@@ -1,0 +1,155 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketing_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./docker/php/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - storage:/var/www/html/storage
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    command: php-fpm
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-ticketing_dkis}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: "${DB_PASSWORD:?Error: DB_PASSWORD wajib didefinisikan di .env}"
+      QUEUE_CONNECTION: database
+      CACHE_DRIVER: database
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ticketing_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: ticketing_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:8443:8443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - storage:/var/www/html/storage
+    depends_on:
+      - app
+    networks:
+      - ticketing_net
+
+  db:
+    image: postgres:15-alpine
+    container_name: ticketing_db
+    restart: unless-stopped
+    # Port 5432 diisolasi internal tanpa expose ke host
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ticketing_dkis}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?Error: DB_PASSWORD wajib didefinisikan di .env}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ticketing_dkis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ticketing_net
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketing_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work --tries=3 --timeout=90
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./docker/php/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - storage:/var/www/html/storage
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-ticketing_dkis}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: "${DB_PASSWORD:?Error: DB_PASSWORD wajib didefinisikan di .env}"
+      QUEUE_CONNECTION: database
+      CACHE_DRIVER: database
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - ticketing_net
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketing_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan schedule:work
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./docker/php/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - storage:/var/www/html/storage
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-ticketing_dkis}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: "${DB_PASSWORD:?Error: DB_PASSWORD wajib didefinisikan di .env}"
+      QUEUE_CONNECTION: database
+      CACHE_DRIVER: database
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    networks:
+      - ticketing_net
+
+  adminer:
+    image: adminer:latest
+    container_name: ticketing_adminer
+    restart: unless-stopped
+    profiles: ["dev-tools"]
+    ports:
+      - "127.0.0.1:${ADMINER_PORT:-8081}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ticketing_net
+
+volumes:
+  pgdata:
+    external: true
+  storage:
+    driver: local
+
+networks:
+  ticketing_net:
+    name: ticketing_net
+    driver: bridge
+
