@@ -1,154 +1,87 @@
-# 🏛️ Sistem Ticketing Layanan TIK & Keamanan Siber
-### Dinas Komunikasi, Informatika, dan Statistik (DKIS) Pemerintah Kota Cirebon
+# 🏛️ Sistem Helpdesk & Ticketing Layanan TIK DKIS Kota Cirebon
+> **Platform Manajemen Permohonan Layanan TIK, Pemeliharaan Infrastruktur, dan Penanganan Insiden Keamanan Siber Terpadu Berbasis Standar SPBE.**
 
-[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Nginx](https://img.shields.io/badge/Nginx-HTTP%2F2_SSL-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
-[![Tests](https://img.shields.io/badge/Tests-26_Passed_(135_Assertions)-success?style=for-the-badge)](#-pengujian-sistem-testing-suite)
-[![Status](https://img.shields.io/badge/Status-Production_Ready-059669?style=for-the-badge)](#)
-
-Platform permohonan bantuan teknologi informasi, pemeliharaan infrastruktur jaringan kedinasan, dan penanganan insiden keamanan siber terpadu untuk melayani **seluruh ASN di lingkungan Organisasi Perangkat Daerah (OPD) Pemerintah Kota Cirebon** sesuai standar arsitektur Sistem Pemerintahan Berbasis Elektronik (SPBE), ITIL v4, dan standar keamanan BSSN/CSIRT.
+[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=flat-square&logo=php&logoColor=white)](https://php.net)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/Tests-26_Passed_(100%25)-059669?style=flat-square)](#-pengujian-sistem)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-blue?style=flat-square)](#)
 
 ---
 
-## 📑 Daftar Isi
+## 📌 Apa Itu Proyek Ini?
 
-- [Fitur Utama Sistem](#-fitur-utama-sistem)
-- [Struktur Peran & Hak Akses (RBAC)](#-struktur-peran--hak-akses-rbac)
-- [Alur Kerja Sistem (Workflow Lifecycle)](#-alur-kerja-sistem-workflow-lifecycle)
-- [Standardisasi SLA & Protokol TLP](#-standardisasi-sla--protokol-tlp)
-- [Arsitektur Keamanan & Proteksi Siber](#-arsitektur-keamanan--proteksi-siber)
-- [Teknologi & Stack Pengembangan](#-teknologi--stack-pengembangan)
-- [Panduan Instalasi Cepat (Docker Setup)](#-panduan-instalasi-cepat-docker-setup)
-- [Pengujian Sistem (Testing Suite)](#-pengujian-sistem-testing-suite)
-- [Akun Bawaan (Default Credentials)](#-akun-bawaan-default-credentials)
-- [Pemeliharaan & Perintah Artisan](#-pemeliharaan--perintah-artisan)
-- [Lisensi & Kepemilikan](#-lisensi--kepemilikan)
+**Sistem Ticketing DKIS Kota Cirebon** adalah platform web helpdesk resmi yang dirancang untuk mengelola seluruh siklus hidup permohonan layanan teknologi informasi, perbaikan infrastruktur jaringan, serta penanganan insiden keamanan siber bagi **seluruh Aparatur Sipil Negara (ASN) di lingkungan Pemerintah Kota Cirebon**.
+
+Sistem ini menghubungkan **Pelapor (ASN OPD)**, **Admin Pusat (Verifikator DKIS)**, **Admin Bidang (Koordinator Tim Teknis)**, dan **Teknisi Lapangan** dalam satu ekosistem kerja terpadu yang transparan, terukur, dan akuntabel.
 
 ---
 
-## 🌟 Fitur Utama Sistem
+## 💡 Mengapa Proyek Ini Dibuat?
 
-### 1. Portal Pelapor Ringan & Terverifikasi (*Zero Friction ASN Access*)
-* ASN se-Kota Cirebon dapat mengajukan permohonan tanpa proses registrasi akun manual.
-* Validasi identitas otomatis berbasis **NIP ASN**, **Unit Kerja (OPD)**, dan **Nomor WhatsApp aktif**.
-* Dilengkapi sistem autocomplete OPD resmi serta opsi input manual untuk instansi vertikal, kelurahan, dan sekolah.
+Sebelum sistem ini dibangun, pengelolaan permohonan bantuan teknis di lingkungan pemerintah daerah menghadapi beberapa kendala nyata:
 
-### 2. Pelacakan Tiket Privat & Autentikasi PIN Bcrypt
-* Perlindungan privasi data aduan sesuai amanat **UU Perlindungan Data Pribadi (UU PDP)**.
-* Pelapor menerima **Kode Tiket unik** dan **PIN Keamanan 6 Digit** (di-hash Bcrypt di database).
-* Riwayat tiket, progres perbaikan, dan unduhan dokumen dilindungi sesi verifikasi PIN otomatis.
-
-### 3. Manajemen Penugasan Teknisi Lapangan Lengkap (*Workload Balancing*)
-* Admin Bidang menunjuk koordinator lapangan (**Lead PIC**) dan tim anggota teknisi pendamping.
-* Sistem mengendalikan kapasitas beban kerja teknisi berdasarkan bobot TLP (RED = 3 poin, AMBER = 2 poin, GREEN = 1 poin, maksimal kuota 6 poin per teknisi).
-* Batas waktu respon konfirmasi penugasan resmi (**15 Menit** untuk TLP RED dan **60 Menit** untuk tugas reguler) dengan pelepasan otomatis (*auto-release*) oleh Command Scheduler jika teknisi tidak merespon.
-
-### 4. Portal Mandiri Teknisi Lapangan (*Mobile & Desktop Ready*)
-* Teknisi memiliki dashboard kerja pribadi dengan hitung mundur SLA *real-time*.
-* Aksi penerimaan tugas (*Accept*), penolakan beralasan formal (*Decline*), worklog progres berkala, pelaporan kendala eksternal (*Blocker*: ISP, vendor, suku cadang), dan pengajuan selesai pekerjaan (*Submit for Review*).
-* Komunikasi langsung 1-klik via WhatsApp ke pelapor tanpa membocorkan data pribadi pelapor setelah tiket ditutup.
-
-### 5. Klasifikasi Traffic Light Protocol (TLP) & CSIRT Bypass
-* Pengelompokan tingkat kerahasiaan: **TLP: RED**, **TLP: AMBER**, **TLP: GREEN**, dan **TLP: CLEAR**.
-* **TLP: RED (Insiden Kritis Siber):** Diisolasi secara ketat di bawah kendali Admin Pusat dan Bidang Persandian/CSIRT. Seluruh staf non-Persandian diblokir total (HTTP 404 Not Found) demi kerahasiaan keamanan negara.
-
-### 6. Hak Veto Force Close & Penyelarasan Status Otomatis
-* Admin Pusat berwenang melakukan *Force Close* pada tiket sengketa atau deadlock di status `eskalasi_pusat`.
-* Sistem secara otomatis mengubah status seluruh penugasan aktif teknisi menjadi `released` dan menghentikan seluruh form aksi kerja lapangan.
-
----
-
-## 👥 Struktur Peran & Hak Akses (RBAC)
-
-| Peran Akun | Cakupan Tugas & Wewenang |
+| Tantangan Sebelumnya | Solusi Melalui Sistem Ini |
 | :--- | :--- |
-| **Pelapor (ASN OPD)** | Mengajukan aduan, melacak timeline progres, mengisi data susulan, mengonfirmasi penutupan tiket, dan memberikan rating kepuasan (1-5 bintang). |
-| **Admin Pusat** | Verifikasi tiket masuk (*triage*), penentuan TLP & kategori, disposisi bidang, penanganan insiden siber TLP RED, penyelesaian eskalasi pusat, hak veto *force close*, rekap laporan kinerja SPBE, dan manajemen pengguna. |
-| **Admin Bidang** | Koordinator tim bidang (ITIK, PEMDI, PERSANDIAN), pemantauan antrean bidang, alokasi penugasan teknisi (*lead* & *members*), kontrol beban kerja staf, dan review hasil penanganan lapangan. |
-| **Teknisi Lapangan** | Menerima/menolak tugas, mencatat progres harian, melaporkan hambatan eksternal, menyelesaikan perbaikan di lokasi, dan mengunggah foto bukti penyelesaian. |
+| **Aduan Tercecer & Tidak Tercatat:** Permohonan via WhatsApp pribadi/telepon sering hilang dan tidak memiliki bukti riwayat. | **Form Pengaduan Terverifikasi:** Seluruh kendala tercatat resmi dengan kode tiket unik dan nomor tiket referensi. |
+| **Birokrasi Registrasi yang Berbelit:** ASN enggan melapor karena malas membuat akun baru atau lupa kata sandi. | **Zero-Friction Access:** ASN cukup memasukkan **NIP** dan **No. WhatsApp** tanpa perlu registrasi akun manual. |
+| **Ketidakpastian Waktu Pengerjaan (Tanpa SLA):** Pelapor tidak tahu kapan perbaikan akan selesai dikerjakan. | **SLA Otomatis (13 Kategori):** Target waktu respon & resolusi dihitung mundur secara *real-time* dengan visualisasi transparan. |
+| **Penumpukan Beban Kerja Teknisi:** Penugasan manual sering membebani beberapa teknisi tertentu saja. | **Workload Balancing:** Sistem membatasi beban aktif maksimal 6 poin per teknisi dengan bobot sesuai tingkat keparahan kendala. |
+| **Insiden Siber Bocor ke Publik:** Laporan kebocoran data atau defacement server berisiko tersebar luas. | **Isolasi Keamanan TLP: RED:** Tiket insiden kritis siber otomatis diisolasi eksklusif hanya untuk tim CSIRT/Persandian (akses teknisi lain diblokir 404). |
+| **Sengketa Perbaikan (Deadlock):** Tidak ada mekanisme penengah jika hasil perbaikan teknisi dan pelapor tidak sepakat. | **Hak Veto Force Close:** Admin Pusat dapat menengahi dan menutup tiket secara permanen (*force closed*) berbasis audit teknis. |
 
 ---
 
-## 🔄 Alur Kerja Sistem (Workflow Lifecycle)
+## ✨ Fitur-Fitur Utama
 
-```mermaid
-flowchart TD
-    %% PENGAJUAN TIKET
-    A["📝 ASN OPD Mengajukan Kendala<br/>(NIP, SKPD, WhatsApp, Deskripsi, Lampiran)"] --> A1["🔑 Generate Kode Tiket & PIN 6 Digit<br/>(Tersimpan Bcrypt di Database)"]
-    A1 --> B["🔍 Verifikasi Admin Pusat<br/>(Triage, Penetapan TLP & Disposisi Bidang)"]
-    
-    %% VERIFIKASI PUSAT
-    B -->|Berkas Belum Lengkap| B1["⚠️ Minta Info Tambahan<br/>(Status: pending_info)"]
-    B1 --> A
-    B -->|Insiden Siber Kritis TLP RED| CSIRT["🚨 CSIRT Persandian<br/>(Isolasi Penuh 404 bagi Non-Persandian)"]
-    B -->|Kasus Reguler| C["📋 Disposisi ke Bidang Pengampu<br/>(Status: verified, SLA Resmi Dimulai)"]
-    
-    %% PENUGASAN TEKNISI
-    C --> D["⚖️ Penugasan Teknisi oleh Admin Bidang<br/>(Workload Balancing kuota 6 poin & Respond Deadline)"]
-    CSIRT --> D
-    D --> E["🛠️ Penanganan oleh Teknisi Lapangan<br/>• Terima Tugas (Accept) -> in_progress<br/>• Catat Progres Harian & Hambatan Blocker<br/>• Selesaikan Tugas & Unggah Foto Bukti"]
-    
-    %% PENYELESAIAN
-    E --> F["🚀 Selesai Dikerjakan (Resolved)<br/>Diteruskan ke Pelapor untuk Konfirmasi"]
-    
-    %% RESPON PELAPOR
-    F --> G{"👤 Konfirmasi Pelapor ASN"}
-    G -->|Puas / Tuntas| H["✅ Tutup Tiket & Rating Bintang (1-5)<br/>(Status: closed)"]
-    G -->|Belum Tuntas (Maks. 2x Reopen)| D
-    G -->|Reopen ke-3 (Deadlock)| I["🚨 Eskalasi ke Admin Pusat<br/>(Status: eskalasi_pusat)"]
-    
-    %% VETO PUSAT
-    I --> J["⚖️ Audit Teknis & Force Close Pusat<br/>(Auto-Release Penugasan Teknisi)"]
-```
+* 📱 **Pelacakan Tiket Terlindungi PIN:** Pelapor melacak progres perbaikan menggunakan Kode Tiket dan PIN Keamanan 6 Digit (di-hash Bcrypt).
+* ⏱️ **Countdown SLA & Indikator Kepatuhan:** Menghitung waktu respon dan resolusi secara presisi; jam pengerjaan tidak dikurangi durasi verifikasi berkas.
+* 🛠️ **Portal Mandiri Teknisi Lapangan:** Antarmuka responsif bagi teknisi untuk menerima/menolak tugas, mencatat worklog progres, melaporkan hambatan (*blocker: ISP/vendor/suku cadang*), dan mengirim foto bukti selesai perbaikan.
+* 🚦 **Klasifikasi Traffic Light Protocol (TLP):** Standardisasi penanganan informasi: **TLP: CLEAR**, **TLP: GREEN**, **TLP: AMBER**, dan **TLP: RED** (CSIRT).
+* 🔒 **Keamanan & Integritas Audit Trail:** Tabel riwayat dilindungi **Trigger PostgreSQL append-only** (mencegah manipulasi/penghapusan riwayat) dan **Optimistic Locking** (`row_version` & HTTP 409 Conflict) untuk mencegah tabrakan data.
 
 ---
 
-## ⏱️ Standardisasi SLA & Protokol TLP
+## 👥 Cara Menggunakan Sistem (Berdasarkan Peran)
 
-### Target Standar Service Level Agreement (SLA) Resmi DKIS
-
-| No | Kategori Layanan | Bidang | SLA Respon | SLA Resolusi |
-| :-: | :--- | :--- | :---: | :---: |
-| 1 | **Bug/Error Aplikasi Kritis (Layanan Publik Terganggu)** | Pemerintahan Digital (PEMDI) | 15 Menit | **4 Jam** |
-| 2 | **Permohonan Penambahan Fitur Minor Aplikasi** | Pemerintahan Digital (PEMDI) | 8 Jam | **72 Jam (3 Hari)** |
-| 3 | **Permohonan Integrasi Data / API Interoperabilitas** | Pemerintahan Digital (PEMDI) | 8 Jam | **120 Jam (5 Hari)** |
-| 4 | **Pengembangan / Rancang Bangun Aplikasi Baru** | Pemerintahan Digital (PEMDI) | 16 Jam | **720 Jam (30 Hari)** |
-| 5 | **Putus Koneksi Jaringan Utama / FO Pemda** | Infrastruktur TIK (ITIK) | 15 Menit | **4 Jam** |
-| 6 | **Gangguan Internet / Wi-Fi Kantor OPD** | Infrastruktur TIK (ITIK) | 30 Menit | **24 Jam (1 Hari)** |
-| 7 | **Penyediaan Server Baru (Alokasi VPS / Cloud)** | Infrastruktur TIK (ITIK) | 2 Jam | **48 Jam (2 Hari)** |
-| 8 | **Pemasangan Jaringan / Penarikan Titik FO Baru** | Infrastruktur TIK (ITIK) | 8 Jam | **96 Jam (4 Hari)** |
-| 9 | **Insiden Siber Kritis (Defacement / Ransomware)** | Persandian & CSIRT | 15 Menit | **6 Jam** |
-| 10 | **Penerbitan / Lupa PIN TTE (BSrE)** | Persandian & CSIRT | 1 Jam | **24 Jam (1 Hari)** |
-| 11 | **Penerbitan Sertifikat SSL / TLS Domain Pemda** | Persandian & CSIRT | 2 Jam | **24 Jam (1 Hari)** |
-| 12 | **Uji Kerentanan Aplikasi (VA / Pentest)** | Persandian & CSIRT | 8 Jam | **168 Jam (7 Hari)** |
-| 13 | **Belum Tahu / Konsultasi Masalah Lainnya** | Layanan Umum | 1 Jam | **24 Jam (1 Hari)** |
+### 1. Sebagai Pelapor (ASN Pemohon Layanan)
+1. **Buka Portal Publik:** Akses halaman utama (tanpa perlu login).
+2. **Ajukan Tiket:** Isi form dengan memilih Unit Kerja (OPD), Kategori Masalah, NIP, Nama, Nomor WhatsApp, dan deskripsi kendala beserta foto pendukung.
+3. **Simpan PIN Keamanan:** Setelah tiket berhasil dibuat, Anda akan menerima **Kode Tiket** dan **PIN 6 Digit**.
+4. **Lacak Progres:** Masukkan Kode Tiket & PIN pada tab *"Lacak Tiket"* untuk memantau status pengerjaan, membaca catatan teknisi, atau menambahkan info susulan.
+5. **Konfirmasi Selesai & Beri Rating:** Saat perbaikan selesai, konfirmasi penyelesaian dan berikan penilaian kepuasan (bintang 1–5).
 
 ---
 
-## 🛡️ Arsitektur Keamanan & Proteksi Siber
-
-1. **Zero Secret Leakage:** Kunci privat `.env`, token API WhatsApp, dan sertifikat SSL dilindungi penuh oleh `.gitignore` dan tidak pernah terekspos ke repositori publik.
-2. **PostgreSQL Trigger Append-Only:** Tabel `ticket_events` dan `audit_logs` dilindungi trigger basis data yang menolak operasi `UPDATE` dan `DELETE` demi integritas audit forensik SPBE.
-3. **Optimistic Concurrency Control:** Kolom `row_version` mencegah insiden balapan data (*race condition*) antar-petugas dengan melempar respons `409 Conflict`.
-4. **Isolasi Database Docker:** Port database PostgreSQL (`5432`) dan PHP-FPM (`9000`) tidak dibuka ke jaringan publik host, melainkan terisolasi di dalam bridge internal `ticketing_net`.
-
----
-
-## 💻 Teknologi & Stack Pengembangan
-
-* **Backend Framework:** PHP 8.2 (Alpine), Laravel 10.x
-* **Database Engine:** PostgreSQL 15 (JSONB support & native performance indexing)
-* **Web Server & Reverse Proxy:** Nginx Alpine (HTTP/2, TLS 1.2/1.3 Termination, Gzip Compression)
-* **Frontend:** Laravel Blade, Vanilla CSS Modern, Tailwind CSS, Alpine.js, Chart.js
-* **Asynchronous Queue & Scheduler:** Database Queue Worker (`ticketing_queue`) & Command Scheduler (`ticketing_scheduler`)
-* **Kontainerisasi:** Docker Engine & Docker Compose
+### 2. Sebagai Admin Pusat (Verifikator Utama DKIS)
+1. **Login Petugas:** Masuk via `/login` menggunakan akun Admin Pusat.
+2. **Triage & Verifikasi Tiket:** Buka menu *"Verifikasi Masuk"*, periksa kelayakan laporan, tentukan klasifikasi TLP (GREEN/AMBER/RED), dan tentukan kategori layanan.
+3. **Disposisi Bidang:** Arahkan tiket ke bidang pengampu yang tepat (Infrastruktur TIK, Aplikasi Digital, atau Persandian/CSIRT).
+4. **Mediasi & Force Close:** Jika terjadi tiket eskalasi yang berulang kali di-reopen pelapor, lakukan audit teknis dan gunakan hak veto penutupan paksa (*Force Close*).
 
 ---
 
-## 🚀 Panduan Instalasi Cepat (Docker Setup)
+### 3. Sebagai Admin Bidang (Koordinator Tim Teknis)
+1. **Penerimaan Tiket:** Buka menu antrean bidang untuk melihat tiket yang telah diverifikasi oleh Admin Pusat.
+2. **Penunjukan Teknisi:** Pilih teknisi koordinator (**Lead PIC**) dan tim anggota. Pantau indikator beban kerja agar tidak melebihi kuota beban.
+3. **Monitoring Progres & Hambatan:** Pantau SLA berjalan dan tindak lanjuti laporan hambatan eksternal (*blocker*) yang dilaporkan teknisi di lapangan.
+
+---
+
+### 4. Sebagai Teknisi Lapangan (Pelaksana Tugas Lapangan)
+1. **Buka Portal Tugas:** Masuk via portal teknisi untuk melihat daftar tugas yang dialokasikan.
+2. **Respon Penugasan:** Klik **"Terima Penugasan"** (atau "Tolak Penugasan" dengan alasan formal) sebelum batas waktu respon kedaluwarsa.
+3. **Komunikasi & Update Progres:** Gunakan tombol *1-Click WhatsApp* untuk menghubungi pelapor, dan catat progres tindakan teknis di lokasi.
+4. **Selesaikan Tugas:** Lampirkan foto bukti perbaikan dan catatan solusi, lalu klik **"Selesaikan Pekerjaan"** untuk meneruskan hasil ke pelapor.
+
+---
+
+## 🚀 Panduan Menjalankan Sistem (Quick Start)
+
+### Prasyarat
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) telah terpasang di komputer Anda.
+* Git.
 
 ### 1. Kloning Repositori
 ```bash
@@ -156,88 +89,80 @@ git clone https://github.com/Shiraori19/Sistem-Ticketing.git
 cd Sistem-Ticketing
 ```
 
-### 2. Konfigurasi Environment (`.env`)
-Salin file template environment bawaan:
+### 2. Siapkan File Environment
+Salin template konfigurasi:
 ```bash
 cp .env.example .env
 ```
-*(Sesuaikan `DB_PASSWORD` dan konfigurasi opsional lainnya di dalam file `.env`).*
+*(File `.env.example` sudah disesuaikan secara default untuk environment Docker lokal).*
 
 ### 3. Jalankan Kontainer Docker
 ```bash
 docker compose up -d
 ```
-Pastikan seluruh 5 kontainer berjalan normal:
-* `ticketing_web` (Nginx di Port 80, 443, dan 8443)
-* `ticketing_app` (PHP-FPM 8.2)
-* `ticketing_db` (PostgreSQL 15)
-* `ticketing_queue` (Queue Worker)
-* `ticketing_scheduler` (Cron Scheduler)
+Sistem akan otomatis menjalankan 5 service:
+* **`ticketing_web`** : Nginx Web Server (Port `80`, `443`, dan `8443` HTTPS).
+* **`ticketing_app`** : PHP 8.2-FPM Backend Engine.
+* **`ticketing_db`** : PostgreSQL 15 Database.
+* **`ticketing_queue`** : Worker Pemroses Notifikasi Latar Belakang.
+* **`ticketing_scheduler`** : Cron Otomasi Pelepasan Tugas & Pengecekan SLA.
 
-### 4. Inisialisasi Database & Seeding
+### 4. Inisialisasi Database & Data Bawaan (Seeder)
 ```bash
 docker exec -it ticketing_app php artisan migrate:fresh --seed
 ```
 
-### 5. Akses Aplikasi
-* **Portal Layanan ASN (Publik):** [https://localhost:8443](https://localhost:8443) (atau [http://localhost:8080](http://localhost:8080))
-* **Portal Masuk Petugas DKIS:** [https://localhost:8443/login](https://localhost:8443/login)
+### 5. Buka di Browser
+* 🌐 **Portal Layanan ASN (Publik):** [https://localhost:8443](https://localhost:8443) *(atau http://localhost)*
+* 🔐 **Portal Masuk Petugas DKIS:** [https://localhost:8443/login](https://localhost:8443/login)
 
 ---
 
-## 🧪 Pengujian Sistem (Testing Suite)
+## 🔑 Akun Demo Pengujian
 
-Sistem telah dilengkapi dengan automated test suite berbasis PHPUnit yang memvalidasi seluruh alur bisnis, proteksi keamanan, dan sinkronisasi lintas peran:
+Anda dapat langsung menguji seluruh peran menggunakan akun bawaan berikut (seluruh kata sandi: `Password123!`):
+
+| Peran Akun | Alamat Email / Akun | Bidang / Cakupan | Kata Sandi |
+| :--- | :--- | :--- | :--- |
+| **Admin Pusat** | `admin.pusat@cirebonkota.go.id` | Lintas Bidang (DKIS Pusat) | `Password123!` |
+| **Admin Bidang ITIK** | `dewi.lestari@cirebonkota.go.id` | Infrastruktur Jaringan & TIK | `Password123!` |
+| **Admin Bidang CSIRT** | `riko.pratama@cirebonkota.go.id` | Persandian & Keamanan Siber | `Password123!` |
+| **Teknisi ITIK** | `fazra.fatimah@cirebonkota.go.id`| Teknisi Lapangan Jaringan | `Password123!` |
+| **Teknisi CSIRT** | `rian.pratama@cirebonkota.go.id` | Teknisi Lapangan Siber | `Password123!` |
+
+---
+
+## 🧪 Pengujian Sistem (Automated Tests)
+
+Proyek ini telah lulus **100% pada 26 skenario pengujian otomatis (135 assertions)**:
 
 ```bash
 docker exec -it ticketing_app php artisan test
 ```
 
-**Status Terkini: 26 Tests Passed (135 Assertions, 0 Failed)**:
-* `BatchThreeHardeningTest`: Validasi berkas susulan, kalkulasi kepatuhan SLA, integrasi antrean notifikasi WhatsApp, dan pencarian case-insensitive.
-* `EndToEndWorkflowTest`: Siklus hidup lengkap Pelapor -> Admin Pusat -> Admin Bidang -> Teknisi Lapangan -> Konfirmasi Pelapor.
-* `PublicTicketSecurityTest`: Pembatasan unduhan privat ber-PIN, rate limiting pelacakan, dan masking data sensitif.
-* `WorkflowAndSlaHardeningTest`: Kompatibilitas PIN, pewarisan SLA tiket anak (parent-child), retensi waktu SLA redisposisi, dan pemisahan antrean TLP RED.
-* `TechnicianAssignmentWorkflowTest`: Penerimaan tugas dalam deadline, penolakan formal, pelepasan penugasan kedaluwarsa, integritas tiket ditutup paksa (*Force Closed*), optimistic locking (409 Conflict), dan append-only event trigger.
+Cakupan pengujian meliputi:
+- Siklus hidup tiket ujung-ke-ujung (E2E Multi-Role Workflow).
+- Proteksi keamanan unduhan privat ber-PIN & masking data rahasia.
+- Preservasi SLA pada redisposisi & pewarisan tiket induk-anak (*parent-child*).
+- Isolasi keamanan insiden siber TLP: RED (blokir HTTP 404 bagi non-Persandian).
+- Sinkronisasi penutupan paksa (*Force Close*) yang otomatis melepaskan penugasan aktif teknisi (*released*).
+- Proteksi konkurensi data (*Optimistic Locking* & HTTP 409 Conflict).
+- Integritas *append-only* riwayat event pada PostgreSQL trigger.
 
 ---
 
-## 🔑 Akun Bawaan (Default Credentials)
+## 🛠️ Stack Teknologi
 
-Semua akun terdaftar menggunakan domain kedinasan resmi Pemerintah Kota Cirebon:
-
-| Nama Pengguna / Email | Peran | Bidang Pengampu | Password Bawaan |
-| :--- | :--- | :--- | :--- |
-| `admin.pusat@cirebonkota.go.id` | Admin Pusat | Lintas Bidang (DKIS Pusat) | `Password123!` |
-| `dewi.lestari@cirebonkota.go.id` | Admin Bidang | Infrastruktur TIK (ITIK) | `Password123!` |
-| `riko.pratama@cirebonkota.go.id` | Admin Bidang | Persandian & CSIRT | `Password123!` |
-| `fazra.fatimah@cirebonkota.go.id`| Teknisi Lapangan | Infrastruktur TIK (ITIK) | `Password123!` |
-| `rian.pratama@cirebonkota.go.id` | Teknisi Lapangan | Persandian & CSIRT | `Password123!` |
-
-> [!TIP]
-> Demi keamanan di lingkungan produksi, segera ubah seluruh kata sandi akun default setelah instalasi selesai melalui menu **Profil Petugas**.
+- **Backend:** PHP 8.2, Laravel 10.x
+- **Basis Data:** PostgreSQL 15 (dengan JSONB Audit Ledger)
+- **Web Server:** Nginx Alpine (HTTP/2, SSL TLS 1.2/1.3, FastCGI Keepalive)
+- **Frontend:** Laravel Blade, CSS3 Modern, Tailwind CSS, Alpine.js, Chart.js
+- **Orkestrasi:** Docker & Docker Compose
+- **Integritas Sistem:** PostgreSQL Triggers, Eloquent State Machine, RBAC Policy Guard
 
 ---
 
-## 🔧 Pemeliharaan & Perintah Artisan
-
-```bash
-# Membersihkan dan mengompilasi ulang cache
-docker exec -it ticketing_app php artisan optimize:clear
-docker exec -it ticketing_app php artisan optimize
-
-# Memeriksa log aktivitas container
-docker logs -f ticketing_app
-docker logs -f ticketing_web
-docker logs -f ticketing_scheduler
-
-# Menjalankan manual pelepasan penugasan teknisi yang kedaluwarsa
-docker exec -it ticketing_app php artisan tickets:release-expired-assignments
-```
-
----
-
-## 🏛️ Lisensi & Kepemilikan
+## 🏛️ Lisensi & Hak Cipta
 
 Hak Cipta © 2026 **Dinas Komunikasi, Informatika, dan Statistik (DKIS) Pemerintah Kota Cirebon**.  
-Dikembangkan untuk meningkatkan tata kelola TIK, transparansi pelayanan kedinasan, dan efisiensi birokrasi pemerintahan daerah.
+Dikembangkan untuk mendukung transformasi digital pemerintahan, transparansi pelayanan publik, dan tata kelola SPBE yang andal.
