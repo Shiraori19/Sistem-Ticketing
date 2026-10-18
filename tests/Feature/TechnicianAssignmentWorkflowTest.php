@@ -535,4 +535,56 @@ class TechnicianAssignmentWorkflowTest extends TestCase
         }
         $this->assertTrue($eloquentDeleteBlocked, 'Eloquent Model guard harus menolak method delete pada TicketEvent.');
     }
+
+    /**
+     * Test Integritas Sinkronisasi: Force Close & Cancel oleh Admin me-release penugasan aktif dan memblokir aksi teknisi
+     */
+    public function test_force_close_dan_cancel_melepas_penugasan_dan_memblokir_aksi_teknisi(): void
+    {
+        $roleAdminPusat = Role::firstOrCreate(['nama_role' => 'Admin Pusat']);
+        $adminPusat = User::create([
+            'nama' => 'Admin Pusat Uji',
+            'username' => 'admin.pusat.' . uniqid() . '@cirebonkota.go.id',
+            'password' => bcrypt('Password123!'),
+            'role_id' => $roleAdminPusat->id,
+            'is_active' => true,
+        ]);
+
+        $teknisi = $this->createTechnician($this->bidangItik, 'Teknisi Uji Lapangan');
+        $ticket = $this->createTicket($this->bidangItik, ['status' => 'in_progress']);
+        $assignment = $this->createAssignment($ticket, $teknisi, [
+            'status' => 'working',
+            'assigned_at' => Carbon::now()->subMinutes(30),
+            'accepted_at' => Carbon::now()->subMinutes(25),
+            'started_at' => Carbon::now()->subMinutes(25),
+        ]);
+
+        $workflow = app(\App\Services\TicketWorkflowService::class);
+        $policy = new \App\Policies\TicketAssignmentPolicy();
+
+        // 1. Force Close oleh Admin Pusat (Tiket berstatus eskalasi_pusat)
+        $ticket->status = 'eskalasi_pusat';
+        $ticket->save();
+
+        $workflow->forceClose($ticket, 'Ditutup paksa karena perangkat di luar tanggung jawab dinas.', $adminPusat);
+
+        $ticket->refresh();
+        $assignment->refresh();
+
+        $this->assertEquals('force_closed', $ticket->status);
+        $this->assertEquals('released', $assignment->status);
+        $this->assertNotNull($assignment->unassigned_at);
+        $this->assertStringContainsString('force closed', $assignment->alasan_unassign);
+
+        // Validasi Policy melarang teknisi bertindak pada tiket force_closed
+        $this->assertFalse($policy->accept($teknisi, $assignment));
+        $this->assertFalse($policy->addProgress($teknisi, $assignment));
+        $this->assertFalse($policy->reportBlocker($teknisi, $assignment));
+        $this->assertFalse($policy->submit($teknisi, $assignment));
+
+        // Validasi Service Guard melempar ValidationException
+        $assignWorkflow = app(\App\Services\AssignmentWorkflowService::class);
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $assignWorkflow->submitForReview($ticket, $assignment, 'Mencoba menyelesaikan tiket yang sudah ditutup paksa', $teknisi);
+    }
 }

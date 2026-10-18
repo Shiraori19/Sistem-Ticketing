@@ -73,7 +73,15 @@ class TicketWorkflowService
                 $responJam = (float) ($category->sla_respon_jam ?: 72.00);
                 $responDeadline = Carbon::now()->addMinutes((int) round($responJam * 60));
 
-                $ticket = Ticket::create([
+                $opdId = $data['opd_id'] ?? null;
+                if (!$opdId && !empty($data['skpd']) && \Illuminate\Support\Facades\Schema::hasTable('master_opd')) {
+                    $matchedOpd = \App\Models\MasterOpd::where('nama_opd', $data['skpd'])
+                        ->orWhere('singkatan', $data['skpd'])
+                        ->first();
+                    $opdId = $matchedOpd?->id;
+                }
+
+                $ticketAttributes = [
                     'kode_tiket' => $kodeTiket,
                     'nip_pelapor' => $data['nip_pelapor'],
                     'nama_pelapor' => $data['nama_pelapor'],
@@ -94,7 +102,13 @@ class TicketWorkflowService
                     'reopen_count' => 0,
                     'max_reopen' => $data['max_reopen'] ?? 3,
                     'status_history' => [],
-                ]);
+                ];
+
+                if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'opd_id')) {
+                    $ticketAttributes['opd_id'] = $opdId;
+                }
+
+                $ticket = Ticket::create($ticketAttributes);
 
                 $this->appendHistory(
                     $ticket,
@@ -885,6 +899,8 @@ class TicketWorkflowService
     {
         return DB::transaction(function () use ($ticket, $notes, $evidencePath, $isConfidential, $actor) {
             $ticket->status = 'resolved';
+            $ticket->selesai_at = $ticket->selesai_at ?: Carbon::now();
+            $ticket->jenis_penyelesaian = $ticket->jenis_penyelesaian ?: 'manual_admin';
             $ticket->catatan_resolusi = $notes;
             $ticket->bukti_resolusi = $evidencePath;
             $ticket->is_confidential_evidence = $isConfidential;
@@ -922,6 +938,8 @@ class TicketWorkflowService
 
                 foreach ($childTickets as $child) {
                     $child->status = 'resolved';
+                    $child->selesai_at = $ticket->selesai_at;
+                    $child->jenis_penyelesaian = 'manual_admin';
                     $child->sla_breach = $isResolusiBreached;
                     $child->catatan_resolusi = $notes;
                     $child->bukti_resolusi = $evidencePath;
@@ -992,6 +1010,8 @@ class TicketWorkflowService
     {
         return DB::transaction(function () use ($ticket, $rating, $feedback) {
             $ticket->status = 'closed';
+            $ticket->selesai_at = $ticket->selesai_at ?: Carbon::now();
+            $ticket->jenis_penyelesaian = 'dikonfirmasi_pelapor';
             $ticket->rating = $rating !== null ? max(1, min(5, (int) $rating)) : 5;
             $ticket->feedback = $feedback;
             $ticket->save();
@@ -1052,7 +1072,23 @@ class TicketWorkflowService
 
         return DB::transaction(function () use ($ticket, $notes, $actor) {
             $ticket->status = 'force_closed';
+            $ticket->selesai_at = Carbon::now();
+            $ticket->jenis_penyelesaian = 'ditutup_paksa';
             $ticket->force_close_notes = $notes;
+            $ticket->save();
+
+            // Batalkan / lepas seluruh penugasan teknisi yang masih aktif untuk tiket ini
+            $activeAssignments = TicketAssignment::where('ticket_id', $ticket->id)
+                ->whereIn('status', ['assigned', 'working', 'submitted', 'returned'])
+                ->get();
+
+            foreach ($activeAssignments as $assignment) {
+                $assignment->status = 'released';
+                $assignment->unassigned_at = Carbon::now();
+                $assignment->alasan_unassign = "Penugasan otomatis dibatalkan karena tiket ditutup paksa (force closed) oleh Admin Pusat. Catatan: {$notes}";
+                $assignment->incrementVersion();
+                $assignment->save();
+            }
 
             $this->appendHistory($ticket, 'force_closed', $actor->nama . ' (Admin Pusat)', $notes);
 
@@ -1083,6 +1119,23 @@ class TicketWorkflowService
 
         return DB::transaction(function () use ($ticket, $reason, $actor) {
             $ticket->status = 'cancelled';
+            $ticket->selesai_at = $ticket->selesai_at ?: Carbon::now();
+            $ticket->jenis_penyelesaian = 'dibatalkan';
+            $ticket->save();
+
+            // Batalkan / lepas seluruh penugasan teknisi yang masih aktif untuk tiket ini
+            $activeAssignments = TicketAssignment::where('ticket_id', $ticket->id)
+                ->whereIn('status', ['assigned', 'working', 'submitted', 'returned'])
+                ->get();
+
+            foreach ($activeAssignments as $assignment) {
+                $assignment->status = 'released';
+                $assignment->unassigned_at = Carbon::now();
+                $assignment->alasan_unassign = "Penugasan otomatis dibatalkan karena tiket berstatus 'cancelled'. Alasan: {$reason}";
+                $assignment->incrementVersion();
+                $assignment->save();
+            }
+
             $this->appendHistory($ticket, 'cancelled', $actor, "Tiket dibatalkan/ditolak. Alasan: {$reason}");
 
             return $ticket;

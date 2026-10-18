@@ -3,7 +3,10 @@
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BidangManagementController;
 use App\Http\Controllers\Admin\BidangTicketController;
+use App\Http\Controllers\Admin\CategoryManagementController;
 use App\Http\Controllers\Admin\EscalationController;
+use App\Http\Controllers\Admin\LaporanKinerjaController;
+use App\Http\Controllers\Admin\OpdManagementController;
 use App\Http\Controllers\Admin\SlaMonitoringController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\UserController;
@@ -79,7 +82,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::get('/tiket/{id}', [TicketController::class, 'show'])->name('admin.tiket.show');
 
         // Rekap Laporan & Audit Log
-        Route::get('/laporan', [TicketController::class, 'laporan'])->name('admin.laporan');
+        Route::get('/laporan', [LaporanKinerjaController::class, 'index'])->name('admin.laporan');
+        Route::get('/laporan/drilldown', [LaporanKinerjaController::class, 'drilldown'])->name('admin.laporan.drilldown');
+        Route::get('/laporan/export-excel', [LaporanKinerjaController::class, 'exportExcel'])->name('admin.laporan.exportExcel');
         Route::get('/audit-log', [TicketController::class, 'auditLog'])->name('admin.audit-log');
         Route::post('/tiket/{id}/excuse-sla', [TicketController::class, 'excuseSla'])->name('admin.tiket.excuseSla');
 
@@ -94,6 +99,18 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::resource('kelola-bidang', BidangManagementController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->names('admin.bidang-master');
+
+        // Kelola Master Kategori Layanan
+        Route::resource('kelola-kategori', CategoryManagementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('admin.kategori');
+
+        // Kelola Master OPD / SKPD
+        Route::resource('kelola-opd', OpdManagementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->names('admin.opd');
+        Route::post('/kelola-opd/merge-unmapped', [OpdManagementController::class, 'mergeUnmapped'])
+            ->name('admin.opd.mergeUnmapped');
     });
 
     /*

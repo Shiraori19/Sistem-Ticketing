@@ -156,56 +156,109 @@
                                     class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
                             </div>
 
-                            <!-- SKPD / Instansi (20 OPD Kota Cirebon) -->
-                            <div>
-                                <label for="skpd" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    SKPD / Perangkat Daerah <span class="text-rose-500 font-bold">*</span>
-                                </label>
-                                <select id="skpd" name="skpd" required onchange="handleSkpdChange(this)"
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
-                                    <option value="">-- Pilih OPD Asal Pelapor --</option>
-                                    @php
-                                        $daftarOpd = [
-                                            'Sekretariat Daerah Kota Cirebon',
-                                            'Sekretariat DPRD Kota Cirebon',
-                                            'Inspektorat Daerah Kota Cirebon',
-                                            'Dinas Komunikasi, Informatika dan Statistik (DKIS)',
-                                            'Badan Kepegawaian dan Pengembangan SDM (BKPSDM)',
-                                            'Badan Pengelola Keuangan dan Pendapatan Daerah (BPKPD)',
-                                            'Badan Perencanaan Pembangunan, Penelitian dan Pengembangan Daerah (Bappelitbangda)',
-                                            'Dinas Pendidikan',
-                                            'Dinas Kesehatan',
-                                            'Dinas Pekerjaan Umum dan Tata Ruang (DPUTR)',
-                                            'Dinas Perumahan Rakyat dan Kawasan Permukiman (DPRKP)',
-                                            'Satuan Polisi Pamong Praja (Satpol PP)',
-                                            'Dinas Sosial',
-                                            'Dinas Tenaga Kerja',
-                                            'Dinas Kependudukan dan Pencatatan Sipil (Disdukcapil)',
-                                            'Dinas Perhubungan',
-                                            'Dinas Koperasi, Usaha Kecil, Menengah, Perdagangan dan Perindustrian (DKUKMPP)',
-                                            'Dinas Pemuda dan Olahraga (Dispora)',
-                                            'Badan Penanggulangan Bencana Daerah (BPBD)',
-                                            'RSUD Gunung Jati Kota Cirebon',
-                                        ];
-                                    @endphp
-                                    @foreach($daftarOpd as $opd)
-                                        <option value="{{ $opd }}" {{ old('skpd') === $opd ? 'selected' : '' }}>
-                                            {{ $opd }}
-                                        </option>
-                                    @endforeach
-                                    <option value="LAINNYA" {{ old('skpd') === 'LAINNYA' || old('skpd_custom') ? 'selected' : '' }}>
-                                        🏢 OPD / Instansi Lainnya (Ketik Manual)
-                                    </option>
-                                </select>
-
-                                <!-- Input Manual Nama OPD jika memilih opsi Lainnya -->
-                                <div id="skpd_custom_wrapper" class="mt-2.5 {{ old('skpd') === 'LAINNYA' || old('skpd_custom') ? '' : 'hidden' }}">
-                                    <label for="skpd_custom" class="block text-xs font-semibold text-slate-700 mb-1">
-                                        Tuliskan Nama OPD / Instansi / Unit Kerja Anda <span class="text-rose-500 font-bold">*</span>
+                            <!-- SKPD / Instansi (Searchable Combobox) -->
+                            <div class="relative" id="skpd_search_container">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label for="skpd_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700">
+                                        SKPD / Perangkat Daerah <span class="text-rose-500 font-bold">*</span>
                                     </label>
-                                    <input type="text" id="skpd_custom" name="skpd_custom" value="{{ old('skpd_custom') }}"
-                                        placeholder="Contoh: Bagian Protokol Setda, Puskesmas Pegambiran, Kantor Kelurahan, dll"
-                                        class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
+                                    <span class="text-[11px] text-blue-600 font-medium">Ketik atau klik untuk memilih</span>
+                                </div>
+
+                                <!-- Hidden input untuk form submit -->
+                                <input type="hidden" id="skpd" name="skpd" value="{{ old('skpd') }}" required>
+
+                                <!-- Kotak Input SKPD dengan Ikon Cari, Clear, & Chevron Dropdown -->
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="skpd_search_input" autocomplete="off"
+                                        placeholder="Pilih dari daftar atau ketik nama instansi Anda..."
+                                        value="{{ old('skpd') }}"
+                                        class="w-full rounded-xl border border-slate-300 shadow-xs focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm py-2.5 pl-10 pr-16 bg-white transition cursor-pointer"
+                                        onclick="openSkpdDropdown()"
+                                        onfocus="openSkpdDropdown()"
+                                        oninput="handleSkpdSearchInput(this.value)">
+                                    
+                                    <!-- Tombol Aksi Kanan: Clear & Chevron Toggle -->
+                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-0.5">
+                                        <button type="button" id="skpd_clear_btn" onclick="clearSkpdSelection()"
+                                            class="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer {{ old('skpd') ? '' : 'hidden' }}"
+                                            title="Hapus pilihan">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" id="skpd_chevron_btn" onclick="toggleSkpdDropdown()"
+                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
+                                            title="Buka / tutup daftar instansi">
+                                            <svg id="skpd_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Panel Dropdown SKPD: Ringkas & Dapat Di-Scroll -->
+                                <div id="skpd_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100">
+                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
+                                        <span>📜 PILIHAN TERSEDIA (GULIR KE BAWAH)</span>
+                                        <span class="text-blue-600 font-medium">Bisa scroll & ketik</span>
+                                    </div>
+                                    @php
+                                        $daftarOpd = (isset($masterOpdList) && $masterOpdList->isNotEmpty())
+                                            ? $masterOpdList->pluck('nama_opd')->toArray()
+                                            : [
+                                                'Sekretariat Daerah Kota Cirebon',
+                                                'Sekretariat DPRD Kota Cirebon',
+                                                'Inspektorat Daerah Kota Cirebon',
+                                                'Dinas Komunikasi, Informatika dan Statistik (DKIS)',
+                                                'Badan Kepegawaian dan Pengembangan SDM (BKPSDM)',
+                                                'Badan Pengelola Keuangan dan Pendapatan Daerah (BPKPD)',
+                                                'Badan Perencanaan Pembangunan, Penelitian dan Pengembangan Daerah (Bappelitbangda)',
+                                                'Dinas Pendidikan',
+                                                'Dinas Kesehatan',
+                                                'Dinas Pekerjaan Umum dan Tata Ruang (DPUTR)',
+                                                'Dinas Perumahan Rakyat dan Kawasan Permukiman (DPRKP)',
+                                                'Satuan Polisi Pamong Praja (Satpol PP)',
+                                                'Dinas Sosial',
+                                                'Dinas Tenaga Kerja',
+                                                'Dinas Kependudukan dan Pencatatan Sipil (Disdukcapil)',
+                                                'Dinas Perhubungan',
+                                                'Dinas Koperasi, Usaha Kecil, Menengah, Perdagangan dan Perindustrian (DKUKMPP)',
+                                                'Dinas Pemuda dan Olahraga (Dispora)',
+                                                'Badan Penanggulangan Bencana Daerah (BPBD)',
+                                                'RSUD Gunung Jati Kota Cirebon',
+                                            ];
+                                    @endphp
+                                    <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="skpd_items_container" style="scrollbar-width: thin;">
+                                        <!-- Opsi Custom Teks Ketikan (Muncul saat mengetik nama yang belum ada) -->
+                                        <div id="skpd_custom_option" class="hidden px-3.5 py-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectSkpdCustom()">
+                                            <div class="flex items-center gap-2">
+                                                <span>✍️</span>
+                                                <span>Gunakan: <strong id="skpd_custom_label" class="underline"></strong></span>
+                                            </div>
+                                        </div>
+
+                                        @foreach($daftarOpd as $opd)
+                                            <div class="skpd-option px-3.5 py-2.5 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('skpd') === $opd ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
+                                                data-value="{{ $opd }}" onclick="selectSkpd('{{ addslashes($opd) }}')">
+                                                <span>{{ $opd }}</span>
+                                                @if(old('skpd') === $opd)
+                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div id="skpd_empty_state" class="hidden p-3.5 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
+                                        <span>Tidak menemukan nama instansi dalam daftar?</span>
+                                        <button type="button" onclick="selectSkpdCustom()" class="block w-full mt-1 text-blue-600 hover:underline font-bold cursor-pointer">
+                                            ✍️ Gunakan nama yang Anda ketik sebagai instansi baru
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -228,42 +281,101 @@
                         </h3>
 
                         <div class="space-y-5">
-                            <!-- Kategori Masalah / Layanan DKIS (Select Dropdown Standar Ber-optgroup) -->
-                            <div>
-                                <label for="category_id" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    Kategori Masalah / Layanan DKIS <span class="text-rose-500 font-bold">*</span>
-                                </label>
-                                <select id="category_id" name="category_id" required
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
-                                    <option value="">-- Pilih Kategori Masalah / Layanan --</option>
-                                    @php
-                                        // Kelompokkan kategori berdasarkan Bidang tanpa mengubah jenis layanannya
-                                        $groupedCategories = $categories->groupBy(function($cat) {
-                                            $kode = strtoupper($cat->bidang?->kode ?? '');
-                                            $nama = strtoupper($cat->bidang?->nama_bidang ?? '');
-                                            $catName = strtolower($cat->nama_kategori);
+                            <!-- Kategori Masalah / Layanan DKIS (Searchable Combobox Berkelompok) -->
+                            <div class="relative" id="cat_search_container">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label for="cat_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700">
+                                        Kategori Masalah / Layanan DKIS <span class="text-rose-500 font-bold">*</span>
+                                    </label>
+                                    <span class="text-[11px] text-blue-600 font-medium">Ketik atau klik untuk memilih</span>
+                                </div>
 
-                                            if (str_contains($catName, 'belum tahu') || str_contains($catName, 'lainnya') || str_contains($catName, 'konsultasi')) {
-                                                return '❓ KONSULTASI / UMUM';
-                                            } elseif (str_contains($kode, 'ITIK') || str_contains($nama, 'INFRASTRUKTUR') || str_contains($nama, 'JARINGAN') || str_contains($catName, 'internet') || str_contains($catName, 'router') || str_contains($catName, 'server')) {
-                                                return '🌐 BIDANG INFRASTRUKTUR TIK (ITIK)';
-                                            } elseif (str_contains($kode, 'PERSANDIAN') || str_contains($nama, 'SANDI') || str_contains($catName, 'tte') || str_contains($catName, 'siber') || str_contains($catName, 'sertifikat elektronik') || str_contains($catName, 'malware')) {
-                                                return '🛡️ BIDANG PERSANDIAN & KEAMANAN INFORMASI';
-                                            } else {
-                                                return '💻 BIDANG APLIKASI & INFORMATIKA (APTIKA)';
-                                            }
-                                        });
-                                    @endphp
-                                    @foreach($groupedCategories as $bidangLabel => $cats)
-                                        <optgroup label="{{ $bidangLabel }}">
-                                            @foreach($cats as $cat)
-                                                <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
-                                                    {{ $cat->nama_kategori }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endforeach
-                                </select>
+                                <!-- Hidden input untuk form submit -->
+                                <input type="hidden" id="category_id" name="category_id" value="{{ old('category_id') }}" required>
+                                <!-- Hidden input untuk menyimpan nama kategori kustom jika mengetik sendiri -->
+                                <input type="hidden" id="custom_category_name" name="custom_category_name" value="">
+
+                                @php
+                                    $selectedCatName = '';
+                                    if (old('category_id')) {
+                                        $matchedCat = $categories->firstWhere('id', old('category_id'));
+                                        $selectedCatName = $matchedCat?->nama_kategori ?? '';
+                                    }
+
+                                    $fallbackCat = $categories->first(function($c) {
+                                        $n = strtolower($c->nama_kategori);
+                                        return str_contains($n, 'lainnya') || str_contains($n, 'belum tahu') || str_contains($n, 'konsultasi');
+                                    }) ?? $categories->first();
+                                    $fallbackCatId = $fallbackCat?->id ?? 1;
+                                @endphp
+
+                                <!-- Kotak Input Kategori dengan Ikon Cari, Clear, & Chevron Dropdown -->
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" id="cat_search_input" autocomplete="off"
+                                        placeholder="Pilih dari daftar atau ketik jenis kendala Anda..."
+                                        value="{{ $selectedCatName }}"
+                                        class="w-full rounded-xl border border-slate-300 shadow-xs focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm py-2.5 pl-10 pr-16 bg-white transition cursor-pointer"
+                                        onclick="openCatDropdown()"
+                                        onfocus="openCatDropdown()"
+                                        oninput="handleCatSearchInput(this.value)">
+                                    
+                                    <!-- Tombol Aksi Kanan: Clear & Chevron Toggle -->
+                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-0.5">
+                                        <button type="button" id="cat_clear_btn" onclick="clearCatSelection()"
+                                            class="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer {{ $selectedCatName ? '' : 'hidden' }}"
+                                            title="Hapus pilihan">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" id="cat_chevron_btn" onclick="toggleCatDropdown()"
+                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
+                                            title="Buka / tutup daftar kategori">
+                                            <svg id="cat_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Panel Dropdown Kategori: Ringkas, Tanpa Judul Bidang & Dapat Di-Scroll -->
+                                <div id="cat_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100">
+                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
+                                        <span>📜 DAFTAR KATEGORI (GULIR KE BAWAH)</span>
+                                        <span class="text-blue-600 font-medium">Bisa scroll & ketik</span>
+                                    </div>
+                                    <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="cat_items_container" style="scrollbar-width: thin;">
+                                        <!-- Opsi Kategori Kustom (Muncul saat mengetik kategori yang belum ada) -->
+                                        <div id="cat_custom_option" class="hidden px-3.5 py-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectCatCustom('{{ $fallbackCatId }}')">
+                                            <div class="flex items-center gap-2">
+                                                <span>✍️</span>
+                                                <span>Gunakan: <strong id="cat_custom_label" class="underline"></strong> (Kategori Baru)</span>
+                                            </div>
+                                        </div>
+
+                                        @foreach($categories as $cat)
+                                            <div class="cat-option px-3.5 py-2.5 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('category_id') == $cat->id ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
+                                                data-id="{{ $cat->id }}" data-name="{{ $cat->nama_kategori }}"
+                                                onclick="selectCat('{{ $cat->id }}', '{{ addslashes($cat->nama_kategori) }}')">
+                                                <span>{{ $cat->nama_kategori }}</span>
+                                                @if(old('category_id') == $cat->id)
+                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div id="cat_empty_state" class="hidden p-3.5 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
+                                        <span>Tidak menemukan kategori yang dicari?</span>
+                                        <button type="button" onclick="selectCatCustom('{{ $fallbackCatId }}')" class="block w-full mt-1 text-blue-600 hover:underline font-bold cursor-pointer">
+                                            ✍️ Gunakan nama yang Anda ketik sebagai kategori baru
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Judul / Pokok Masalah -->
@@ -1459,21 +1571,369 @@
         return true;
     }
 
-    // 2. Toggle OPD Manual Input if "LAINNYA" selected
-    function handleSkpdChange(selectElem) {
-        const wrapper = document.getElementById('skpd_custom_wrapper');
-        const customInput = document.getElementById('skpd_custom');
-        if (!wrapper || !customInput) return;
-
-        if (selectElem.value === 'LAINNYA') {
-            wrapper.classList.remove('hidden');
-            customInput.setAttribute('required', 'required');
-            customInput.focus();
-        } else {
-            wrapper.classList.add('hidden');
-            customInput.removeAttribute('required');
+    // ══════════════════════════════════════════════════════════════════════
+    // 2. SEARCHABLE & SCROLLABLE COMBOBOX: SKPD / PERANGKAT DAERAH
+    // ══════════════════════════════════════════════════════════════════════
+    function openSkpdDropdown() {
+        const list = document.getElementById('skpd_dropdown_list');
+        const icon = document.getElementById('skpd_chevron_icon');
+        if (list) {
+            list.classList.remove('hidden');
+            if (icon) icon.classList.add('rotate-180');
+            const searchInput = document.getElementById('skpd_search_input');
+            filterSkpdOptions(searchInput ? searchInput.value : '');
         }
     }
+
+    function closeSkpdDropdown() {
+        const list = document.getElementById('skpd_dropdown_list');
+        const icon = document.getElementById('skpd_chevron_icon');
+        if (list) list.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-180');
+    }
+
+    function toggleSkpdDropdown() {
+        const list = document.getElementById('skpd_dropdown_list');
+        if (!list) return;
+        if (list.classList.contains('hidden')) {
+            openSkpdDropdown();
+            document.getElementById('skpd_search_input')?.focus();
+        } else {
+            closeSkpdDropdown();
+        }
+    }
+
+    function handleSkpdSearchInput(query) {
+        const clearBtn = document.getElementById('skpd_clear_btn');
+        const hiddenInput = document.getElementById('skpd');
+        const q = (query || '').trim();
+
+        if (clearBtn) {
+            if (q.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+        }
+
+        // Sinkronisasi langsung nilai teks yang diketik ke input form
+        if (hiddenInput) {
+            hiddenInput.value = q;
+        }
+
+        openSkpdDropdown();
+        filterSkpdOptions(q);
+    }
+
+    function filterSkpdOptions(query) {
+        const q = (query || '').toLowerCase().trim();
+        const items = document.querySelectorAll('.skpd-option');
+        const customOpt = document.getElementById('skpd_custom_option');
+        const customLabel = document.getElementById('skpd_custom_label');
+        let visibleCount = 0;
+        let exactMatch = false;
+
+        items.forEach(item => {
+            const val = item.getAttribute('data-value') || '';
+            const text = item.textContent.toLowerCase();
+            if (!q || text.includes(q)) {
+                item.classList.remove('hidden');
+                visibleCount++;
+                if (text === q || val.toLowerCase() === q) {
+                    exactMatch = true;
+                }
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        // Tampilkan opsi ketik kustom langsung jika pengguna mengetik nama yang belum ada di daftar
+        if (customOpt && customLabel) {
+            if (q.length > 0 && !exactMatch) {
+                customLabel.textContent = query.trim();
+                customOpt.classList.remove('hidden');
+            } else {
+                customOpt.classList.add('hidden');
+            }
+        }
+
+        const emptyState = document.getElementById('skpd_empty_state');
+        if (emptyState) {
+            if (visibleCount === 0 && q.length > 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+    }
+
+    function selectSkpd(val) {
+        const hiddenInput = document.getElementById('skpd');
+        const searchInput = document.getElementById('skpd_search_input');
+        const clearBtn = document.getElementById('skpd_clear_btn');
+
+        if (hiddenInput) hiddenInput.value = val;
+        if (searchInput) {
+            searchInput.value = val;
+            searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+        }
+        if (clearBtn) clearBtn.classList.remove('hidden');
+
+        document.querySelectorAll('.skpd-option').forEach(item => {
+            const itemVal = item.getAttribute('data-value');
+            if (itemVal === val) {
+                item.classList.add('bg-blue-50', 'font-bold', 'text-blue-900');
+            } else {
+                item.classList.remove('bg-blue-50', 'font-bold', 'text-blue-900');
+            }
+        });
+
+        closeSkpdDropdown();
+    }
+
+    function selectSkpdCustom() {
+        const searchInput = document.getElementById('skpd_search_input');
+        const hiddenInput = document.getElementById('skpd');
+        const clearBtn = document.getElementById('skpd_clear_btn');
+        const val = (searchInput ? searchInput.value : '').trim();
+
+        if (val) {
+            if (hiddenInput) hiddenInput.value = val;
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            if (searchInput) searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+        }
+        closeSkpdDropdown();
+    }
+
+    function clearSkpdSelection() {
+        const hiddenInput = document.getElementById('skpd');
+        const searchInput = document.getElementById('skpd_search_input');
+        const clearBtn = document.getElementById('skpd_clear_btn');
+        const customOpt = document.getElementById('skpd_custom_option');
+
+        if (hiddenInput) hiddenInput.value = '';
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        if (clearBtn) clearBtn.classList.add('hidden');
+        if (customOpt) customOpt.classList.add('hidden');
+
+        document.querySelectorAll('.skpd-option').forEach(item => {
+            item.classList.remove('bg-blue-50', 'font-bold', 'text-blue-900');
+            item.classList.remove('hidden');
+        });
+        const emptyState = document.getElementById('skpd_empty_state');
+        if (emptyState) emptyState.classList.add('hidden');
+
+        openSkpdDropdown();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // 3. SEARCHABLE & SCROLLABLE COMBOBOX: KATEGORI LAPORAN (FLAT DIRECT LIST)
+    // ══════════════════════════════════════════════════════════════════════
+    function openCatDropdown() {
+        const list = document.getElementById('cat_dropdown_list');
+        const icon = document.getElementById('cat_chevron_icon');
+        if (list) {
+            list.classList.remove('hidden');
+            if (icon) icon.classList.add('rotate-180');
+            const searchInput = document.getElementById('cat_search_input');
+            filterCatOptions(searchInput ? searchInput.value : '');
+        }
+    }
+
+    function closeCatDropdown() {
+        const list = document.getElementById('cat_dropdown_list');
+        const icon = document.getElementById('cat_chevron_icon');
+        if (list) list.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-180');
+    }
+
+    function toggleCatDropdown() {
+        const list = document.getElementById('cat_dropdown_list');
+        if (!list) return;
+        if (list.classList.contains('hidden')) {
+            openCatDropdown();
+            document.getElementById('cat_search_input')?.focus();
+        } else {
+            closeCatDropdown();
+        }
+    }
+
+    function handleCatSearchInput(query) {
+        const clearBtn = document.getElementById('cat_clear_btn');
+        const q = (query || '').trim();
+
+        if (clearBtn) {
+            if (q.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+        }
+
+        openCatDropdown();
+        filterCatOptions(q);
+    }
+
+    function filterCatOptions(query) {
+        const q = (query || '').toLowerCase().trim();
+        const options = document.querySelectorAll('.cat-option');
+        const customOpt = document.getElementById('cat_custom_option');
+        const customLabel = document.getElementById('cat_custom_label');
+        let visibleCount = 0;
+        let exactMatch = false;
+
+        options.forEach(opt => {
+            const name = (opt.getAttribute('data-name') || '').toLowerCase();
+            if (!q || name.includes(q)) {
+                opt.classList.remove('hidden');
+                visibleCount++;
+                if (name === q) {
+                    exactMatch = true;
+                }
+            } else {
+                opt.classList.add('hidden');
+            }
+        });
+
+        // Tampilkan opsi ketik kustom langsung jika pengguna mengetik kategori baru
+        if (customOpt && customLabel) {
+            if (q.length > 0 && !exactMatch) {
+                customLabel.textContent = query.trim();
+                customOpt.classList.remove('hidden');
+            } else {
+                customOpt.classList.add('hidden');
+            }
+        }
+
+        const emptyState = document.getElementById('cat_empty_state');
+        if (emptyState) {
+            if (visibleCount === 0 && q.length > 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+    }
+
+    function selectCat(id, name) {
+        const hiddenInput = document.getElementById('category_id');
+        const customInput = document.getElementById('custom_category_name');
+        const searchInput = document.getElementById('cat_search_input');
+        const clearBtn = document.getElementById('cat_clear_btn');
+
+        if (hiddenInput) hiddenInput.value = id;
+        if (customInput) customInput.value = '';
+        if (searchInput) {
+            searchInput.value = name;
+            searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+        }
+        if (clearBtn) clearBtn.classList.remove('hidden');
+
+        document.querySelectorAll('.cat-option').forEach(item => {
+            const itemId = item.getAttribute('data-id');
+            if (itemId == id) {
+                item.classList.add('bg-blue-50', 'font-bold', 'text-blue-900');
+            } else {
+                item.classList.remove('bg-blue-50', 'font-bold', 'text-blue-900');
+            }
+        });
+
+        closeCatDropdown();
+    }
+
+    function selectCatCustom(fallbackId) {
+        const searchInput = document.getElementById('cat_search_input');
+        const hiddenInput = document.getElementById('category_id');
+        const customInput = document.getElementById('custom_category_name');
+        const clearBtn = document.getElementById('cat_clear_btn');
+        const val = (searchInput ? searchInput.value : '').trim();
+
+        if (val) {
+            if (hiddenInput) hiddenInput.value = fallbackId;
+            if (customInput) customInput.value = val;
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            if (searchInput) searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+        }
+        closeCatDropdown();
+    }
+
+    function clearCatSelection() {
+        const hiddenInput = document.getElementById('category_id');
+        const customInput = document.getElementById('custom_category_name');
+        const searchInput = document.getElementById('cat_search_input');
+        const clearBtn = document.getElementById('cat_clear_btn');
+        const customOpt = document.getElementById('cat_custom_option');
+
+        if (hiddenInput) hiddenInput.value = '';
+        if (customInput) customInput.value = '';
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        if (clearBtn) clearBtn.classList.add('hidden');
+        if (customOpt) customOpt.classList.add('hidden');
+
+        document.querySelectorAll('.cat-option').forEach(item => {
+            item.classList.remove('bg-blue-50', 'font-bold', 'text-blue-900');
+            item.classList.remove('hidden');
+        });
+        const emptyState = document.getElementById('cat_empty_state');
+        if (emptyState) emptyState.classList.add('hidden');
+
+        openCatDropdown();
+    }
+
+    // Auto-tutup dropdown combobox saat klik di luar kontainer & rotasi panah chevron
+    document.addEventListener('click', function(e) {
+        const skpdContainer = document.getElementById('skpd_search_container');
+        if (skpdContainer && !skpdContainer.contains(e.target)) {
+            closeSkpdDropdown();
+            const hiddenSkpd = document.getElementById('skpd');
+            const searchSkpd = document.getElementById('skpd_search_input');
+            if (hiddenSkpd && searchSkpd) {
+                if (hiddenSkpd.value) {
+                    searchSkpd.value = hiddenSkpd.value;
+                } else if (searchSkpd.value.trim().length > 0) {
+                    hiddenSkpd.value = searchSkpd.value.trim();
+                } else {
+                    searchSkpd.value = '';
+                    const clearBtn = document.getElementById('skpd_clear_btn');
+                    if (clearBtn) clearBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        const catContainer = document.getElementById('cat_search_container');
+        if (catContainer && !catContainer.contains(e.target)) {
+            closeCatDropdown();
+            const hiddenCat = document.getElementById('category_id');
+            const searchCat = document.getElementById('cat_search_input');
+            const customCat = document.getElementById('custom_category_name');
+            if (hiddenCat && searchCat) {
+                if (hiddenCat.value && !customCat?.value) {
+                    const selectedOption = document.querySelector(`.cat-option[data-id="${hiddenCat.value}"]`);
+                    if (selectedOption) {
+                        searchCat.value = selectedOption.getAttribute('data-name') || '';
+                    }
+                } else if (customCat?.value) {
+                    searchCat.value = customCat.value;
+                } else if (searchCat.value.trim().length > 0) {
+                    // Simpan ketikan bebas jika belum terpilih
+                    hiddenCat.value = '{{ $fallbackCatId }}';
+                    if (customCat) customCat.value = searchCat.value.trim();
+                } else {
+                    searchCat.value = '';
+                    const clearBtn = document.getElementById('cat_clear_btn');
+                    if (clearBtn) clearBtn.classList.add('hidden');
+                }
+            }
+        }
+    });
+
+    // Keyboard support: Escape untuk menutup dropdown
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSkpdDropdown();
+            closeCatDropdown();
+        }
+    });
 
     // ══════════════════════════════════════════════════════════════════════
     // FORM VALIDATION & CONTROLS
@@ -1489,16 +1949,39 @@
             return false;
         }
 
-        // 2. Validasi Kategori Layanan
-        const catId = document.getElementById('category_id');
-        if (!catId || !catId.value) {
-            catId.focus();
-            catId.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
-            alert('Silakan pilih salah satu Kategori Masalah / Layanan DKIS terlebih dahulu.');
+        // 2. Validasi SKPD / Perangkat Daerah (Mendukung input bebas langsung)
+        const skpdHidden = document.getElementById('skpd');
+        const skpdSearch = document.getElementById('skpd_search_input');
+        if (skpdSearch && skpdSearch.value.trim().length > 0) {
+            skpdHidden.value = skpdSearch.value.trim();
+        }
+        if (!skpdHidden || !skpdHidden.value.trim()) {
+            if (skpdSearch) {
+                skpdSearch.focus();
+                skpdSearch.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
+            }
+            alert('Silakan pilih dari daftar atau ketikkan Perangkat Daerah (OPD) tempat Anda bertugas.');
             return false;
         }
 
-        // 3. Validasi Keamanan Google reCAPTCHA
+        // 3. Validasi Kategori Layanan (Mendukung input bebas langsung)
+        const catId = document.getElementById('category_id');
+        const catSearch = document.getElementById('cat_search_input');
+        const customCat = document.getElementById('custom_category_name');
+        if (catSearch && catSearch.value.trim().length > 0 && (!catId.value || catId.value === '')) {
+            catId.value = '{{ $fallbackCatId }}';
+            if (customCat) customCat.value = catSearch.value.trim();
+        }
+        if (!catId || !catId.value) {
+            if (catSearch) {
+                catSearch.focus();
+                catSearch.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
+            }
+            alert('Silakan pilih dari daftar atau ketikkan Kategori Masalah / Layanan DKIS terlebih dahulu.');
+            return false;
+        }
+
+        // 4. Validasi Keamanan Google reCAPTCHA
         if (typeof grecaptcha !== 'undefined') {
             const recaptchaResp = grecaptcha.getResponse();
             if (!recaptchaResp || recaptchaResp.trim().length === 0) {

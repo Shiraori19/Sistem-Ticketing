@@ -28,6 +28,7 @@ class PublicTicketController extends Controller
     public function index(Request $request)
     {
         $categories = Category::with('bidang')->orderBy('bidang_id')->orderBy('id')->get();
+        $masterOpdList = \App\Models\MasterOpd::active()->orderBy('urutan')->orderBy('nama_opd')->get();
         $activeTab = $request->input('tab', 'buat');
         $query = trim($request->input('q', ''));
         $inputWa = trim($request->input('no_whatsapp', ''));
@@ -82,7 +83,7 @@ class PublicTicketController extends Controller
             }
         }
 
-        return view('public.index', compact('categories', 'activeTab', 'query', 'tickets', 'relatedTickets'));
+        return view('public.index', compact('categories', 'masterOpdList', 'activeTab', 'query', 'tickets', 'relatedTickets'));
     }
 
     /**

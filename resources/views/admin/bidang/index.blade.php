@@ -580,7 +580,7 @@
                                             <span class="text-xs font-bold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
                                                 <span>👷</span> Penugasan Teknisi Lapangan
                                             </span>
-                                            <p class="text-[11px] text-slate-500 mt-0.5">Pilih 1 Koordinator (Lead PIC) dan opsional Teknisi Pendamping</p>
+                                            <p class="text-[11px] text-slate-600 mt-0.5 font-medium">Pilih <strong>1 Koordinator (Lead PIC)</strong>. Centang <strong>'Pendamping' pada teknisi LAIN</strong> jika butuh tim kerja.</p>
                                         </div>
                                         <span class="text-[10px] text-blue-800 bg-blue-100 px-2.5 py-1 rounded-full font-bold border border-blue-200">
                                             Terkontrol Beban Kerja
@@ -655,16 +655,21 @@
                                                             </div>
                                                         </div>
 
-                                                        <!-- Checkbox Pendamping -->
-                                                        <div class="flex items-center gap-1 pt-0.5">
-                                                            <input type="checkbox" name="member_user_ids[]" id="mem-{{ $t->id }}-{{ $tech['user_id'] }}"
-                                                                value="{{ $tech['user_id'] }}"
-                                                                {{ $isCurMember ? 'checked' : '' }}
-                                                                {{ $onLeave || $isCurLead ? 'disabled' : '' }}
-                                                                class="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 rounded border-slate-300 cursor-pointer disabled:cursor-not-allowed">
-                                                            <label for="mem-{{ $t->id }}-{{ $tech['user_id'] }}" class="text-[10px] font-semibold text-slate-500 select-none cursor-pointer">
-                                                                Pendamping
-                                                            </label>
+                                                        <!-- Checkbox / Status Pendamping -->
+                                                        <div class="flex items-center gap-1 pt-0.5" id="mem-wrapper-{{ $t->id }}-{{ $tech['user_id'] }}">
+                                                            <span id="mem-badge-{{ $t->id }}-{{ $tech['user_id'] }}" class="{{ $isCurLead ? 'inline-flex' : 'hidden' }} items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded-md" title="Teknisi ini adalah Koordinator Utama (Lead PIC). Pilih teknisi lain sebagai pendamping jika diperlukan.">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Koordinator Utama
+                                                            </span>
+                                                            <div id="mem-input-box-{{ $t->id }}-{{ $tech['user_id'] }}" class="{{ $isCurLead ? 'hidden' : 'flex' }} items-center gap-1">
+                                                                <input type="checkbox" name="member_user_ids[]" id="mem-{{ $t->id }}-{{ $tech['user_id'] }}"
+                                                                    value="{{ $tech['user_id'] }}"
+                                                                    {{ $isCurMember ? 'checked' : '' }}
+                                                                    {{ $onLeave ? 'disabled' : '' }}
+                                                                    class="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500 rounded border-slate-300 cursor-pointer disabled:cursor-not-allowed">
+                                                                <label for="mem-{{ $t->id }}-{{ $tech['user_id'] }}" class="text-[10px] font-semibold text-slate-600 select-none cursor-pointer">
+                                                                    + Pendamping
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -945,16 +950,56 @@
         const overrideWrapper = document.getElementById('override-wrapper-' + ticketId);
         const overrideInput = document.getElementById('override-input-' + ticketId);
 
-        // Nonaktifkan checkbox pendamping untuk user yang sama (karena sudah dipilih sebagai Lead)
-        const checkboxes = document.querySelectorAll(`input[name="member_user_ids[]"][id^="mem-${ticketId}-"]`);
-        checkboxes.forEach(cb => {
-            if (cb.value == techUserId) {
-                cb.checked = false;
-                cb.disabled = true;
+        // Update status visual: teknisi yang dipilih jadi Koordinator Utama, lainnya bisa dipilih jadi Pendamping
+        const allWrappers = document.querySelectorAll(`[id^="mem-wrapper-${ticketId}-"]`);
+        allWrappers.forEach(wrapper => {
+            const userId = wrapper.id.replace(`mem-wrapper-${ticketId}-`, '');
+            const badge = document.getElementById(`mem-badge-${ticketId}-${userId}`);
+            const inputBox = document.getElementById(`mem-input-box-${ticketId}-${userId}`);
+            const cb = document.getElementById(`mem-${ticketId}-${userId}`);
+
+            if (userId == techUserId) {
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.classList.add('inline-flex');
+                }
+                if (inputBox) {
+                    inputBox.classList.add('hidden');
+                    inputBox.classList.remove('flex');
+                }
+                if (cb) {
+                    cb.checked = false;
+                    cb.disabled = true;
+                }
             } else {
-                const parentCard = cb.closest('.p-3');
-                if (!parentCard || !parentCard.classList.contains('opacity-60')) {
-                    cb.disabled = false;
+                if (badge) {
+                    badge.classList.add('hidden');
+                    badge.classList.remove('inline-flex');
+                }
+                if (inputBox) {
+                    inputBox.classList.remove('hidden');
+                    inputBox.classList.add('flex');
+                }
+                if (cb) {
+                    const parentCard = cb.closest('.p-3');
+                    if (!parentCard || !parentCard.classList.contains('opacity-60')) {
+                        cb.disabled = false;
+                    }
+                }
+            }
+        });
+
+        // Update highlight border pada card teknisi
+        const radioInputs = document.querySelectorAll(`input[name="lead_user_id"][id^="lead-${ticketId}-"]`);
+        radioInputs.forEach(radio => {
+            const card = radio.closest('.p-3');
+            if (card) {
+                if (radio.value == techUserId) {
+                    card.classList.add('border-amber-400', 'bg-amber-50/20', 'ring-1', 'ring-amber-300');
+                    card.classList.remove('border-slate-200');
+                } else {
+                    card.classList.remove('border-amber-400', 'bg-amber-50/20', 'ring-1', 'ring-amber-300');
+                    card.classList.add('border-slate-200');
                 }
             }
         });
