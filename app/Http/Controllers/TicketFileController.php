@@ -76,9 +76,9 @@ class TicketFileController extends Controller
     {
         $ticket = Ticket::where('kode_tiket', $kode)->firstOrFail();
 
-        // 1. Proteksi mutlak: bukti rahasia tidak boleh diakses pelapor
-        if ($type === 'bukti' && $ticket->is_confidential_evidence) {
-            abort(403, 'Akses Ditolak: Berkas ini ditandai rahasia internal dan tidak dapat diakses oleh publik.');
+        // 1. Proteksi mutlak: bukti rahasia atau tiket TLP: RED tidak boleh diakses pelapor
+        if ($type === 'bukti' && ($ticket->is_confidential_evidence || strtoupper($ticket->tlp_level ?? '') === 'RED')) {
+            abort(403, 'Akses Ditolak: Berkas resolusi ini berklasifikasi rahasia (TLP: RED / Rahasia Internal) dan tidak dapat diakses oleh publik.');
         }
 
         // 2. Verifikasi Otorisasi Pelapor Sah untuk Mengunduh Berkas (Proteksi Anti-IDOR via PIN Auth Sesi)

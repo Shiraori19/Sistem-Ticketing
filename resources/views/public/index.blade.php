@@ -1013,7 +1013,7 @@
 
                                                 <!-- HASIL & BUKTI PENANGANAN PETUGAS (DI DALAM VERIFIKASI) -->
                                                 @if($t->catatan_resolusi)
-                                                    @if($t->is_confidential_evidence)
+                                                    @if($t->is_confidential_evidence || strtoupper($t->tlp_level ?? '') === 'RED')
                                                         <!-- BUKTI RAHASIA (LINK FILE TIDAK TAMPIL) -->
                                                         <div class="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 space-y-2 shadow-xs">
                                                             <div class="flex items-center gap-2 font-bold text-sm text-amber-900">
@@ -1221,7 +1221,7 @@
                                                                 <p class="italic text-slate-700">"{{ $t->feedback }}"</p>
                                                             </div>
                                                         @endif
-                                                        @if($t->bukti_resolusi && !$t->is_confidential_evidence)
+                                                        @if($t->bukti_resolusi && !$t->is_confidential_evidence && strtoupper($t->tlp_level ?? '') !== 'RED')
                                                             <div class="pt-1 text-xs font-semibold text-slate-700">
                                                                 <a href="{{ route('public.tiket.download', ['kode' => $t->kode_tiket, 'type' => 'bukti']) }}" target="_blank" class="inline-flex items-center gap-1.5 underline hover:text-slate-950">
                                                                     <span>📎</span>

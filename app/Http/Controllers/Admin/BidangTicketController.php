@@ -207,7 +207,7 @@ class BidangTicketController extends Controller
         if ($request->hasFile('bukti_resolusi')) {
             $evidencePath = $request->file('bukti_resolusi')->store("tickets/{$ticket->kode_tiket}", 'private');
         }
-        $isConfidential = $request->boolean('is_confidential_evidence');
+        $isConfidential = $request->boolean('is_confidential_evidence') || (strtoupper($ticket->tlp_level ?? '') === 'RED');
 
         $this->workflowService->markResolved(
             $ticket,

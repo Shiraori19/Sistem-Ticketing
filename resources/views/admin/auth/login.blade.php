@@ -140,5 +140,12 @@
             text.textContent = 'Memverifikasi Otentikasi...';
         }
     }
+
+    // Tangani navigasi back-forward cache peramban agar token CSRF selalu segar
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
 </script>
 @endsection

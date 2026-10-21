@@ -44,5 +44,13 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        // Tangani kedaluwarsa sesi / CSRF (Error 419 Page Expired) secara elegan
+        $this->renderable(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->is('login') || $request->routeIs('login*') || $request->is('admin/*') || $request->is('teknisi/*')) {
+                return redirect()->route('login')->with('error', 'Sesi formulir telah kedaluwarsa demi keamanan. Silakan masukkan kembali kredensial Anda.');
+            }
+            return redirect()->back()->with('error', 'Sesi halaman telah kedaluwarsa. Silakan muat ulang dan coba kembali.');
+        });
     }
 }

@@ -404,4 +404,35 @@ class TeknisiTicketController extends Controller
 
         return back()->with('success', 'Kata sandi akun Anda berhasil diperbarui.');
     }
+
+    /**
+     * Polling Notifikasi Teknisi (JSON)
+     */
+    public function notifications()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['unread_count' => 0, 'items' => []]);
+        }
+
+        $items = TicketAssignment::with('ticket')
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['assigned', 'returned'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'title' => $a->status === 'returned' ? 'Perbaikan Dikembalikan' : 'Tugas Baru',
+                    'message' => "Tiket #{$a->ticket->kode_tiket}: {$a->ticket->judul}",
+                    'time' => $a->created_at ? $a->created_at->diffForHumans() : '',
+                    'url' => route('teknisi.tugas.index'),
+                ];
+            });
+
+        return response()->json([
+            'unread_count' => $items->count(),
+            'items' => $items,
+        ]);
+    }
 }

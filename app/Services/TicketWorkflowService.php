@@ -903,6 +903,10 @@ class TicketWorkflowService
             $ticket->jenis_penyelesaian = $ticket->jenis_penyelesaian ?: 'manual_admin';
             $ticket->catatan_resolusi = $notes;
             $ticket->bukti_resolusi = $evidencePath;
+            // TLP RED: Selalu otomatis berstatus rahasia mutlak (Secure by Default)
+            if (strtoupper($ticket->tlp_level ?? '') === 'RED') {
+                $isConfidential = true;
+            }
             $ticket->is_confidential_evidence = $isConfidential;
 
             // Evaluasi SLA Resolusi Teknis

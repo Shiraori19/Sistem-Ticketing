@@ -799,13 +799,33 @@
                                     </div>
 
                                     <!-- Checkbox Tandai Rahasia -->
-                                    <div class="flex items-center gap-2 pt-1">
-                                        <input type="checkbox" name="is_confidential_evidence" id="confidential-{{ $t->id }}" value="1"
-                                            class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
-                                        <label for="confidential-{{ $t->id }}" class="text-xs font-semibold text-slate-700 cursor-pointer select-none flex items-center gap-1">
-                                            <span>🔒 Tandai Rahasia (Hanya dapat dilihat internal pengelola)</span>
-                                        </label>
-                                    </div>
+                                     <!-- Proteksi Kerahasiaan Berkas Bukti Berdasarkan TLP -->
+                                     @if(strtoupper($t->tlp_level ?? '') === 'RED')
+                                         <div class="flex items-start gap-2 pt-1 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs">
+                                             <span class="text-sm">🔒</span>
+                                             <div>
+                                                 <span class="font-bold block">Bukti Otomatis Terkunci (TLP: RED)</span>
+                                                 <span class="text-[11px] text-rose-800/90 leading-tight block">Klasifikasi Persandian & CSIRT. Berkas bukti penyelesaian mutlak dirahasiakan dan tertutup dari publik.</span>
+                                             </div>
+                                             <input type="hidden" name="is_confidential_evidence" value="1">
+                                         </div>
+                                     @elseif(strtoupper($t->tlp_level ?? '') === 'AMBER')
+                                         <div class="flex items-center gap-2 pt-1 p-2 bg-amber-50/70 border border-amber-200/80 rounded-xl">
+                                             <input type="checkbox" name="is_confidential_evidence" id="confidential-{{ $t->id }}" value="1" checked
+                                                 class="w-4 h-4 text-amber-600 rounded border-amber-300 focus:ring-amber-500 cursor-pointer">
+                                             <label for="confidential-{{ $t->id }}" class="text-xs font-semibold text-amber-900 cursor-pointer select-none flex items-center gap-1">
+                                                 <span>🔒 Tandai Rahasia (Direkomendasikan untuk TLP: AMBER)</span>
+                                             </label>
+                                         </div>
+                                     @else
+                                         <div class="flex items-center gap-2 pt-1">
+                                             <input type="checkbox" name="is_confidential_evidence" id="confidential-{{ $t->id }}" value="1"
+                                                 class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
+                                             <label for="confidential-{{ $t->id }}" class="text-xs font-semibold text-slate-700 cursor-pointer select-none flex items-center gap-1">
+                                                 <span>🔒 Tandai Rahasia (Hanya dapat dilihat internal pengelola)</span>
+                                             </label>
+                                         </div>
+                                     @endif
 
                                     <!-- Tombol Tandai Selesai (Langsung Aktif) -->
                                     <button type="submit" id="btn-resolve-{{ $t->id }}"
