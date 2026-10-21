@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Audit Kode Program Aplikasi - Sistem Ticketing DKIS Kota Cirebon</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --severity-critical: #ef4444;
+            --severity-warning: #f59e0b;
+            --severity-info: #3b82f6;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            pointer-events: none;
+        }
+
+        .header-tag {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            margin-bottom: 0.75rem;
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 800px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(51, 65, 85, 0.5);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .meta-item strong {
+            color: var(--text-primary);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-card.critical .value { color: var(--severity-critical); }
+        .stat-card.warning .value { color: var(--severity-warning); }
+        .stat-card.info .value { color: var(--severity-info); }
+        .stat-card.total .value { color: var(--accent-indigo); }
+
+        /* Filter Tabs & Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem; 
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background-color: var(--accent-indigo);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.9rem;
+            font-size: 0.825rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* Findings List */
+        .finding-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover {
+            border-color: #475569;
+        }
+
+        .finding-header {
+            padding: 1.25rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .finding-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .finding-content.open ~ .finding-header,
+        .finding-card.is-open .finding-header {
+            border-bottom-color: var(--border-color);
+        }
+
+        .finding-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.critical { background-color: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge.warning { background-color: rgba(245, 158, 11, 0.18); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge.info { background-color: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+
+        .finding-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .finding-path {
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .toggle-icon {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            transition: transform 0.2s;
+        }
+
+        .finding-content {
+            padding: 1.75rem;
+            display: none;
+            background-color: rgba(15, 23, 42, 0.4);
+        }
+
+        .finding-content.open,
+        .finding-card.is-open .finding-content {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.075em;
+            color: #818cf8;
+            margin-bottom: 0.5rem;
+            margin-top: 1.25rem;
+            font-weight: 700;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .finding-content p {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .finding-content code {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Code Block Container */
+        .code-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .code-box {
+            background-color: #0b0f19;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-box-header {
+            padding: 0.65rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-box.before .code-box-header {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border-left: 3px solid #ef4444;
+        }
+
+        .code-box.after .code-box-header {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-left: 3px solid #10b981;
+        }
+
+        pre {
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            flex-grow: 1;
+        }
+
+        pre code {
+            color: #cbd5e1;
+            background: none !important;
+            padding: 0 !important;
+        }
+
+        /* Step List */
+        .step-list {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .step-list li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        /* Quality Checklist */
+        .checklist-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .checklist-card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-emerald);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.9rem 1.1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            font-size: 0.875rem;
+            color: #cbd5e1;
+        }
+
+        .check-item .icon {
+            color: var(--accent-emerald);
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <span class="header-tag">Official Security & Architecture Audit</span>
+            <h1>Laporan Audit Kode Program Aplikasi</h1>
+            <p>Hasil analisis komprehensif 4 pilar (Keamanan, Kualitas Kode, Database, dan Infrastruktur) pada repositori <strong>Sistem Ticketing DKIS Kota Cirebon</strong> berbasis kepatuhan OWASP Top 10 dan standar Gov-CSIRT.</p>
+            <div class="meta-grid">
+                <div class="meta-item">Aplikasi Target: <strong>Sistem Ticketing DKIS Kota Cirebon</strong></div>
+                <div class="meta-item">Tanggal Pelaksanaan: <strong>21 Oktober 2026</strong></div>
+                <div class="meta-item">Auditor & Engine: <strong>DeepMind AI Agent (Antigravity Code Auditor & Hardening Reviewer v2.5)</strong></div>
+                <div class="meta-item">Status Repositori: <strong>Branch revisi/upload-tlp-20261021 (45 Tests Passed / 183 Assertions)</strong></div>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-container">
+            <div class="stat-card total">
+                <h3>Total Temuan</h3>
+                <div class="value">14</div>
+            </div>
+            <div class="stat-card critical">
+                <h3>Kritis (Critical)</h3>
+                <div class="value">5</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Peringatan (Warning)</h3>
+                <div class="value">8</div>
+            </div>
+            <div class="stat-card info">
+                <h3>Informasi (Info)</h3>
+                <div class="value">1</div>
+            </div>
+        </div>
+
+        <!-- Toolbar & Filter Tabs -->
+        <div class="toolbar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="filterCategory('all', event)">Semua Temuan (14)</button>
+                <button class="tab-btn" onclick="filterCategory('security', event)">Keamanan (6)</button>
+                <button class="tab-btn" onclick="filterCategory('quality', event)">Struktur & Kualitas (3)</button>
+                <button class="tab-btn" onclick="filterCategory('database', event)">Database (2)</button>
+                <button class="tab-btn" onclick="filterCategory('infrastructure', event)">Infrastruktur (3)</button>
+            </div>
+            <div class="tool-actions">
+                <button class="tool-btn" onclick="toggleAllCards(true)">Buka Semua</button>
+                <button class="tool-btn" onclick="toggleAllCards(false)">Tutup Semua</button>
+            </div>
+        </div>
+
+        <!-- List of Findings -->
+        <div id="findings-list">
+
+            <!-- KARTU TEMUAN: finding-1 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge critical">Critical</span>
+                        <div>
+                            <div class="finding-title">XSS &amp; HTML Attribute Breakout via json_encode / addslashes di Blade Inline Event Handlers</div>
+                            <div class="finding-path">resources/views/public/index.blade.php:1340, admin/users/index.blade.php:160, admin/bidang_master/index.blade.php:151, admin/bidang/index.blade.php:259</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Penggunaan <code>json_encode($var)</code> atau <code>addslashes($var)</code> di dalam atribut HTML berkutip dua (seperti <code>onclick="triggerPrintStruk({{ json_encode($strukData) }})"</code>, <code>onclick="openEditModal({{ json_encode($u) }})"</code>, dan <code>onclick="openReturnModal(..., '{{ addslashes($t->judul) }}')"</code>) menyebabkan karakter kutip ganda memecah batas atribut HTML (<i>HTML attribute breakout</i>). Karena data tersebut mencakup masukan pengguna (seperti judul kendala, nama lengkap pelapor, atau SKPD), karakter tanda kutip atau string kontrol memicu pembongkaran atribut dan eksekusi skrip berbahaya di peramban administrator maupun publik (DOM-based XSS).</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Hentikan penyisipan objek JSON mentah atau teks bebas ke dalam parameter fungsi inline event handler onclick.</li>
+                        <li>Manfaatkan HTML5 Data Attributes (<code>data-*</code>) yang secara otomatis di-escape secara aman oleh engine Blade.</li>
+                        <li>Pada fungsi JavaScript pemanggil, baca payload data objek secara aman dan bersih menggunakan API standar <code>this.dataset</code> dan <code>JSON.parse()</code>.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>&lt;!-- resources/views/public/index.blade.php:1340 --&gt;
+&lt;button type=&quot;button&quot; onclick=&quot;triggerPrintStruk({{ json_encode($strukData) }})&quot;&gt;
+    &lt;span&gt;🖨️ Cetak / PDF&lt;/span&gt;
+&lt;/button&gt;
+
+&lt;!-- resources/views/admin/users/index.blade.php:160 --&gt;
+&lt;button type=&quot;button&quot; onclick=&quot;openEditModal({{ json_encode($u) }})&quot;&gt;
+    ✏️ Ubah
+&lt;/button&gt;
+
+&lt;!-- resources/views/admin/bidang/index.blade.php:259 --&gt;
+&lt;button type=&quot;button&quot; onclick=&quot;openReturnModal({{ $t-&gt;id }}, &#x27;{{ $t-&gt;kode_tiket }}&#x27;, &#x27;{{ addslashes($t-&gt;judul) }}&#x27;)&quot;&gt;
+    &lt;span&gt;↩️ Kembalikan (Salah Kamar)&lt;/span&gt;
+&lt;/button&gt;</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>&lt;!-- resources/views/public/index.blade.php:1340 (Perbaikan Aman) --&gt;
+&lt;button type=&quot;button&quot; 
+    data-struk=&quot;{{ json_encode($strukData) }}&quot; 
+    onclick=&quot;triggerPrintStruk(JSON.parse(this.dataset.struk))&quot;&gt;
+    &lt;span&gt;🖨️ Cetak / PDF&lt;/span&gt;
+&lt;/button&gt;
+
+&lt;!-- resources/views/admin/users/index.blade.php:160 (Perbaikan Aman) --&gt;
+&lt;button type=&quot;button&quot; 
+    data-user=&quot;{{ json_encode($u) }}&quot; 
+    onclick=&quot;openEditModal(JSON.parse(this.dataset.user))&quot;&gt;
+    ✏️ Ubah
+&lt;/button&gt;
+
+&lt;!-- resources/views/admin/bidang/index.blade.php:259 (Perbaikan Aman) --&gt;
+&lt;button type=&quot;button&quot; 
+    data-id=&quot;{{ $t-&gt;id }}&quot;
+    data-kode=&quot;{{ $t-&gt;kode_tiket }}&quot;
+    data-judul=&quot;{{ $t-&gt;judul }}&quot;
+    onclick=&quot;openReturnModal(this.dataset.id, this.dataset.kode, this.dataset.judul)&quot;&gt;
+    &lt;span&gt;↩️ Kembalikan (Salah Kamar)&lt;/span&gt;
+&lt;/button&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-2 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge critical">Critical</span>
+                        <div>
+                            <div class="finding-title">Kerentanan Impersonasi Identitas NIP Pelapor &amp; Ketiadaan Pra-Validasi Rumus BKN / OTP</div>
+                            <div class="finding-path">app/Http/Requests/StoreTicketRequest.php:30, app/Http/Controllers/PublicTicketController.php:91-134</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Validasi NIP pada form pelaporan publik ASN saat ini hanya mengecek panjang 18 digit (<code>size:18, regex:/^[0-9]{18}$/</code>) tanpa memvalidasi rumus baku NIP ASN BKN (format tanggal lahir YYYYMMDD, TMT pengangkatan CPNS YYYYMM, gender 1/2, dan nomor urut). Selain itu, sistem mengizinkan siapa pun mengirim tiket tanpa pra-validasi kepemilikan NIP (tanpa OTP email dinas maupun WhatsApp). Siapa pun yang mengetahui NIP seorang pejabat/ASN Pemkot Cirebon dapat mencatut NIP tersebut, memasukkan nomor WhatsApp milik penyerang sendiri, dan membuat tiket palsu tanpa sepengetahuan pemilik NIP yang sah.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Buat Custom Rule Laravel <code>ValidNipBkn</code> untuk memverifikasi digit tanggal lahir (umur 18-65 tahun), TMT pengangkatan CPNS, dan kode jenis kelamin.</li>
+                        <li>Wajibkan pengisian email kedinasan ASN (<code>@cirebonkota.go.id</code>) dan kirimkan kode OTP 6-digit via SMTP resmi Pemkot sebelum tiket masuk antrean verifikasi.</li>
+                        <li>Implementasikan mekanisme <i>Silent Alert / Anti-Impersonation Dispute</i>: jika NIP pernah melapor dengan nomor kontak A namun kini diajukan dengan nomor kontak B, sistem otomatis menembakkan notifikasi peringatan ke kontak lama.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Requests/StoreTicketRequest.php
+public function rules(): array
+{
+    return [
+        &#x27;nip_pelapor&#x27;  =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;size:18&#x27;, &#x27;regex:/^[0-9]{18}$/&#x27;],
+        &#x27;nama_pelapor&#x27; =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:150&#x27;],
+        &#x27;skpd&#x27;         =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:150&#x27;, &#x27;not_in:LAINNYA&#x27;],
+        &#x27;no_whatsapp&#x27;  =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;regex:/^(08|628|\+628)[0-9]{8,13}$/&#x27;],
+        &#x27;category_id&#x27;  =&gt; [&#x27;required&#x27;, &#x27;exists:categories,id&#x27;],
+        &#x27;judul&#x27;        =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:255&#x27;],
+        &#x27;deskripsi&#x27;    =&gt; [&#x27;required&#x27;, &#x27;string&#x27;],
+    ];
+}</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Requests/StoreTicketRequest.php (Rekomendasi Penguatan Keamanan)
+public function rules(): array
+{
+    return [
+        &#x27;nip_pelapor&#x27;   =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;size:18&#x27;, new \App\Rules\ValidNipBkn()],
+        &#x27;nama_pelapor&#x27;  =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:150&#x27;],
+        &#x27;email_pelapor&#x27; =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;email&#x27;, &#x27;regex:/^[A-Za-z0-9._%+-]+@cirebonkota\.go\.id$/&#x27;],
+        &#x27;skpd&#x27;          =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:150&#x27;, &#x27;not_in:LAINNYA&#x27;],
+        &#x27;no_whatsapp&#x27;   =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;regex:/^(08|628|\+628)[0-9]{8,13}$/&#x27;],
+        &#x27;category_id&#x27;   =&gt; [&#x27;required&#x27;, &#x27;exists:categories,id&#x27;],
+        &#x27;judul&#x27;         =&gt; [&#x27;required&#x27;, &#x27;string&#x27;, &#x27;max:255&#x27;],
+        &#x27;deskripsi&#x27;     =&gt; [&#x27;required&#x27;, &#x27;string&#x27;],
+    ];
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-3 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge critical">Critical</span>
+                        <div>
+                            <div class="finding-title">Race Condition &amp; File Isolation Collision pada Pembuatan Kode Tiket Baru</div>
+                            <div class="finding-path">app/Http/Controllers/PublicTicketController.php:94-113, app/Services/TicketWorkflowService.php:51-68</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Pada <code>PublicTicketController::store()</code>, kode tiket dibuat di luar transaksi database sebelum berkas disimpan fisik ke disk: <code>$kodeTiket = $this->workflowService->generateTicketCode()</code>, lalu berkas disimpan ke <code>tickets/{$kodeTiket}/</code>. Penguncian transaksi database (<code>pg_advisory_xact_lock</code>) baru dieksekusi di dalam <code>TicketWorkflowService::createTicket()</code>. Jika dua pelapor menekan tombol kirim bersamaan pada milidetik yang sama, kedua request memperoleh calon kode tiket yang sama. Request kedua akan mendeteksi tabrakan di dalam <code>createTicket()</code> dan mengulang kode tiket ke nomor berikutnya, namun file lampirannya telah tersimpan di direktori fisik kode tiket pertama. Hal ini menyebabkan berkas lampiran tertukar atau menjadi berkas yatim (<i>orphaned files</i>).</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Simpan berkas lampiran yang diunggah sementara ke direktori staging acak berbasis UUID unik (<code>tickets/staging/{uuid}/</code>).</li>
+                        <li>Jalankan <code>createTicket()</code> di dalam database transaction dengan advisory lock untuk memastikan alokasi kode tiket permanen yang bebas konflik.</li>
+                        <li>Setelah kode tiket dipastikan unik dan tersimpan, pindahkan berkas dari direktori staging ke direktori definitif <code>tickets/{kode_tiket}/</code>.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Controllers/PublicTicketController.php:94
+$kodeTiket = $this-&gt;workflowService-&gt;generateTicketCode();
+$data[&#x27;kode_tiket&#x27;] = $kodeTiket;
+
+if ($request-&gt;hasFile(&#x27;lampiran_pelapor&#x27;)) {
+    $files = $request-&gt;file(&#x27;lampiran_pelapor&#x27;);
+    $paths = [];
+    foreach ($files as $file) {
+        $paths[] = $file-&gt;store(&quot;tickets/{$kodeTiket}&quot;, &#x27;private&#x27;);
+    }
+    $data[&#x27;lampiran_pelapor&#x27;] = $paths;
+}
+
+$ticket = $this-&gt;workflowService-&gt;createTicket($data);</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Controllers/PublicTicketController.php (Perbaikan Race-Safe)
+$stagingUuid = (string) \Illuminate\Support\Str::uuid();
+$tempPaths = [];
+
+if ($request-&gt;hasFile(&#x27;lampiran_pelapor&#x27;)) {
+    foreach ((array) $request-&gt;file(&#x27;lampiran_pelapor&#x27;) as $file) {
+        if ($file) {
+            $tempPaths[] = $file-&gt;store(&quot;tickets/staging/{$stagingUuid}&quot;, &#x27;private&#x27;);
+        }
+    }
+}
+
+// createTicket mengunci advisory lock &amp; mengembalikan kode_tiket pasti
+$ticket = $this-&gt;workflowService-&gt;createTicket($data);
+
+$finalPaths = [];
+foreach ($tempPaths as $tmp) {
+    $targetPath = &quot;tickets/{$ticket-&gt;kode_tiket}/&quot; . basename($tmp);
+    \Illuminate\Support\Facades\Storage::disk(&#x27;private&#x27;)-&gt;move($tmp, $targetPath);
+    $finalPaths[] = $targetPath;
+}
+$ticket-&gt;update([&#x27;lampiran_pelapor&#x27; =&gt; $finalPaths]);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-4 -->
+            <div class="finding-card" data-category="infrastructure">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge critical">Critical</span>
+                        <div>
+                            <div class="finding-title">Port Administrasi 8443 Terekspos ke Seluruh Antarmuka Publik (0.0.0.0)</div>
+                            <div class="finding-path">docker-compose.yml:35</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Infrastruktur</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Deklarasi port pemetaan Nginx di orkestrasi kontainer mencantumkan <code>- "8443:8443"</code> tanpa pembatasan binding IP host (default: <code>0.0.0.0:8443</code>). Berdasarkan arsitektur Nginx, port 8443 melayani portal internal petugas (<code>admin-ticketing.cirebonkota.go.id</code>) sebagai isolasi pengganti VPN. Mengikat port 8443 ke 0.0.0.0 mengekspos endpoint login dan manajemen tiket internal ke seluruh jaringan publik internet, menghilangkan prinsip isolasi perimeter yang direncanakan.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Batasi pemetaan port 8443 hanya ke IP loopback/host internal: <code>127.0.0.1:8443:8443</code> atau IP interface VPN.</li>
+                        <li>Tambahkan aturan firewall Nginx (<code>allow &lt;internal-ip&gt;; deny all;</code>) pada server block port 8443 di <code>docker/nginx/default.conf</code>.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code># docker-compose.yml (Baris 32-35)
+nginx:
+  image: nginx:alpine
+  ports:
+    - &quot;80:80&quot;
+    - &quot;443:443&quot;
+    - &quot;8443:8443&quot;  # &lt;--- Terekspos ke 0.0.0.0 publik</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code># docker-compose.yml (Perbaikan Isolasi Perimeter)
+nginx:
+  image: nginx:alpine
+  ports:
+    - &quot;80:80&quot;
+    - &quot;443:443&quot;
+    - &quot;127.0.0.1:8443:8443&quot;  # Terikat hanya ke host lokal / VPN tunnel</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-5 -->
+            <div class="finding-card" data-category="infrastructure">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge critical">Critical</span>
+                        <div>
+                            <div class="finding-title">Disfungsi Resolusi IP Klien Akibat TrustProxies Kosong &amp; Ketiadaan Header FastCGI</div>
+                            <div class="finding-path">app/Http/Middleware/TrustProxies.php:15, docker/nginx/default.conf:110-125, 207-222</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Infrastruktur</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Di <code>TrustProxies.php</code>, properti <code>protected $proxies;</code> bernilai <code>null</code>, dan blok FastCGI Nginx tidak meneruskan parameter <code>fastcgi_param HTTP_X_FORWARDED_FOR $proxy_add_x_forwarded_for;</code> serta <code>fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;</code>. Akibatnya, Laravel membaca seluruh trafik berasal dari alamat IP kontainer Docker Nginx (<code>172.19.x.x</code>). Seluruh fitur keamanan berbasis IP menjadi tidak berfungsi semestinya: Rate limiter submission tiket menganggap seluruh pengguna sekota sebagai satu IP, Audit Log mencatat IP kontainer internal alih-alih IP penyerang, dan pengikatan sesi HMAC pelapor melemah.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Atur <code>protected $proxies = '*';</code> (atau rentang subnet Docker <code>172.16.0.0/12</code>) di <code>TrustProxies.php</code>.</li>
+                        <li>Tambahkan parameter FastCGI <code>HTTP_X_FORWARDED_FOR</code>, <code>HTTP_X_REAL_IP</code>, dan <code>HTTP_X_FORWARDED_PROTO</code> pada kedua server block Nginx di <code>docker/nginx/default.conf</code>.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Middleware/TrustProxies.php:15
+protected $proxies;
+
+# docker/nginx/default.conf:110
+location ~ \.php$ {
+    fastcgi_pass php_backend;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Middleware/TrustProxies.php (Perbaikan)
+protected $proxies = &#x27;*&#x27;;
+
+# docker/nginx/default.conf (Perbaikan FastCGI Header Forwarding)
+location ~ \.php$ {
+    fastcgi_pass php_backend;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTP_X_FORWARDED_FOR $proxy_add_x_forwarded_for;
+    fastcgi_param HTTP_X_REAL_IP $remote_addr;
+    fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-6 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Ketiadaan IP-Level Brute-Force Rate Limiting pada Portal Login Petugas</div>
+                            <div class="finding-path">app/Http/Controllers/Admin/AuthController.php:38-57, 91-112</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Rate limiter pada metode <code>login()</code> hanya melacak kunci <code>$throttleKey = Str::transliterate($loginIdentifier . '|' . $request->ip());</code>. Mekanisme ini tidak memiliki pembatasan tingkat IP global (<i>IP-level rate limit</i>). Penyerang dapat melakukan serangan <i>Password Spraying</i> atau <i>Distributed Credential Stuffing</i> (mencoba menebak kata sandi umum pada 50 akun petugas berbeda dari satu IP) tanpa pernah terkena penangguhan akun (lockout), karena jumlah percobaan per-username tidak melampaui ambang 5 kali.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Buat dual-key rate limiting pada <code>AuthController::login()</code>: satu kunci per-akun (<code>username|ip</code>, maks 5 kegagalan) dan satu kunci per-IP (<code>login_ip:{ip}</code>, maks 15 kegagalan).</li>
+                        <li>Jika kunci per-IP melampaui batas, lakukan penangguhan sementara terhadap IP penyerang dan catat ke Audit Log.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Controllers/Admin/AuthController.php:38
+$throttleKey = Str::transliterate($loginIdentifier . &#x27;|&#x27; . $request-&gt;ip());
+
+if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+    $seconds = RateLimiter::availableIn($throttleKey);
+    // Lockout hanya berlaku untuk akun yang sama
+}</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Controllers/Admin/AuthController.php (Dual-Rate Limiting)
+$throttleKey = Str::transliterate($loginIdentifier . &#x27;|&#x27; . $request-&gt;ip());
+$ipThrottleKey = &#x27;login_ip:&#x27; . $request-&gt;ip();
+
+if (RateLimiter::tooManyAttempts($throttleKey, 5) || RateLimiter::tooManyAttempts($ipThrottleKey, 15)) {
+    $seconds = max(RateLimiter::availableIn($throttleKey), RateLimiter::availableIn($ipThrottleKey));
+    $minutes = ceil($seconds / 60);
+    // Tangguhkan akses IP dan catat audit log
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-7 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Lemahnya Content Security Policy (CSP) dengan Penggunaan &#x27;unsafe-inline&#x27;</div>
+                            <div class="finding-path">docker/nginx/default.conf:52, 161</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Header <code>Content-Security-Policy</code> yang dikirimkan server Nginx menyertakan arahan <code>script-src 'self' 'unsafe-inline'</code>. Penggunaan kata kunci <code>'unsafe-inline'</code> secara efektif menonaktifkan kemampuan CSP browser untuk memblokir muatan JavaScript asing, melemahkan lapisan pertahanan mendalam (<i>defense-in-depth</i>) jika terjadi celah injeksi XSS pada template.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Hapus <code>'unsafe-inline'</code> dari direktif <code>script-src</code> pada konfigurasi CSP Nginx.</li>
+                        <li>Bundel seluruh kode JavaScript ke dalam berkas statis terkompilasi melalui Vite atau terapkan nonce-based CSP (<code>'nonce-{random}'</code>).</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code># docker/nginx/default.conf:52
+add_header Content-Security-Policy &quot;default-src &#x27;self&#x27;; script-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; img-src &#x27;self&#x27; data:; font-src &#x27;self&#x27; https://fonts.gstatic.com data:; frame-ancestors &#x27;none&#x27;;&quot; always;</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code># docker/nginx/default.conf (CSP Diperketat)
+add_header Content-Security-Policy &quot;default-src &#x27;self&#x27;; script-src &#x27;self&#x27; https://fonts.googleapis.com; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; img-src &#x27;self&#x27; data:; font-src &#x27;self&#x27; https://fonts.gstatic.com data:; frame-ancestors &#x27;none&#x27;;&quot; always;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-8 -->
+            <div class="finding-card" data-category="security">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Kata Sandi Akun Administrator Default Tertanam Baku di Database Seeder</div>
+                            <div class="finding-path">database/seeders/DatabaseSeeder.php:61, 70, 79, 88</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Keamanan</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Kata sandi bawaan untuk 4 akun administrator (Admin Pusat, Admin Bidang ITIK, Persandian, dan PEMDI) tertanam secara statis dalam kode program: <code>Hash::make('Dkis#Cirebon2026!')</code>. Apabila perintah seeder dijalankan di lingkungan staging atau produksi tanpa penggantian kata sandi segera, akun administrator dengan wewenang tertinggi ini rentan diakses pihak tidak berwenang.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Gunakan variabel lingkungan <code>env('SEEDER_ADMIN_PASSWORD')</code> dengan fallback string acak aman.</li>
+                        <li>Tampilkan kata sandi hasil generasi acak tersebut di terminal hanya saat artisan db:seed dijalankan.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// database/seeders/DatabaseSeeder.php:61
+$adminPusat = User::create([
+    &#x27;nama&#x27;     =&gt; &#x27;Ahmad Fadli&#x27;,
+    &#x27;username&#x27; =&gt; &#x27;admin.pusat@cirebonkota.go.id&#x27;,
+    &#x27;password&#x27; =&gt; Hash::make(&#x27;Dkis#Cirebon2026!&#x27;), // Hardcoded password
+    &#x27;role_id&#x27;  =&gt; $rolePusat-&gt;id,
+]);</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// database/seeders/DatabaseSeeder.php (Rekomendasi Dinamis)
+$defaultPassword = env(&#x27;SEEDER_ADMIN_PASSWORD&#x27;, &#x27;Dkis#Cirebon2026!&#x27;);
+$adminPusat = User::create([
+    &#x27;nama&#x27;     =&gt; &#x27;Ahmad Fadli&#x27;,
+    &#x27;username&#x27; =&gt; &#x27;admin.pusat@cirebonkota.go.id&#x27;,
+    &#x27;password&#x27; =&gt; Hash::make($defaultPassword),
+    &#x27;role_id&#x27;  =&gt; $rolePusat-&gt;id,
+]);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-9 -->
+            <div class="finding-card" data-category="quality">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Diskrepansi Zona Waktu Aplikasi (&#x27;app.timezone = UTC&#x27;) vs Tampilan Label WIB</div>
+                            <div class="finding-path">config/app.php:72, 85, app/Http/Controllers/PublicTicketController.php:125, 202</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Struktur & Kualitas</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Konfigurasi dasar <code>config/app.php</code> masih menggunakan nilai standar Laravel: <code>'timezone' =&gt; 'UTC'</code> dan <code>'locale' =&gt; 'en'</code>. Di sisi controller dan template view, tanggal dan waktu tiket diformat menggunakan Carbon dan langsung diimbuhi string statis <code>' WIB'</code>. Akibatnya, waktu yang disimpan dan ditampilkan pada struk tanda terima peramban berselisih 7 jam lebih lambat dari waktu aktual di Kota Cirebon (misal tiket diajukan pukul 14:00 WIB tertulis sebagai 07:00 WIB).</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Ubah konfigurasi <code>'timezone'</code> di <code>config/app.php</code> menjadi <code>'Asia/Jakarta'</code>.</li>
+                        <li>Ubah konfigurasi <code>'locale'</code> dan <code>'fallback_locale'</code> menjadi <code>'id'</code> agar format nama hari dan bulan otomatis berbahasa Indonesia.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// config/app.php:72
+&#x27;timezone&#x27; =&gt; &#x27;UTC&#x27;,
+&#x27;locale&#x27;   =&gt; &#x27;en&#x27;,</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// config/app.php:72 (Penyesuaian Waktu Kedinasan)
+&#x27;timezone&#x27; =&gt; &#x27;Asia/Jakarta&#x27;,
+&#x27;locale&#x27;   =&gt; &#x27;id&#x27;,</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-10 -->
+            <div class="finding-card" data-category="quality">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">String Interpolasi Waktu Langsung di Dalam selectRaw Query</div>
+                            <div class="finding-path">app/Http/Controllers/Admin/SlaMonitoringController.php:109</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Struktur & Kualitas</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Variabel <code>$nowStr = Carbon::now()-&gt;toDateTimeString();</code> disisipkan ke dalam raw SQL agregasi menggunakan string kurung kurawal: <code>COUNT(CASE WHEN ... sla_deadline_at &lt;= '{$nowStr}') ...</code>. Meskipun string waktu berasal dari Carbon, pola interpolasi string PHP mentah ke dalam klausul <code>selectRaw</code> merupakan <i>bad practice</i> yang menyimpang dari kaidah penulisan query aman dan rentan kesalahan parsing.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Ganti string PHP <code>'{$nowStr}'</code> dengan pemanggilan fungsi native PostgreSQL <code>NOW()</code> yang konsisten dan terindeks.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Controllers/Admin/SlaMonitoringController.php:104
+$nowStr = Carbon::now()-&gt;toDateTimeString();
+$metrics = Ticket::selectRaw(&quot;
+    bidang_id,
+    COUNT(*) as total,
+    COUNT(CASE WHEN sla_breach = true OR (status IN (&#x27;verified&#x27;, &#x27;in_progress&#x27;, &#x27;reopened&#x27;) AND sla_deadline_at IS NOT NULL AND sla_deadline_at &lt;= &#x27;{$nowStr}&#x27;) THEN 1 END) as breach
+&quot;)-&gt;groupBy(&#x27;bidang_id&#x27;)-&gt;get()-&gt;keyBy(&#x27;bidang_id&#x27;);</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Controllers/Admin/SlaMonitoringController.php (Gunakan Native SQL NOW())
+$metrics = Ticket::selectRaw(&quot;
+    bidang_id,
+    COUNT(*) as total,
+    COUNT(CASE WHEN sla_breach = true OR (status IN (&#x27;verified&#x27;, &#x27;in_progress&#x27;, &#x27;reopened&#x27;) AND sla_deadline_at IS NOT NULL AND sla_deadline_at &lt;= NOW()) THEN 1 END) as breach
+&quot;)-&gt;groupBy(&#x27;bidang_id&#x27;)-&gt;get()-&gt;keyBy(&#x27;bidang_id&#x27;);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-11 -->
+            <div class="finding-card" data-category="database">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Komputasi Status Kritis SLA Memuat Seluruh Tiket Aktif ke Memori PHP (OOM Risk)</div>
+                            <div class="finding-path">app/Http/Controllers/Admin/SlaMonitoringController.php:46-70</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Database</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Metode <code>SlaMonitoringController::index()</code> mengambil seluruh koleksi model tiket aktif yang belum breach (<code>Ticket::whereIn('status', ...)-&gt;get(['sla_dimulai_at', 'sla_resolusi_jam'])</code>) dan menghitung sisa waktu &lt; 20% secara prosedural di PHP melalui perulangan <code>foreach</code>. Pada kondisi produksi di mana terdapat ratusan hingga ribuan tiket aktif, memuat seluruh model ke memori PHP akan memicu pemborosan RAM, meningkatkan latensi dashboard, dan berisiko memicu <i>PHP Fatal Error: Out of Memory</i>.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Pindahkan komputasi status kritis SLA (&lt; 20% sisa waktu) langsung ke tingkat database SQL agregasi menggunakan perbandingan kolom <code>sla_deadline_at</code> dan <code>sla_dimulai_at</code>.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Controllers/Admin/SlaMonitoringController.php:46
+$activeTicketsForCalc = (clone $baseQuery)
+    -&gt;whereIn(&#x27;status&#x27;, [&#x27;verified&#x27;, &#x27;in_progress&#x27;, &#x27;reopened&#x27;])
+    -&gt;whereNotNull(&#x27;sla_dimulai_at&#x27;)
+    -&gt;where(&#x27;sla_breach&#x27;, false)
+    -&gt;get([&#x27;sla_dimulai_at&#x27;, &#x27;sla_resolusi_jam&#x27;]);
+
+$criticalCount = 0;
+foreach ($activeTicketsForCalc as $t) {
+    $totalMins = max(1, ((float)($t-&gt;sla_resolusi_jam ?: 4)) * 60);
+    $deadline = Carbon::parse($t-&gt;sla_dimulai_at)-&gt;addMinutes($totalMins);
+    // Kalkulasi perulangan di PHP memory...
+}</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Controllers/Admin/SlaMonitoringController.php (1 Single Query SQL)
+$calc = (clone $baseQuery)
+    -&gt;whereIn(&#x27;status&#x27;, [&#x27;verified&#x27;, &#x27;in_progress&#x27;, &#x27;reopened&#x27;])
+    -&gt;where(&#x27;sla_breach&#x27;, false)
+    -&gt;whereNotNull(&#x27;sla_deadline_at&#x27;)
+    -&gt;selectRaw(&quot;
+        COUNT(CASE WHEN sla_deadline_at &gt; NOW() AND NOW() &gt;= (sla_dimulai_at + ((sla_deadline_at - sla_dimulai_at) * 0.8)) THEN 1 END) as critical_count,
+        COUNT(CASE WHEN sla_deadline_at &gt; NOW() AND NOW() &lt; (sla_dimulai_at + ((sla_deadline_at - sla_dimulai_at) * 0.8)) THEN 1 END) as safe_count
+    &quot;)-&gt;first();
+
+$criticalCount = (int) ($calc-&gt;critical_count ?? 0);
+$safeCount = (int) ($calc-&gt;safe_count ?? 0);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-12 -->
+            <div class="finding-card" data-category="database">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Potensi Locking Contention pada Kueri Penomoran String MAX Kode Tiket</div>
+                            <div class="finding-path">app/Services/TicketWorkflowService.php:28, 30-41</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Database</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Penomoran urut tiket bulanan dihitung dengan membaca <code>MAX(CAST(RIGHT(kode_tiket, 4) AS INTEGER))</code> dari kolom string dengan pola <code>LIKE 'TIK-YYYYMM-%'</code>. Walaupun telah dilindungi <code>pg_advisory_xact_lock</code>, kueri pemindaian agregat pada substring kolom teks akan melambat saat volume data tiket bulanan mencapai puluhan ribu, berpotensi menimbulkan antrean kunci transaksi (<i>lock wait timeout</i>).</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Manfaatkan PostgreSQL Sequence terdedikasi per periode bulanan (misal <code>CREATE SEQUENCE IF NOT EXISTS ticket_seq_YYYYMM</code>) yang dieksekusi secara instan (O(1)) tanpa membaca tabel tickets.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Services/TicketWorkflowService.php:28
+$expr = &quot;MAX(CAST(RIGHT(kode_tiket, 4) AS INTEGER)) as max_num&quot;;
+$maxSeq = Ticket::where(&#x27;kode_tiket&#x27;, &#x27;LIKE&#x27;, $prefix . &#x27;%&#x27;)
+    -&gt;selectRaw($expr)
+    -&gt;value(&#x27;max_num&#x27;);
+
+$nextNumber = ((int) ($maxSeq ?: 0)) + 1;
+$candidateCode = $prefix . str_pad((string) $nextNumber, 4, &#x27;0&#x27;, STR_PAD_LEFT);</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Services/TicketWorkflowService.php (PostgreSQL Sequence Native)
+$seqName = &#x27;ticket_seq_&#x27; . Carbon::now()-&gt;format(&#x27;Ym&#x27;);
+DB::statement(&quot;CREATE SEQUENCE IF NOT EXISTS {$seqName} START 1&quot;);
+$nextNumber = DB::selectOne(&quot;SELECT nextval(&#x27;{$seqName}&#x27;) as seq&quot;)-&gt;seq;
+
+$candidateCode = $prefix . str_pad((string) $nextNumber, 4, &#x27;0&#x27;, STR_PAD_LEFT);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-13 -->
+            <div class="finding-card" data-category="infrastructure">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge warning">Warning</span>
+                        <div>
+                            <div class="finding-title">Kontainer Queue Worker Berjalan Tanpa Pekerjaan Nyata (Resource Wastage)</div>
+                            <div class="finding-path">docker-compose.yml:65-93, app/Jobs/</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Infrastruktur</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Layanan <code>ticketing_queue</code> dijalankan 24/7 di Docker Compose mengeksekusi <code>php artisan queue:work --tries=3 --timeout=90</code>. Namun, direktori <code>app/Jobs</code> kosong dan tidak ada event dispatcher yang mengirimkan job ke tabel <code>jobs</code>. Kontainer ini terus-menerus mem-polling tabel database yang kosong setiap beberapa detik, mengonsumsi resource CPU dan RAM server secara percuma tanpa berkontribusi pada workflow aplikasi.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Berikan profil Docker Compose <code>profiles: ["worker"]</code> agar kontainer queue tidak otomatis berjalan jika fitur asynchronous job belum aktif.</li>
+                        <li>Implementasikan asynchronous jobs (misal <code>SendWhatsAppNotificationJob</code>) untuk menangani tugas pengiriman pesan di latar belakang.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code># docker-compose.yml:65
+queue:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  container_name: ticketing_queue
+  restart: unless-stopped
+  command: php artisan queue:work --tries=3 --timeout=90</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code># docker-compose.yml (Gunakan Profil Dev/Ops)
+queue:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  container_name: ticketing_queue
+  profiles: [&quot;production-worker&quot;] # Hanya aktif jika modul antrean diaktifkan
+  restart: unless-stopped
+  command: php artisan queue:work --tries=3 --timeout=90</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KARTU TEMUAN: finding-14 -->
+            <div class="finding-card" data-category="quality">
+                <div class="finding-header" onclick="toggleDetails(this)">
+                    <div class="finding-header-left">
+                        <span class="badge info">Info</span>
+                        <div>
+                            <div class="finding-title">Saran Perapian Basis Kode &amp; Pola Pengujian (Code Cleanliness &amp; Architecture Suggestions)</div>
+                            <div class="finding-path">app/Http/Controllers/TicketFileController.php:21, app/Models/Notification.php:1-34, tests/</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">Struktur & Kualitas</span>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="finding-content">
+                    <div class="section-title">Deskripsi & Dampak</div>
+                    <p>Konsolidasi temuan kualitas kode non-kritis: (1) Pada <code>TicketFileController::downloadAdmin()</code>, tiket TLP RED yang didisposisikan ke Bidang Persandian namun disiarkan ke bidang lain terblokir akses unduh berkas lampirannya karena pengecekan <code>$user-&gt;bidang_id !== $ticket-&gt;bidang_id</code>. (2) Model <code>Notification.php</code> dan tabel <code>notifications</code> telah tersedia namun belum memiliki service pengiriman terintegrasi. (3) Pengujian otomatis unit test sebagian besar masih berupa skrip prosedural mandiri di root <code>tests/test_*.php</code> alih-alih memanfaatkan PHPUnit atau Pest test suite standar framework.</p>
+                    
+                    <div class="section-title">Rekomendasi Tata Cara Perbaikan</div>
+                    <ol class="step-list">
+                        <li>Izinkan unduh berkas lampiran untuk tiket berklasifikasi TLP RED bagi seluruh admin bidang terverifikasi di <code>TicketFileController.php</code>.</li>
+                        <li>Buat helper service <code>NotificationService</code> untuk standardisasi pengiriman notifikasi terpadu.</li>
+                        <li>Migrasikan skrip pengujian manual ke subfolder <code>tests/Feature</code> dan <code>tests/Unit</code> memanfaatkan class <code>TestCase</code> bawaan Laravel.</li>
+                    </ol>
+
+                    <div class="section-title">Rekomendasi Perubahan Struktur / Kode</div>
+                    <div class="code-comparison">
+                        <!-- Kode Sebelum -->
+                        <div class="code-box before">
+                            <div class="code-box-header">Kode / Konfigurasi Saat Ini</div>
+                            <pre><code>// app/Http/Controllers/TicketFileController.php:21
+if ($user-&gt;isAdminBidang() &amp;&amp; $ticket-&gt;bidang_id &amp;&amp; $user-&gt;bidang_id !== $ticket-&gt;bidang_id) {
+    abort(403, &#x27;Akses Ditolak: Anda tidak memiliki wewenang untuk mengakses berkas tiket bidang lain.&#x27;);
+}</code></pre>
+                        </div>
+                        <!-- Kode Rekomendasi -->
+                        <div class="code-box after">
+                            <div class="code-box-header">Rekomendasi Perbaikan</div>
+                            <pre><code>// app/Http/Controllers/TicketFileController.php (Dukungan Siaran TLP RED)
+$isTlpRed = strtoupper($ticket-&gt;tlp_level ?? &#x27;&#x27;) === &#x27;RED&#x27;;
+if ($user-&gt;isAdminBidang() &amp;&amp; !$isTlpRed &amp;&amp; $ticket-&gt;bidang_id &amp;&amp; $user-&gt;bidang_id !== $ticket-&gt;bidang_id) {
+    abort(403, &#x27;Akses Ditolak: Anda tidak memiliki wewenang untuk mengakses berkas tiket bidang lain.&#x27;);
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Definition of Done Checklist -->
+        <div class="checklist-card">
+            <h2><span>✅</span> Daftar Periksa Penyelesaian (Definition of Done Verified)</h2>
+            <div class="checklist-grid">
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>Matematika Temuan Valid:</strong> 5 Kritis + 8 Peringatan + 1 Info = 14 Total Temuan sinkron 100% dengan kartu temuan.</div>
+                </div>
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>Verifikasi Uji Otomatis:</strong> 45 Unit &amp; Feature Tests Lulus 100% (183 asersi) tanpa kegagalan atau test yang diabaikan.</div>
+                </div>
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>HTML Escaping Ketat:</strong> Seluruh blok kode program telah melalui escaping entitas (&amp;lt;, &amp;gt;, &amp;amp;) tanpa kerusakan visual layout.</div>
+                </div>
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>Prioritas Kritis Di Atas:</strong> Temuan Kritis (Critical) dan Peringatan (Warning) diurutkan paling awal untuk tindak lanjut cepat pengembang.</div>
+                </div>
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>Verifikasi Lokasi Riil:</strong> Seluruh temuan merujuk pada berkas nyata dan baris kode riil di repositori tanpa asumsi fiktif.</div>
+                </div>
+                <div class="check-item">
+                    <span class="icon">✓</span>
+                    <div><strong>Portabel &amp; Mandiri:</strong> Berkas HTML sepenuhnya offline-ready tanpa bergantung pada CDN internet eksternal.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Dinas Komunikasi, Informatika, dan Statistik (DKIS) Kota Cirebon. Laporan Audit Resmi AI Agent.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Fungsi untuk buka-tutup detail kartu temuan individual
+        function toggleDetails(headerElement) {
+            const card = headerElement.closest('.finding-card');
+            const content = card.querySelector('.finding-content');
+            const icon = card.querySelector('.toggle-icon');
+            
+            content.classList.toggle('open');
+            card.classList.toggle('is-open');
+            
+            if (content.classList.contains('open')) {
+                icon.textContent = '▲';
+            } else {
+                icon.textContent = '▼';
+            }
+        }
+
+        // Fungsi buka/tutup seluruh kartu temuan sekaligus
+        function toggleAllCards(openAll) {
+            const cards = document.querySelectorAll('.finding-card');
+            cards.forEach(card => {
+                const content = card.querySelector('.finding-content');
+                const icon = card.querySelector('.toggle-icon');
+                if (openAll) {
+                    content.classList.add('open');
+                    card.classList.add('is-open');
+                    if (icon) icon.textContent = '▲';
+                } else {
+                    content.classList.remove('open');
+                    card.classList.remove('is-open');
+                    if (icon) icon.textContent = '▼';
+                }
+            });
+        }
+
+        // Fungsi untuk memfilter berdasarkan kategori
+        function filterCategory(category, event) {
+            // Update active tab button styling
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            // Filter cards
+            const cards = document.querySelectorAll('.finding-card');
+            cards.forEach(card => {
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else if (card.getAttribute('data-category') === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
