@@ -37,6 +37,7 @@ Route::post('/tiket/{kode}/reopen', [PublicTicketController::class, 'reopen'])->
 Route::post('/tiket/{kode}/lengkapi-data', [PublicTicketController::class, 'submitCompletion'])->name('public.ticket.submit_completion');
 Route::post('/tiket/{kode}/batal', [PublicTicketController::class, 'cancelTicket'])->name('public.ticket.cancel');
 Route::get('/tiket/{kode}/berkas/{type}', [\App\Http\Controllers\TicketFileController::class, 'downloadPublic'])->name('public.tiket.download');
+Route::get('/tiket/{kode}/preview/{fileId}', [\App\Http\Controllers\TicketFileController::class, 'previewPublic'])->name('public.tiket.preview');
 
 /*
 |--------------------------------------------------------------------------
@@ -59,7 +60,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Dashboard umum untuk seluruh admin yang login
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/monitoring-sla', [SlaMonitoringController::class, 'index'])->name('admin.sla.index');
+    Route::get('/tiket/{id}', [TicketController::class, 'show'])->name('admin.tiket.show');
     Route::get('/tiket/{kode}/berkas/{type}', [\App\Http\Controllers\TicketFileController::class, 'downloadAdmin'])->name('admin.tiket.download');
+    Route::get('/tiket/{kode}/preview/{fileId}', [\App\Http\Controllers\TicketFileController::class, 'previewAdmin'])->name('admin.tiket.preview');
+    Route::post('/tiket/{kode}/request-access/{fileId}', [\App\Http\Controllers\TicketFileController::class, 'requestAccess'])->name('admin.tiket.requestAccess');
+    Route::post('/access-requests/{requestId}/review', [\App\Http\Controllers\TicketFileController::class, 'reviewAccessRequest'])->name('admin.tiket.reviewAccess');
 
     /*
     |--------------------------------------------------------------------------
@@ -69,6 +74,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::middleware(['admin.pusat'])->group(function () {
         // Verifikasi & Disposisi Tiket
         Route::get('/verifikasi', [VerificationController::class, 'index'])->name('admin.verifikasi.index');
+        Route::post('/verifikasi/ambil-berikutnya', [VerificationController::class, 'claimNext'])->name('admin.verifikasi.claimNext');
+        Route::post('/tiket/{id}/claim', [VerificationController::class, 'claimTicket'])->name('admin.verifikasi.claim');
+        Route::post('/tiket/{id}/release-claim', [VerificationController::class, 'releaseClaim'])->name('admin.verifikasi.releaseClaim');
         Route::post('/verifikasi/batch-link', [VerificationController::class, 'batchLink'])->name('admin.verifikasi.batchLink');
         Route::post('/tiket/{id}/verifikasi', [VerificationController::class, 'verify'])->name('admin.verifikasi.verify');
         Route::post('/tiket/{id}/minta-kelengkapan', [VerificationController::class, 'requestCompletion'])->name('admin.verifikasi.requestCompletion');
@@ -79,7 +87,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
         // Semua Tiket + Multi-Filter (Status, Bidang, TLP, SLA Breach)
         Route::get('/tiket', [TicketController::class, 'index'])->name('admin.tiket.index');
-        Route::get('/tiket/{id}', [TicketController::class, 'show'])->name('admin.tiket.show');
 
         // Rekap Laporan & Audit Log
         Route::get('/laporan', [LaporanKinerjaController::class, 'index'])->name('admin.laporan');

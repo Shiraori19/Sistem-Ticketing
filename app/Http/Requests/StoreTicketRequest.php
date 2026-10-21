@@ -76,7 +76,11 @@ class StoreTicketRequest extends FormRequest
                     }
                 },
             ],
-            'lampiran_pelapor.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // Maks 5MB per berkas
+            'lampiran_pelapor.*' => [
+                'file',
+                'max:5120',
+                new \App\Rules\ValidSecureFile(['image', 'pdf']),
+            ], // Maks 5MB per berkas, divalidasi isi asli
             'g-recaptcha-response' => [
                 app()->environment('testing') || app()->runningUnitTests() ? 'nullable' : 'required',
                 function ($attribute, $value, $fail) {

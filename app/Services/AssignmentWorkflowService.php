@@ -21,10 +21,14 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class AssignmentWorkflowService
 {
     protected TicketWorkflowService $ticketWorkflowService;
+    protected SecureUploadService $uploadService;
 
-    public function __construct(TicketWorkflowService $ticketWorkflowService)
-    {
+    public function __construct(
+        TicketWorkflowService $ticketWorkflowService,
+        SecureUploadService $uploadService
+    ) {
         $this->ticketWorkflowService = $ticketWorkflowService;
+        $this->uploadService = $uploadService;
     }
 
     /**
@@ -824,16 +828,33 @@ class AssignmentWorkflowService
         UploadedFile $file,
         string $kategori
     ): TicketFile {
-        $path = $file->store("tickets/{$ticket->kode_tiket}", 'private');
+        $isTlpRed = strtoupper($ticket->tlp_level ?? '') === 'RED';
+        $uploadResult = $this->uploadService->storeUploadedFile(
+            $file,
+            "tickets/{$ticket->kode_tiket}",
+            [
+                'ticket' => $ticket,
+                'event_id' => $event->id,
+                'uploader_id' => $uploader->id,
+                'classification' => $isTlpRed ? 'rahasia' : 'umum',
+                'kategori_field' => $kategori,
+                'allowed_categories' => ['image', 'pdf', 'text', 'video'],
+            ]
+        );
 
-        return TicketFile::create([
-            'ticket_id' => $ticket->id,
-            'event_id' => $event->id,
-            'uploader_id' => $uploader->id,
-            'path' => $path,
-            'mime' => $file->getClientMimeType() ?: 'application/octet-stream',
-            'size' => $file->getSize() ?: 0,
-            'kategori' => $kategori,
+        return TicketFile::where('path', $uploadResult['path'])->latest()->first() ?? TicketFile::create([
+            'ticket_id'      => $ticket->id,
+            'event_id'       => $event->id,
+            'uploader_id'    => $uploader->id,
+            'path'           => $uploadResult['path'],
+            'mime'           => $uploadResult['mime'],
+            'size'           => $uploadResult['size'],
+            'kategori'       => $kategori,
+            'sha256'         => $uploadResult['sha256'],
+            'original_name'  => $uploadResult['original_name'],
+            'classification' => $uploadResult['classification'],
+            'is_encrypted'   => $uploadResult['is_encrypted'],
+            'vault_path'     => $uploadResult['vault_path'],
         ]);
     }
 

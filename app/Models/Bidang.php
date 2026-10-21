@@ -16,7 +16,17 @@ class Bidang extends Model
         'nama_bidang',
         'kode',
         'icon',
+        'is_persandian',
     ];
+
+    protected $casts = [
+        'is_persandian' => 'boolean',
+    ];
+
+    public function isPersandian(): bool
+    {
+        return (bool) $this->is_persandian || strtoupper($this->kode) === 'PERSANDIAN';
+    }
 
     public function users(): HasMany
     {

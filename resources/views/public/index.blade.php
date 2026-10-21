@@ -435,6 +435,14 @@
 
                                 <!-- Chips / Pills Berkas Terpilih -->
                                 <div id="file-list-preview" class="mt-3 flex flex-wrap gap-2"></div>
+
+                                <!-- Opsi Unggah Asli Tanpa Kompresi (BUTIR 4) -->
+                                <div class="mt-2.5 flex items-center justify-between text-xs px-1 pt-2 border-t border-slate-100">
+                                    <label class="flex items-center gap-2 cursor-pointer text-slate-600 select-none hover:text-slate-800">
+                                        <input type="checkbox" id="checkbox-raw-upload" name="is_raw_upload" value="1" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                        <span class="font-semibold text-[11px] sm:text-xs">Unggah berkas asli tanpa kompresi (Resolusi penuh untuk forensik / insiden siber)</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -970,7 +978,7 @@
                                                         <label class="block text-xs font-bold text-slate-800 mb-1.5">
                                                             2. Berkas / Foto Tambahan (Opsional)
                                                         </label>
-                                                        <input type="file" name="lampiran_tambahan" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                                                        <input type="file" name="lampiran_tambahan" accept=".jpg,.jpeg,.png,.pdf"
                                                             class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 border border-slate-200 rounded-xl p-1">
                                                         <p class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG, PDF (Maks. 5MB)</p>
                                                     </div>
@@ -1039,10 +1047,27 @@
                                                                 {{ $t->catatan_resolusi }}
                                                             </p>
                                                             @if($t->bukti_resolusi)
-                                                                <div class="pt-1 flex items-center gap-2 text-xs font-semibold text-emerald-800">
+                                                                <div class="pt-1 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                                                                    @php
+                                                                        $buktiFile = $t->files()->where('kategori', 'bukti_resolusi')->latest()->first();
+                                                                    @endphp
+                                                                    @if($buktiFile)
+                                                                        <button type="button" onclick="SecureFilePreviewViewer.open([{
+                                                                            name: 'Bukti Penanganan Teknis',
+                                                                            type: '{{ $buktiFile->isImage() ? 'image' : ($buktiFile->isPdf() ? 'pdf' : 'text') }}',
+                                                                            classification: '{{ $buktiFile->classification }}',
+                                                                            previewUrl: '{{ route('public.tiket.preview', ['kode' => $t->kode_tiket, 'fileId' => $buktiFile->id]) }}',
+                                                                            downloadUrl: '{{ route('public.tiket.download', ['kode' => $t->kode_tiket, 'type' => 'bukti']) }}',
+                                                                            sha256: '{{ $buktiFile->sha256 }}',
+                                                                            pages: 1
+                                                                        }], 0)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-xs cursor-pointer">
+                                                                            <span>👁</span>
+                                                                            <span>Pratinjau Bukti (Tanpa Unduh)</span>
+                                                                        </button>
+                                                                    @endif
                                                                     <a href="{{ route('public.tiket.download', ['kode' => $t->kode_tiket, 'type' => 'bukti']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition underline">
-                                                                        <span>📎</span>
-                                                                        <span>Lihat Berkas Bukti Resolusi (Foto/Laporan)</span>
+                                                                        <span>⬇</span>
+                                                                        <span>Unduh Berkas Asli</span>
                                                                     </a>
                                                                 </div>
                                                             @endif
@@ -2324,5 +2349,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/secure-client-upload.js') }}"></script>
+<script src="{{ asset('js/file-preview-viewer.js') }}"></script>
 <script src="https://www.google.com/recaptcha/api.js?hl=id" async defer></script>
 @endpush

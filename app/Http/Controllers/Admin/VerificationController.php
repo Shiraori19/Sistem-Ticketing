@@ -30,19 +30,21 @@ class VerificationController extends Controller
                 'id', 'parent_id', 'is_parent', 'kode_tiket', 'created_at', 'nama_pelapor', 'skpd', 'nip_pelapor',
                 'no_whatsapp', 'judul', 'deskripsi', 'lampiran_pelapor', 'lampiran_tambahan',
                 'catatan_kelengkapan', 'category_id', 'bidang_id', 'tlp_level', 'status', 'status_history',
-                'sla_respon_jam', 'sla_respon_breach', 'sla_respon_deadline_at'
+                'sla_respon_jam', 'sla_respon_breach', 'sla_respon_deadline_at',
+                'claimed_by', 'claimed_at', 'row_version'
             ])
             ->with([
                 'category:id,nama_kategori',
                 'bidang:id,nama_bidang,kode',
-                'parent:id,kode_tiket,judul'
+                'parent:id,kode_tiket,judul',
+                'claimedByUser:id,nama,avatar',
             ])
             ->whereIn('status', ['pending_verification', 'pending_info'])
             ->orderBy('id', 'asc')
             ->paginate(15);
 
         $bidangList = \Illuminate\Support\Facades\Cache::remember('bidang_list_dropdown', 60, function () {
-            return Bidang::select(['id', 'nama_bidang', 'kode'])->get();
+            return Bidang::select(['id', 'nama_bidang', 'kode', 'is_persandian'])->get();
         });
 
         // Ambil daftar Induk Tiket yang sedang aktif untuk pilihan penautan (Cache 60 detik)
@@ -64,22 +66,39 @@ class VerificationController extends Controller
                 ->get();
         });
 
-        return view('admin.verifikasi.index', compact('tickets', 'bidangList', 'activeParents', 'clusters'));
+        // Statistik beban kerja per Admin Pusat (BUTIR 2)
+        $adminPusatWorkloads = \App\Models\User::whereHas('role', fn($r) => $r->where('nama_role', 'Admin Pusat'))
+            ->withCount(['verifiedTickets as verified_today_count' => fn($q) => $q->whereDate('updated_at', today())])
+            ->get();
+
+        return view('admin.verifikasi.index', compact('tickets', 'bidangList', 'activeParents', 'clusters', 'adminPusatWorkloads'));
     }
 
     /**
-     * Proses verifikasi & penetapan TLP serta disposisi (Mendukung Safe Parent-Child Linking)
+     * Proses verifikasi & penetapan TLP serta disposisi (Mendukung Safe Parent-Child Linking & Kunci Optimistik)
      */
     public function verify(VerifyTicketRequest $request, int $id)
     {
         $ticket = Ticket::findOrFail($id);
+        $user = Auth::user();
+
+        // 1. Optimistic Locking (row_version) Cegah Tabrakan Antar-Admin Pusat
+        if ($request->filled('row_version') && (int) $ticket->row_version !== (int) $request->input('row_version')) {
+            abort(409, 'Konflik Verifikasi (409 Conflict): Tiket ini telah diverifikasi atau diperbarui oleh Admin Pusat lain.');
+        }
+
+        // 2. Soft Lock Check: Pastikan tiket tidak sedang dikunci admin lain
+        if (!$ticket->canBeClaimedBy($user->id)) {
+            $claimant = $ticket->claimedByUser?->nama ?: 'Admin Pusat lain';
+            return back()->with('error', "Tiket ini sedang diverifikasi oleh {$claimant} (Kunci aktif 10 menit).");
+        }
 
         if (!in_array($ticket->status, ['pending_verification', 'pending_info'])) {
             return back()->with('error', "Tiket ini sudah tidak berada dalam status pending verifikasi.");
         }
 
         $tlp = $request->input('tlp_level');
-        $persandian = Bidang::where('kode', 'PERSANDIAN')->orWhere('nama_bidang', 'LIKE', '%Persandian%')->first();
+        $persandian = Bidang::where('is_persandian', true)->first() ?? Bidang::where('kode', 'PERSANDIAN')->first();
         $bidangId = $tlp === 'RED' ? ($persandian?->id ?? $request->input('bidang_id')) : $request->input('bidang_id');
         $notes = $request->input('notes');
 
@@ -105,10 +124,36 @@ class VerificationController extends Controller
             $tlp,
             $bidangId ? (int) $bidangId : null,
             $notes,
-            Auth::user()
+            $user
         );
 
-        // Bersihkan catatan kelengkapan setelah berhasil diverifikasi
+        // BUTIR 7: Catat Keterlibatan Bidang Pelaksana & Ditembuskan untuk TLP: RED
+        if ($tlp === 'RED' && $persandian) {
+            \App\Models\TicketBidangInvolvement::updateOrCreate(
+                ['ticket_id' => $updated->id, 'bidang_id' => $persandian->id, 'peran' => 'pelaksana'],
+                ['notified_at' => now(), 'ditetapkan_oleh' => $user->id]
+            );
+
+            if ($request->filled('bidang_ditembuskan')) {
+                $ditembuskanList = (array) $request->input('bidang_ditembuskan');
+                foreach ($ditembuskanList as $bId) {
+                    if ((int)$bId !== (int)$persandian->id) {
+                        \App\Models\TicketBidangInvolvement::updateOrCreate(
+                            ['ticket_id' => $updated->id, 'bidang_id' => (int) $bId, 'peran' => 'ditembuskan'],
+                            ['notified_at' => now(), 'ditetapkan_oleh' => $user->id]
+                        );
+                    }
+                }
+            }
+
+            // Pindahkan seluruh lampiran tiket ke Vault secara otomatis
+            app(\App\Services\SecureUploadService::class)->migrateTicketFilesToVault($updated);
+        }
+
+        // Lepas kunci klaim tiket dan naikkan row_version
+        $updated->claimed_by = null;
+        $updated->claimed_at = null;
+        $updated->row_version = ($updated->row_version ?? 1) + 1;
         $updated->catatan_kelengkapan = null;
         $updated->save();
 
@@ -118,6 +163,80 @@ class VerificationController extends Controller
             : "Tiket {$updated->kode_tiket}{$parentMsg} berhasil diverifikasi dan diteruskan ke Bidang terkait.";
 
         return redirect()->route('admin.verifikasi.index')->with('success', $msg);
+    }
+
+    /**
+     * Ambil Tiket Berikutnya secara Atomik (BUTIR 2: Multi Admin Pusat)
+     */
+    public function claimNext()
+    {
+        $user = Auth::user();
+
+        // Kunci baris tiket terlama yang bebas klaim atau klaimnya sudah kedaluwarsa
+        $ticket = \Illuminate\Support\Facades\DB::transaction(function () use ($user) {
+            $t = Ticket::whereIn('status', ['pending_verification', 'pending_info'])
+                ->where(function ($q) use ($user) {
+                    $q->whereNull('claimed_by')
+                      ->orWhere('claimed_by', $user->id)
+                      ->orWhere('claimed_at', '<', now()->subMinutes(10));
+                })
+                ->orderBy('id', 'asc')
+                ->lockForUpdate()
+                ->first();
+
+            if ($t) {
+                $t->update([
+                    'claimed_by' => $user->id,
+                    'claimed_at' => now(),
+                ]);
+            }
+
+            return $t;
+        });
+
+        if (!$ticket) {
+            return redirect()->route('admin.verifikasi.index')
+                ->with('info', 'Semua tiket dalam antrean saat ini sedang ditangani oleh Admin Pusat lain atau antrean kosong.');
+        }
+
+        return redirect()->route('admin.verifikasi.index')
+            ->with('success', "Tiket #{$ticket->kode_tiket} berhasil diklaim untuk Anda verifikasi (Kunci aktif 10 menit).");
+    }
+
+    /**
+     * Kunci manual klaim tiket oleh Admin Pusat
+     */
+    public function claimTicket(int $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+        $user = Auth::user();
+
+        if (!$ticket->canBeClaimedBy($user->id)) {
+            $claimant = $ticket->claimedByUser?->nama ?: 'Admin Pusat lain';
+            return back()->with('error', "Tiket ini sedang diverifikasi oleh {$claimant}.");
+        }
+
+        $ticket->update([
+            'claimed_by' => $user->id,
+            'claimed_at' => now(),
+        ]);
+
+        return back()->with('success', "Tiket #{$ticket->kode_tiket} berhasil dikunci untuk Anda.");
+    }
+
+    /**
+     * Lepas kunci klaim tiket
+     */
+    public function releaseClaim(int $id)
+    {
+        $ticket = Ticket::findOrFail($id);
+        if ($ticket->claimed_by === Auth::id()) {
+            $ticket->update([
+                'claimed_by' => null,
+                'claimed_at' => null,
+            ]);
+        }
+        return back()->with('success', "Kunci tiket #{$ticket->kode_tiket} berhasil dilepas.");
     }
 
     /**

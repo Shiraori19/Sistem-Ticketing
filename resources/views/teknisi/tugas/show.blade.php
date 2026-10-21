@@ -556,7 +556,8 @@
         </div>
         <div style="margin-bottom: 16px;">
             <label style="font-size: 12px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px;">Foto Bukti Hasil Perbaikan (Opsional, Max 10MB):</label>
-            <input type="file" name="bukti_foto" accept=".jpg,.jpeg,.png,.pdf,.txt,.log" style="font-size: 12px; width: 100%;">
+            <input type="file" name="bukti_foto" accept=".jpg,.jpeg,.png,.pdf,.txt,.log,.mp4" style="font-size: 12px; width: 100%;">
+            <p style="font-size: 11px; color: var(--mut); margin: 4px 0 0;">Format didukung: JPG, PNG, PDF, TXT, LOG, MP4 (Maks. 10MB). Foto otomatis dioptimalkan sebelum terkirim.</p>
         </div>
         <div style="display: flex; gap: 8px; justify-content: flex-end;">
             <button type="button" class="btn o" onclick="this.closest('dialog').close()">Batal</button>
@@ -564,4 +565,5 @@
         </div>
     </form>
 </dialog>
+<script src="{{ asset('js/secure-client-upload.js') }}"></script>
 @endsection

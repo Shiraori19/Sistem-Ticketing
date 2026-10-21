@@ -15,13 +15,16 @@ class BidangTicketController extends Controller
 {
     protected TicketWorkflowService $workflowService;
     protected AssignmentWorkflowService $assignmentWorkflowService;
+    protected \App\Services\SecureUploadService $uploadService;
 
     public function __construct(
         TicketWorkflowService $workflowService,
-        AssignmentWorkflowService $assignmentWorkflowService
+        AssignmentWorkflowService $assignmentWorkflowService,
+        \App\Services\SecureUploadService $uploadService
     ) {
         $this->workflowService = $workflowService;
         $this->assignmentWorkflowService = $assignmentWorkflowService;
+        $this->uploadService = $uploadService;
     }
 
     /**
@@ -31,7 +34,7 @@ class BidangTicketController extends Controller
     {
         $user = Auth::user();
         $bidangId = $user->bidang_id;
-        $isPersandian = $user->bidang && (strtoupper($user->bidang->kode) === 'PERSANDIAN' || str_contains(strtoupper($user->bidang->nama_bidang ?? ''), 'PERSANDIAN'));
+        $isPersandian = $user->bidang?->isPersandian() ?? false;
         $filter = $request->input('filter');
 
         // Query antrean bidang
@@ -202,12 +205,24 @@ class BidangTicketController extends Controller
             return back()->with('error', "Tiket dengan status '{$ticket->status}' tidak dapat ditandai selesai.");
         }
 
-        // Simpan file bukti resolusi jika ada (opsional) di storage/app/private/tickets/{kode_tiket}/
+        // Simpan file bukti resolusi jika ada (opsional) melalui SecureUploadService
         $evidencePath = null;
-        if ($request->hasFile('bukti_resolusi')) {
-            $evidencePath = $request->file('bukti_resolusi')->store("tickets/{$ticket->kode_tiket}", 'private');
-        }
         $isConfidential = $request->boolean('is_confidential_evidence') || (strtoupper($ticket->tlp_level ?? '') === 'RED');
+
+        if ($request->hasFile('bukti_resolusi')) {
+            $uploadResult = $this->uploadService->storeUploadedFile(
+                $request->file('bukti_resolusi'),
+                "tickets/{$ticket->kode_tiket}",
+                [
+                    'ticket' => $ticket,
+                    'classification' => $isConfidential ? 'rahasia' : 'umum',
+                    'kategori_field' => 'bukti_resolusi',
+                    'allowed_categories' => ['image', 'pdf'],
+                    'uploader_id' => $user->id,
+                ]
+            );
+            $evidencePath = $uploadResult['path'];
+        }
 
         $this->workflowService->markResolved(
             $ticket,

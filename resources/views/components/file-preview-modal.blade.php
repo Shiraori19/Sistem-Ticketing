@@ -58,6 +58,19 @@
                 </iframe>
             </div>
 
+            <!-- Preview Video MP4 -->
+            <div id="preview-video-container" class="hidden w-full flex items-center justify-center">
+                <video id="preview-video-elem" controls class="max-h-[75vh] max-w-full rounded-xl shadow-2xl border border-slate-800">
+                    <source src="" type="video/mp4">
+                    Browser Anda tidak mendukung tag video.
+                </video>
+            </div>
+
+            <!-- Preview Teks / Log / Kode -->
+            <div id="preview-text-container" class="hidden w-full max-h-[75vh] overflow-auto">
+                <pre id="preview-text-elem" class="p-4 rounded-xl bg-slate-900 text-emerald-400 font-mono text-xs whitespace-pre-wrap leading-relaxed border border-slate-800"></pre>
+            </div>
+
             <!-- Fallback untuk format lain -->
             <div id="preview-fallback-container" class="hidden text-center p-8 bg-slate-900 rounded-2xl border border-slate-800 max-w-md">
                 <div class="text-4xl mb-3">📄</div>
@@ -86,6 +99,10 @@
         const imgElem = document.getElementById('preview-image-elem');
         const pdfContainer = document.getElementById('preview-pdf-container');
         const pdfIframe = document.getElementById('preview-pdf-iframe');
+        const videoContainer = document.getElementById('preview-video-container');
+        const videoElem = document.getElementById('preview-video-elem');
+        const textContainer = document.getElementById('preview-text-container');
+        const textElem = document.getElementById('preview-text-elem');
         const fallbackContainer = document.getElementById('preview-fallback-container');
         const fallbackLink = document.getElementById('preview-fallback-link');
 
@@ -93,6 +110,8 @@
         if (loadingElem) loadingElem.classList.remove('hidden');
         if (imgContainer) imgContainer.classList.add('hidden');
         if (pdfContainer) pdfContainer.classList.add('hidden');
+        if (videoContainer) videoContainer.classList.add('hidden');
+        if (textContainer) textContainer.classList.add('hidden');
         if (fallbackContainer) fallbackContainer.classList.add('hidden');
 
         // Set labels
@@ -104,7 +123,7 @@
         if (downloadBtn) downloadBtn.href = downloadUrl;
         if (fallbackLink) fallbackLink.href = fileUrl;
 
-        // Determine extension reliably (handles query parameters and file names)
+        // Determine extension reliably
         let ext = '';
         try {
             const urlObj = new URL(fileUrl, window.location.origin);
@@ -141,6 +160,25 @@
             if (loadingElem) loadingElem.classList.add('hidden');
             if (pdfContainer) pdfContainer.classList.remove('hidden');
             pdfIframe.src = fileUrl;
+        } else if (ext === 'mp4') {
+            if (iconElem) iconElem.textContent = '🎬';
+            if (loadingElem) loadingElem.classList.add('hidden');
+            if (videoContainer) videoContainer.classList.remove('hidden');
+            videoElem.src = fileUrl;
+            videoElem.load();
+        } else if (['txt', 'log', 'json', 'csv'].includes(ext)) {
+            if (iconElem) iconElem.textContent = '📝';
+            fetch(fileUrl)
+                .then(r => r.text())
+                .then(txt => {
+                    if (loadingElem) loadingElem.classList.add('hidden');
+                    if (textContainer) textContainer.classList.remove('hidden');
+                    textElem.textContent = txt;
+                })
+                .catch(() => {
+                    if (loadingElem) loadingElem.classList.add('hidden');
+                    if (fallbackContainer) fallbackContainer.classList.remove('hidden');
+                });
         } else {
             if (iconElem) iconElem.textContent = '📎';
             if (loadingElem) loadingElem.classList.add('hidden');
@@ -160,8 +198,13 @@
 
         const imgElem = document.getElementById('preview-image-elem');
         const pdfIframe = document.getElementById('preview-pdf-iframe');
+        const videoElem = document.getElementById('preview-video-elem');
         if (imgElem) imgElem.src = '';
         if (pdfIframe) pdfIframe.src = '';
+        if (videoElem) {
+            videoElem.pause();
+            videoElem.src = '';
+        }
     }
 
     document.addEventListener('keydown', function(e) {

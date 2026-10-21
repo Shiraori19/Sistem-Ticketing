@@ -16,10 +16,12 @@ use Illuminate\Support\Str;
 class PublicTicketController extends Controller
 {
     protected TicketWorkflowService $workflowService;
+    protected \App\Services\SecureUploadService $uploadService;
 
-    public function __construct(TicketWorkflowService $workflowService)
+    public function __construct(TicketWorkflowService $workflowService, \App\Services\SecureUploadService $uploadService)
     {
         $this->workflowService = $workflowService;
+        $this->uploadService = $uploadService;
     }
 
     /**
@@ -93,36 +95,34 @@ class PublicTicketController extends Controller
     {
         $data = $request->validated();
 
-        // 1. Simpan berkas lampiran sementara ke folder staging berbasis UUID unik
-        // guna mencegah tabrakan/penimpaan berkas (race condition) saat concurrent requests
-        $stagingUuid = (string) Str::uuid();
-        $tempPaths = [];
-        if ($request->hasFile('lampiran_pelapor')) {
-            $files = $request->file('lampiran_pelapor');
-            if (is_array($files)) {
-                foreach ($files as $file) {
-                    if ($file) {
-                        $tempPaths[] = $file->store("tickets/staging/{$stagingUuid}", 'private');
-                    }
-                }
-            } elseif ($files) {
-                $tempPaths[] = $files->store("tickets/staging/{$stagingUuid}", 'private');
-            }
-        }
-
-        // 2. createTicket mengunci advisory lock & mengalokasikan kode tiket pasti yang terbebas konflik
+        // 1. createTicket mengunci advisory lock & mengalokasikan kode tiket pasti yang terbebas konflik
         $ticket = $this->workflowService->createTicket($data);
 
-        // 3. Pindahkan berkas dari staging ke direktori definitif tiket
-        if (!empty($tempPaths)) {
+        // 2. Simpan seluruh lampiran pelapor melalui SecureUploadService
+        if ($request->hasFile('lampiran_pelapor')) {
+            $files = $request->file('lampiran_pelapor');
+            $filesList = is_array($files) ? $files : [$files];
             $finalPaths = [];
-            foreach ($tempPaths as $tmp) {
-                $dest = "tickets/{$ticket->kode_tiket}/" . basename($tmp);
-                \Illuminate\Support\Facades\Storage::disk('private')->move($tmp, $dest);
-                $finalPaths[] = $dest;
+
+            foreach ($filesList as $file) {
+                if ($file) {
+                    $uploadResult = $this->uploadService->storeUploadedFile(
+                        $file,
+                        "tickets/{$ticket->kode_tiket}",
+                        [
+                            'ticket' => $ticket,
+                            'kategori_field' => 'lampiran_pelapor',
+                            'allowed_categories' => ['image', 'pdf'],
+                        ]
+                    );
+                    $finalPaths[] = $uploadResult['path'];
+                }
             }
-            $ticket->lampiran_pelapor = $finalPaths;
-            $ticket->save();
+
+            if (!empty($finalPaths)) {
+                $ticket->lampiran_pelapor = $finalPaths;
+                $ticket->save();
+            }
         }
 
         // 4. Kirim notifikasi asinkron ke antrean worker
@@ -216,18 +216,16 @@ class PublicTicketController extends Controller
 
         if ($request->hasFile('lampiran_tambahan')) {
             $uploaded = $request->file('lampiran_tambahan');
-            $path = $uploaded->store("tickets/{$ticket->kode_tiket}", 'private');
-            $ticket->lampiran_tambahan = $path;
-
-            // FLOW-05: Catat ke tabel ticket_files agar berkas revisi sebelumnya tidak hilang tertimpa
-            \App\Models\TicketFile::create([
-                'ticket_id' => $ticket->id,
-                'path' => $path,
-                'mime' => $uploaded->getClientMimeType() ?: 'application/octet-stream',
-                'size' => $uploaded->getSize() ?: 0,
-                'kategori' => 'lampiran_tambahan',
-                'uploader_id' => null,
-            ]);
+            $uploadResult = $this->uploadService->storeUploadedFile(
+                $uploaded,
+                "tickets/{$ticket->kode_tiket}",
+                [
+                    'ticket' => $ticket,
+                    'kategori_field' => 'lampiran_tambahan',
+                    'allowed_categories' => ['image', 'pdf'],
+                ]
+            );
+            $ticket->lampiran_tambahan = $uploadResult['path'];
         }
 
         $nowStr = Carbon::now()->translatedFormat('d F Y, H:i');
@@ -346,7 +344,16 @@ class PublicTicketController extends Controller
             return back()->with('error', "Tiket hanya dapat dibuka kembali jika sudah berstatus 'resolved' atau 'closed'.");
         }
 
-        $path = $request->file('bukti_reopen')->store("tickets/{$ticket->kode_tiket}", 'private');
+        $uploadResult = $this->uploadService->storeUploadedFile(
+            $request->file('bukti_reopen'),
+            "tickets/{$ticket->kode_tiket}",
+            [
+                'ticket' => $ticket,
+                'kategori_field' => 'bukti_reopen',
+                'allowed_categories' => ['image', 'pdf'],
+            ]
+        );
+        $path = $uploadResult['path'];
 
         $updatedTicket = $this->workflowService->reopen(
             $ticket,

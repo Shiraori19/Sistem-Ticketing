@@ -54,10 +54,11 @@ class DatabaseSeeder extends Seeder
             'nama_bidang' => 'Persandian',
             'kode' => 'PERSANDIAN',
             'icon' => 'shield-check',
+            'is_persandian' => true,
         ]);
 
         // =========================================================================
-        // 3. SEED USERS (4 Akun Admin)
+        // 3. SEED USERS (5 Akun Admin: 2 Admin Pusat, 3 Admin Bidang)
         // =========================================================================
         $defaultAdminPassword = env('SEEDER_ADMIN_PASSWORD', 'Dkis#Cirebon2026!');
 
@@ -68,6 +69,15 @@ class DatabaseSeeder extends Seeder
             'role_id' => $rolePusat->id,
             'bidang_id' => null, // Admin Pusat tidak terikat bidang
             'avatar' => 'AF',
+        ]);
+
+        $adminPusat2 = User::create([
+            'nama' => 'Budi Santoso',
+            'username' => 'admin.pusat2@cirebonkota.go.id',
+            'password' => Hash::make($defaultAdminPassword),
+            'role_id' => $rolePusat->id,
+            'bidang_id' => null, // Admin Pusat kedua untuk uji multi-operator
+            'avatar' => 'BS',
         ]);
 
         $adminJaringan = User::create([

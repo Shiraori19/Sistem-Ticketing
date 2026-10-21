@@ -14,11 +14,36 @@
             </p>
         </div>
 
-        <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-xs text-xs font-bold text-slate-700">
-            <span>Menunggu Tindakan:</span>
-            <span class="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">{{ $tickets->total() }}</span>
+        <div class="flex items-center gap-3 flex-wrap">
+            <form method="POST" action="{{ route('admin.verifikasi.claimNext') }}">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs shadow-xs transition cursor-pointer">
+                    <span>⚡ Ambil Tiket Berikutnya</span>
+                </button>
+            </form>
+
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-xs text-xs font-bold text-slate-700">
+                <span>Menunggu Tindakan:</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">{{ $tickets->total() }}</span>
+            </div>
         </div>
     </div>
+
+    <!-- Statistik Beban Kerja Admin Pusat Hari Ini (BUTIR 2) -->
+    @if(isset($adminPusatWorkloads) && $adminPusatWorkloads->isNotEmpty())
+        <div class="flex items-center gap-2 text-xs flex-wrap p-2.5 bg-slate-100/80 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-600 flex items-center gap-1 text-[11px] uppercase tracking-wider">
+                <span>👥</span> Beban Verifikasi Hari Ini:
+            </span>
+            @foreach($adminPusatWorkloads as $ap)
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 text-[11px] font-medium shadow-2xs">
+                    <span class="w-2 h-2 rounded-full {{ $ap->id === auth()->id() ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+                    <span>{{ $ap->nama }}</span>
+                    <strong class="font-black text-slate-900 bg-slate-100 px-1.5 py-0.2 rounded">{{ $ap->verified_today_count }}</strong>
+                </span>
+            @endforeach
+        </div>
+    @endif
 
     @if($tickets->isEmpty())
         <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-xs">
@@ -208,20 +233,49 @@
                                     <span class="text-[10px] text-slate-400 mt-0.5 block">SLA: {{ round(((float)($t->sla_resolusi_jam ?? 336))/24) }} Hari ({{ (int)($t->sla_resolusi_jam ?? 336) }} Jam)</span>
                                 </td>
 
-                                <!-- Status Badge Universal -->
+                                <!-- Status Badge Universal & Soft-Claim Status -->
                                 <td class="w-32 px-2 py-2.5 text-center whitespace-nowrap overflow-hidden">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 text-[10px] font-bold shadow-xs whitespace-nowrap">
-                                        <span>⏳</span> Belum Verifikasi
-                                    </span>
+                                    @if($t->isClaimActive())
+                                        @if($t->claimed_by === auth()->id())
+                                            <div class="space-y-0.5">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-300 text-[10px] font-bold shadow-xs whitespace-nowrap">
+                                                    <span>🔒</span> Sedang Anda Tangani
+                                                </span>
+                                                <form method="POST" action="{{ route('admin.verifikasi.releaseClaim', $t->id) }}" onclick="event.stopPropagation()" class="block">
+                                                    @csrf
+                                                    <button type="submit" class="text-[9px] text-slate-400 hover:text-rose-600 underline cursor-pointer">Lepas Kunci</button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <div class="space-y-0.5">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300 text-[10px] font-bold shadow-xs whitespace-nowrap" title="Kunci aktif sampai {{ $t->claimed_at->addMinutes(10)->format('H:i') }}">
+                                                    <span>🔒</span> {{ \Illuminate\Support\Str::limit($t->claimedByUser?->nama ?? 'Admin Lain', 13) }}
+                                                </span>
+                                                <span class="text-[9px] text-amber-600 block font-mono font-medium">Sedang Ditinjau</span>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 text-[10px] font-bold shadow-xs whitespace-nowrap">
+                                            <span>⏳</span> Belum Verifikasi
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <!-- Aksi -->
                                 <td class="w-24 px-2.5 py-2.5 text-right whitespace-nowrap overflow-hidden" onclick="event.stopPropagation()">
-                                    <button type="button"
-                                        onclick="openVerifyModal({{ $t->id }})"
-                                        class="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs shadow-xs transition inline-flex items-center justify-center gap-1 cursor-pointer">
-                                        <span>⚡ Verifikasi</span>
-                                    </button>
+                                    @if($t->isClaimActive() && $t->claimed_by !== auth()->id())
+                                        <button type="button"
+                                            onclick="openVerifyModal({{ $t->id }})"
+                                            class="w-full py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs shadow-xs transition inline-flex items-center justify-center gap-1 cursor-pointer">
+                                            <span>👁️ Tinjau</span>
+                                        </button>
+                                    @else
+                                        <button type="button"
+                                            onclick="openVerifyModal({{ $t->id }})"
+                                            class="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs shadow-xs transition inline-flex items-center justify-center gap-1 cursor-pointer">
+                                            <span>⚡ Verifikasi</span>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -376,7 +430,14 @@
 
                     <form id="verify-form" method="POST" action="" class="space-y-3.5">
                         @csrf
+                        <input type="hidden" name="row_version" id="modal-row-version" value="1">
                         <input type="hidden" name="catatan" id="hidden-catatan" value="">
+
+                        <!-- Claim Locked Banner jika sedang dikunci Admin lain -->
+                        <div id="modal-claim-locked-banner" class="hidden p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+                            <span class="text-base leading-none">🔒</span>
+                            <span id="modal-claim-locked-text">Tiket ini sedang diverifikasi oleh Admin Pusat lain. Mode baca-saja.</span>
+                        </div>
 
                         <!-- 1. RADIO TLP LEVEL -->
                         <div>
@@ -450,6 +511,24 @@
                                 <div class="text-[11px] leading-tight text-rose-800">
                                     <strong class="font-bold">Bypass CSIRT:</strong> Tiket TLP RED otomatis ditugaskan ke Bidang Persandian.
                                 </div>
+                            </div>
+
+                            <!-- BUTIR 7: Opsi Bidang yang Ditembuskan untuk TLP RED -->
+                            <div id="red-tembusan-container" class="hidden mt-2.5 p-2.5 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
+                                <span class="block text-[11px] font-bold text-slate-700 mb-1.5">
+                                    👥 Tembusan Disposisi ke Bidang Lain (Opsional):
+                                </span>
+                                <div class="grid grid-cols-1 gap-1 max-h-28 overflow-y-auto pr-1">
+                                    @foreach($bidangList as $b)
+                                        @if(!$b->is_persandian)
+                                            <label class="flex items-center gap-2 p-1 rounded hover:bg-white text-slate-700 cursor-pointer text-[11px]">
+                                                <input type="checkbox" name="bidang_ditembuskan[]" value="{{ $b->id }}" class="rounded text-sky-600 focus:ring-sky-500">
+                                                <span>{{ $b->nama_lengkap ?? $b->nama_bidang }}</span>
+                                            </label>
+                                        @endif
+                                    @endforeach
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1">Bidang ditembuskan dapat melihat rekam jejak tiket tanpa membuka file rahasia.</p>
                             </div>
                         </div>
 
@@ -696,6 +775,11 @@
             'catatan_kelengkapan' => $t->catatan_kelengkapan,
             'bidang_id' => $t->bidang_id,
             'tlp_level' => $t->tlp_level,
+            'row_version' => $t->row_version ?? 1,
+            'claimed_by' => $t->claimed_by,
+            'claimed_user_name' => $t->claimedByUser?->nama,
+            'is_claimed_active' => $t->isClaimActive(),
+            'can_be_claimed' => $t->canBeClaimedBy(auth()->id()),
             'is_overdue' => $isOverdue,
             'sla_respon_text' => $slaText,
             'created_at_fmt' => $t->created_at ? $t->created_at->translatedFormat('d M Y, H:i') : '-',
@@ -983,6 +1067,34 @@
             }
         }
 
+        // Row version (Optimistic locking)
+        const rowVersionInput = document.getElementById('modal-row-version');
+        if (rowVersionInput) {
+            rowVersionInput.value = ticket.row_version || 1;
+        }
+
+        // Handle Claim Lock Status
+        const lockedBanner = document.getElementById('modal-claim-locked-banner');
+        const lockedText = document.getElementById('modal-claim-locked-text');
+        const btnVerify = document.getElementById('btn-submit-verify');
+
+        if (ticket.is_claimed_active && !ticket.can_be_claimed) {
+            if (lockedBanner) {
+                lockedText.textContent = `Tiket ini sedang diverifikasi oleh ${ticket.claimed_user_name || 'Admin Pusat lain'}. Formulir ini dalam mode baca-saja untuk menghindari tabrakan.`;
+                lockedBanner.classList.remove('hidden');
+            }
+            if (btnVerify) {
+                btnVerify.disabled = true;
+                btnVerify.classList.add('opacity-40', 'cursor-not-allowed');
+            }
+        } else {
+            if (lockedBanner) lockedBanner.classList.add('hidden');
+            if (btnVerify) {
+                btnVerify.disabled = false;
+                btnVerify.classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+        }
+
         // Form action
         document.getElementById('verify-form').action = `/admin/tiket/${ticket.id}/verifikasi`;
         document.getElementById('modal-notes').value = '';
@@ -1032,17 +1144,20 @@
     function handleTlpSelect(val) {
         const selectBidang = document.getElementById('modal-select-bidang');
         const warning = document.getElementById('red-bypass-warning');
+        const tembusanContainer = document.getElementById('red-tembusan-container');
 
         if (val === 'RED') {
             selectBidang.disabled = true;
             selectBidang.classList.add('opacity-50', 'bg-slate-100', 'cursor-not-allowed');
             selectBidang.removeAttribute('required');
             warning.classList.remove('hidden');
+            if (tembusanContainer) tembusanContainer.classList.remove('hidden');
         } else {
             selectBidang.disabled = false;
             selectBidang.classList.remove('opacity-50', 'bg-slate-100', 'cursor-not-allowed');
             selectBidang.setAttribute('required', 'required');
             warning.classList.add('hidden');
+            if (tembusanContainer) tembusanContainer.classList.add('hidden');
         }
     }
 

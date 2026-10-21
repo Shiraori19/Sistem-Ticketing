@@ -63,7 +63,7 @@ class BatchThreeHardeningTest extends TestCase
             'catatan_kelengkapan' => 'Mohon sertakan bukti foto perangkat.',
         ]);
 
-        $fakeFile = UploadedFile::fake()->create('foto_perangkat.jpg', 200, 'image/jpeg');
+        $fakeFile = UploadedFile::fake()->image('foto_perangkat.jpg', 200, 200);
 
         $response = $this->post(route('public.ticket.submit_completion', $ticket->kode_tiket), [
             'pin' => $rawPin,

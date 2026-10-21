@@ -43,6 +43,20 @@ return [
             'throw' => false,
         ],
 
+        'vault' => [
+            'driver' => 'local',
+            'root' => storage_path('app/vault'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
+        'previews' => [
+            'driver' => 'local',
+            'root' => storage_path('app/previews'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

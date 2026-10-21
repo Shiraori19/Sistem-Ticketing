@@ -81,21 +81,49 @@ class TicketController extends Controller
             'assigner',
             'parent:id,kode_tiket,judul',
             'children:id,parent_id,kode_tiket,judul,skpd,nama_pelapor,status',
-            'assignments'
+            'assignments',
+            'files.accessRequests',
+            'involvements.bidang'
         ])->findOrFail($id);
         $user = Auth::user();
 
-        // Otorisasi Hak Akses Tiket: Admin Bidang hanya berhak mengakses tiket yang telah didisposisikan ke bidangnya (kecuali TLP RED)
-        if ($user->isAdminBidang() && strtoupper($ticket->tlp_level ?? '') !== 'RED') {
+        $isRed = strtoupper($ticket->tlp_level ?? '') === 'RED';
+
+        // Otorisasi Hak Akses Tiket TLP RED (BUTIR 7 & KEPUTUSAN 3)
+        if ($isRed && $user->isAdminBidang()) {
+            $isPersandian = (bool) $user->bidang?->isPersandian();
+            $isInvolved = \App\Models\TicketBidangInvolvement::where('ticket_id', $ticket->id)
+                ->where('bidang_id', $user->bidang_id)
+                ->exists();
+
+            if (!$isPersandian && !$isInvolved) {
+                abort(403, 'Akses Ditolak: Tiket TLP RED (Siber Kritis) hanya dapat diakses oleh Tim Tanggap Insiden CSIRT / Bidang Persandian.');
+            }
+        } elseif (!$isRed && $user->isAdminBidang()) {
             if ($ticket->bidang_id !== $user->bidang_id || in_array($ticket->status, ['pending_verification', 'pending_info', 'cancelled'])) {
                 abort(403, 'Akses Ditolak: Tiket ini belum didisposisikan ke bidang Anda.');
             }
         }
 
-        // Cek kerahasiaan bukti (Confidential Evidence)
-        $canViewConfidential = $user->isAdminPusat() || ($user->isAdminBidang() && $user->bidang_id === $ticket->bidang_id);
+        // Cek kerahasiaan bukti & berkas (Confidential Evidence & Vault, KEPUTUSAN BAWAAN 3)
+        $isPersandian = (bool) $user->bidang?->isPersandian();
+        $fileIds = $ticket->files ? $ticket->files->pluck('id')->all() : [];
+        $hasApprovedAccess = !empty($fileIds) && \App\Models\TicketFileAccessRequest::whereIn('ticket_file_id', $fileIds)
+            ->where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->where('expires_at', '>', now())
+            ->exists();
 
-        return view('admin.tiket.show', compact('ticket', 'canViewConfidential'));
+        $canViewConfidential = $isPersandian 
+            || ($user->isAdminBidang() && $user->bidang_id === $ticket->bidang_id && !$isRed)
+            || ($user->isAdminPusat() && (!$isRed || $hasApprovedAccess));
+
+        $hasPendingAccessRequest = !empty($fileIds) && \App\Models\TicketFileAccessRequest::whereIn('ticket_file_id', $fileIds)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        return view('admin.tiket.show', compact('ticket', 'canViewConfidential', 'hasApprovedAccess', 'hasPendingAccessRequest'));
     }
 
     /**

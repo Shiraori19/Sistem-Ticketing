@@ -160,6 +160,18 @@ class UserController extends Controller
             $validated['bidang_id'] = null;
         }
 
+        // Pengaman: Cegah penurunan peran Admin Pusat terakhir
+        if ($user->isAdminPusat() && (int) $validated['role_id'] !== (int) $user->role_id) {
+            $otherActivePusat = User::whereHas('role', fn($r) => $r->where('nama_role', 'Admin Pusat'))
+                ->where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->count();
+
+            if ($otherActivePusat < 1) {
+                return back()->withInput()->with('error', 'Aksi Ditolak: Anda tidak dapat menurunkan peran Admin Pusat terakhir. Sistem wajib memiliki minimal 1 Admin Pusat aktif.');
+            }
+        }
+
         $user->nama = $validated['nama'];
         $user->username = strtolower($validated['username']);
         $user->role_id = $validated['role_id'];
@@ -217,6 +229,19 @@ class UserController extends Controller
         }
 
         $user = User::findOrFail($id);
+
+        // Pengaman: Cegah penonaktifan Admin Pusat terakhir
+        if ($user->isAdminPusat() && $user->is_active) {
+            $otherActivePusat = User::whereHas('role', fn($r) => $r->where('nama_role', 'Admin Pusat'))
+                ->where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->count();
+
+            if ($otherActivePusat < 1) {
+                return back()->with('error', 'Aksi Ditolak: Sistem wajib memiliki minimal 1 Admin Pusat aktif. Anda tidak dapat menonaktifkan Admin Pusat terakhir.');
+            }
+        }
+
         $user->is_active = !$user->is_active;
         $user->save();
 
@@ -246,6 +271,18 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $nama = $user->nama;
         $username = $user->username;
+
+        // Pengaman: Cegah penghapusan Admin Pusat terakhir
+        if ($user->isAdminPusat()) {
+            $otherActivePusat = User::whereHas('role', fn($r) => $r->where('nama_role', 'Admin Pusat'))
+                ->where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->count();
+
+            if ($otherActivePusat < 1) {
+                return back()->with('error', 'Aksi Ditolak: Anda tidak dapat menghapus Admin Pusat terakhir. Sistem wajib memiliki minimal 1 Admin Pusat aktif.');
+            }
+        }
 
         // Jika user memiliki tugas aktif atau riwayat tiket, arahkan ke nonaktifkan (soft deactivate)
         $hasAssignments = $user->assignedTasks()->exists();

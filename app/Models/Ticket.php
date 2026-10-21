@@ -72,6 +72,9 @@ class Ticket extends Model
         'selesai_at',
         'jenis_penyelesaian',
         'total_jeda_menit',
+        'claimed_by',
+        'claimed_at',
+        'row_version',
     ];
 
     protected $casts = [
@@ -94,6 +97,8 @@ class Ticket extends Model
         'pengerjaan_dimulai_at' => 'datetime',
         'selesai_at' => 'datetime',
         'total_jeda_menit' => 'integer',
+        'claimed_at' => 'datetime',
+        'row_version' => 'integer',
     ];
 
     protected $attributes = [
@@ -208,6 +213,31 @@ class Ticket extends Model
     public function files(): HasMany
     {
         return $this->hasMany(TicketFile::class, 'ticket_id')->orderBy('created_at', 'desc');
+    }
+
+    public function involvements(): HasMany
+    {
+        return $this->hasMany(TicketBidangInvolvement::class, 'ticket_id');
+    }
+
+    public function claimedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'claimed_by');
+    }
+
+    public function isClaimActive(): bool
+    {
+        return !empty($this->claimed_by) && $this->claimed_at && $this->claimed_at->copy()->addMinutes(10)->isFuture();
+    }
+
+    public function isClaimExpired(): bool
+    {
+        return empty($this->claimed_by) || !$this->claimed_at || $this->claimed_at->copy()->addMinutes(10)->isPast();
+    }
+
+    public function canBeClaimedBy(int $userId): bool
+    {
+        return $this->isClaimExpired() || $this->claimed_by === $userId;
     }
 
     public function getLeadTechnicianNameAttribute(): string

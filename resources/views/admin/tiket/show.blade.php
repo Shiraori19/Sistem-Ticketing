@@ -192,9 +192,28 @@
                         <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                             <span class="text-slate-500 font-medium">Berkas Bukti Pekerjaan:</span>
                             @if($ticket->is_confidential_evidence && !$canViewConfidential)
-                                <span class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center gap-1">
-                                    🔒 Bukti Rahasia Terlindungi
-                                </span>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-300 rounded-lg font-bold flex items-center gap-1">
+                                        🔒 Bukti Rahasia Terlindungi (Khusus CSIRT / Persandian)
+                                    </span>
+                                    @if(auth()->user()->isAdminPusat())
+                                        @if(!empty($hasPendingAccessRequest))
+                                            <span class="px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-lg font-bold text-xs flex items-center gap-1">
+                                                ⏳ Permintaan Akses Anda Sedang Ditinjau CSIRT
+                                            </span>
+                                        @else
+                                            @php
+                                                $firstFile = $ticket->files->where('type', 'bukti_resolusi')->first() ?? $ticket->files->first();
+                                            @endphp
+                                            @if($firstFile)
+                                                <button type="button" onclick="openRequestAccessModal({{ $firstFile->id }})"
+                                                    class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg text-xs transition shadow-2xs cursor-pointer">
+                                                    🔐 Ajukan Akses Dinas (Justifikasi Kebutuhan)
+                                                </button>
+                                            @endif
+                                        @endif
+                                    @endif
+                                </div>
                             @else
                                 <div class="flex items-center gap-2">
                                     @if($ticket->is_confidential_evidence)
@@ -442,9 +461,58 @@
                         <span class="text-slate-400 block text-[11px]">Diverifikasi Oleh:</span>
                         <span class="text-slate-700">{{ $ticket->verifier?->nama ?? '-' }}</span>
                     </div>
+
+                    @if($ticket->involvements && $ticket->involvements->isNotEmpty())
+                        <div class="pt-2 border-t border-slate-100">
+                            <span class="text-slate-400 block text-[11px] mb-1">Koordinasi Antar-Bidang (TLP RED):</span>
+                            <div class="space-y-1">
+                                @foreach($ticket->involvements as $inv)
+                                    <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-slate-50 border border-slate-200">
+                                        <span class="font-bold text-slate-800">{{ $inv->bidang?->nama_bidang ?? 'Bidang' }}</span>
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $inv->peran === 'pelaksana' ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800' }}">
+                                            {{ ucfirst($inv->peran) }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal Minta Akses Dokumen Rahasia (BUTIR 5 & KEPUTUSAN 3) -->
+<dialog id="modal-request-access" class="rounded-2xl border border-slate-200 p-0 shadow-2xl backdrop:bg-slate-950/70 w-full max-w-md">
+    <div class="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-800">
+        <h3 class="font-bold text-sm flex items-center gap-1.5">
+            <span>🔐</span> Pengajuan Akses Berkas Rahasia
+        </h3>
+        <button type="button" onclick="document.getElementById('modal-request-access').close()" class="text-slate-400 hover:text-white text-sm">✕</button>
+    </div>
+    <form id="form-request-access" method="POST" action="" class="p-5 space-y-4 text-xs">
+        @csrf
+        <p class="text-slate-600 leading-relaxed">
+            Sesuai kebijakan pengamanan TLP RED / Vault DKIS, berkas bukti teknis ini dienkripsi dan memerlukan justifikasi kebutuhan kedinasan sebelum dapat ditinjau oleh Admin Pusat.
+        </p>
+        <div>
+            <label class="font-bold text-slate-800 block mb-1">Alasan / Justifikasi Kebutuhan Dinas (Min. 10 Karakter):</label>
+            <textarea name="reason" rows="3" required minlength="10" placeholder="Contoh: Diperlukan untuk koordinasi tindak lanjut insiden dengan Tim CSIRT..." class="w-full rounded-xl border border-slate-300 p-2.5 text-xs focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="document.getElementById('modal-request-access').close()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">Batal</button>
+            <button type="submit" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold cursor-pointer">Kirim Pengajuan</button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    function openRequestAccessModal(fileId) {
+        const dialog = document.getElementById('modal-request-access');
+        const form = document.getElementById('form-request-access');
+        form.action = `/admin/tiket/{{ $ticket->kode_tiket }}/request-access/${fileId}`;
+        dialog.showModal();
+    }
+</script>
 @endsection
