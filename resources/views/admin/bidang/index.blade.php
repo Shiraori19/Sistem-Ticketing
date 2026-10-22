@@ -795,6 +795,7 @@
                                             Upload Berkas Bukti Penyelesaian (Opsional, JPG/PNG/PDF Max 5MB)
                                         </label>
                                         <input type="file" name="bukti_resolusi" id="bukti-file-{{ $t->id }}"
+                                            accept=".jpg,.jpeg,.png,.pdf"
                                             class="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
                                     </div>
 
