@@ -20,8 +20,6 @@ class User extends Authenticatable
         'nama',
         'username',
         'password',
-        'role_id',
-        'bidang_id',
         'avatar',
         'is_active',
     ];

@@ -98,7 +98,7 @@ class TlpRedVaultAndCrossBidangTest extends TestCase
             'tlp_level' => 'RED',
             'bidang_id' => $this->bidangPersandian->id,
             'category_id' => $this->category->id,
-            'pin_hash' => bcrypt('654321'),
+            'pin' => bcrypt('654321'),
         ]);
 
         // Upload berkas awal
@@ -201,5 +201,98 @@ class TlpRedVaultAndCrossBidangTest extends TestCase
         // Verifikasi isi mentah di vault bukan plaintext gambar
         $rawVaultContent = Storage::disk('vault')->get($this->ticketFile->vault_path);
         $this->assertFalse(str_starts_with($rawVaultContent, "\x89PNG"));
+    }
+
+    /**
+     * Uji penugasan teknisi lintas bidang untuk tiket TLP RED oleh Bidang Persandian
+     */
+    public function test_persandian_can_assign_cross_bidang_technician_to_tlp_red_ticket(): void
+    {
+        $roleTeknisi = Role::firstOrCreate(['nama_role' => 'Teknisi']);
+        $teknisiItik = User::create([
+            'nama' => 'Teknisi ITIK Lintas Bidang',
+            'username' => 'teknisi.itik.' . uniqid(),
+            'password' => bcrypt('Password123!'),
+            'role_id' => $roleTeknisi->id,
+            'bidang_id' => $this->bidangItik->id,
+            'avatar' => 'TI',
+            'is_active' => true,
+        ]);
+        $teknisiItik->technicianProfile()->create([
+            'availability' => 'tersedia',
+            'max_load' => 6,
+            'skills' => ['Forensik Jaringan'],
+        ]);
+
+        // Admin Persandian menugaskan teknisi dari Bidang ITIK ke tiket TLP RED
+        $response = $this->actingAs($this->adminPersandian)
+            ->post(route('admin.bidang.tiket.assignTechnician', $this->ticket->id), [
+                'lead_user_id' => $teknisiItik->id,
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('ticket_assignments', [
+            'ticket_id' => $this->ticket->id,
+            'user_id' => $teknisiItik->id,
+            'role' => 'lead',
+            'status' => 'assigned',
+        ]);
+
+        $assignment = \App\Models\TicketAssignment::where('ticket_id', $this->ticket->id)
+            ->where('user_id', $teknisiItik->id)
+            ->first();
+
+        // Teknisi ITIK yang sah ditugaskan dapat melihat dan membuka penugasan TLP RED miliknya
+        $viewResponse = $this->actingAs($teknisiItik)
+            ->get(route('teknisi.tugas.show', $assignment->id));
+        $viewResponse->assertStatus(200);
+
+        // Teknisi ITIK juga melihat tugas TLP RED ini pada daftar tugasnya
+        $listResponse = $this->actingAs($teknisiItik)
+            ->get(route('teknisi.tugas.index'));
+        $listResponse->assertStatus(200);
+        $listResponse->assertSee($this->ticket->kode_tiket);
+    }
+
+    /**
+     * Uji penugasan teknisi lintas bidang pada tiket non-TLP RED tetap ditolak
+     */
+    public function test_cross_bidang_assignment_rejected_for_non_tlp_red_ticket(): void
+    {
+        $roleTeknisi = Role::firstOrCreate(['nama_role' => 'Teknisi']);
+        $teknisiPersandian = User::create([
+            'nama' => 'Teknisi Persandian',
+            'username' => 'teknisi.sandi.' . uniqid(),
+            'password' => bcrypt('Password123!'),
+            'role_id' => $roleTeknisi->id,
+            'bidang_id' => $this->bidangPersandian->id,
+            'avatar' => 'TP',
+            'is_active' => true,
+        ]);
+        $teknisiPersandian->technicianProfile()->create([
+            'availability' => 'tersedia',
+            'max_load' => 6,
+        ]);
+
+        // Tiket normal milik ITIK (bukan TLP RED)
+        $ticketItik = Ticket::create([
+            'kode_tiket' => 'TIK-ITIK-NORM-' . rand(100, 999),
+            'nama_pelapor' => 'Staff ITIK',
+            'nip_pelapor' => '198801012011011001',
+            'no_whatsapp' => '081277778888',
+            'skpd' => 'Diskominfo',
+            'judul' => 'Perbaikan Kabel LAN',
+            'deskripsi' => 'Kabel LAN ruang rapat putus.',
+            'status' => 'verified',
+            'tlp_level' => 'GREEN',
+            'bidang_id' => $this->bidangItik->id,
+            'category_id' => $this->category->id,
+            'pin' => bcrypt('123456'),
+        ]);
+
+        // Admin ITIK mencoba menugaskan teknisi dari Persandian ke tiket ITIK -> Wajib gagal validasi
+        $workflowService = app(\App\Services\TicketWorkflowService::class);
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $workflowService->assignTechnician($ticketItik, $teknisiPersandian->id, $this->adminItik);
     }
 }

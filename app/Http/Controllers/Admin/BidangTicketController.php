@@ -116,7 +116,8 @@ class BidangTicketController extends Controller
                 ->count();
         }
 
-        $techniciansWithWorkload = $this->workflowService->getTechniciansWithWorkload($bidangId);
+        // Untuk Bidang Persandian: ambil seluruh teknisi lintas bidang agar dapat memilih teknisi bidang lain untuk tiket TLP RED
+        $techniciansWithWorkload = $this->workflowService->getTechniciansWithWorkload($isPersandian ? null : $bidangId);
 
         return view('admin.bidang.index', compact('tickets', 'user', 'staffUsers', 'showAll', 'foldedChildrenCount', 'techniciansWithWorkload', 'isPersandian', 'countSiaranSiber'));
     }

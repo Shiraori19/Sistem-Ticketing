@@ -648,6 +648,11 @@
                                                                 <label for="lead-{{ $t->id }}-{{ $tech['user_id'] }}" class="cursor-pointer font-bold text-slate-900 select-none flex items-center gap-1.5 flex-wrap">
                                                                     <span>👑 {{ $tech['nama'] }}</span>
                                                                     <span class="text-[10px] text-slate-500 font-mono font-normal">({{ $tech['username'] }})</span>
+                                                                    @if(!empty($tech['bidang_kode']))
+                                                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                                                                            {{ $tech['bidang_kode'] }}
+                                                                        </span>
+                                                                    @endif
                                                                     @if($isCurLead)
                                                                         <span class="text-[9px] font-black bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded uppercase">Lead Aktif</span>
                                                                     @endif

@@ -406,13 +406,10 @@ class TicketWorkflowService
     {
         $bidangId = $bidang instanceof Bidang ? $bidang->id : $bidang;
 
-        // Jika tiket berklasifikasi TLP RED: hanya teknisi Bidang Persandian
+        // Jika tiket berklasifikasi TLP RED: penanganan lintas bidang oleh Persandian, tampilkan teknisi lintas bidang
         $isTlpRed = $ticket && strtoupper($ticket->tlp_level ?? '') === 'RED';
         if ($isTlpRed) {
-            $persandianBidang = Bidang::where('kode', 'PERSANDIAN')
-                ->orWhere('nama_bidang', 'LIKE', '%PERSANDIAN%')
-                ->first();
-            $targetBidangId = $persandianBidang?->id;
+            $targetBidangId = null;
         } else {
             $targetBidangId = $bidangId;
         }
@@ -643,14 +640,9 @@ class TicketWorkflowService
             // 4. Validasi Bidang dan Aturan TLP RED
             $isTlpRed = strtoupper($ticket->tlp_level ?? '') === 'RED';
             foreach ($allAssignedUsers as $u) {
-                $uIsPersandian = $u->bidang && (strtoupper($u->bidang->kode) === 'PERSANDIAN' || str_contains(strtoupper($u->bidang->nama_bidang ?? ''), 'PERSANDIAN'));
-                if ($isTlpRed) {
-                    if (!$uIsPersandian) {
-                        throw ValidationException::withMessages([
-                            'technician' => "Akses Ditolak: Tiket berklasifikasi TLP: RED hanya boleh ditugaskan kepada teknisi Bidang Persandian. Teknisi {$u->nama} bukan anggota Bidang Persandian."
-                        ]);
-                    }
-                } else {
+                // Untuk tiket non-TLP RED, teknisi wajib berasal dari bidang pengampu tiket
+                // Untuk tiket TLP RED, penanganan lintas bidang oleh Persandian: diperbolehkan memilih teknisi dari bidang manapun
+                if (!$isTlpRed) {
                     if ($ticket->bidang_id && $u->bidang_id !== $ticket->bidang_id) {
                         throw ValidationException::withMessages([
                             'technician' => "Teknisi {$u->nama} berasal dari bidang yang berbeda dengan bidang pengampu tiket."

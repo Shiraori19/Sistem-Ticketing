@@ -58,7 +58,7 @@ class SecureUploadServiceTest extends TestCase
             'deskripsi' => 'Pengujian berkas upload aman terhadap ancaman malware dan pemalsuan ekstensi.',
             'status' => 'pending_verification',
             'category_id' => $category->id,
-            'pin_hash' => bcrypt('123456'),
+            'pin' => bcrypt('123456'),
         ]);
     }
 

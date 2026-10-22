@@ -54,7 +54,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username'],
+            'username' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z0-9._@-]+$/', 'unique:users,username'],
             'password' => ['required', 'string', 'min:8'],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['nullable', 'exists:bidang,id'],
@@ -62,7 +62,7 @@ class UserController extends Controller
             'nama.required' => 'Nama lengkap petugas wajib diisi.',
             'username.required' => 'Username akun wajib diisi.',
             'username.unique' => 'Username ini sudah digunakan, silakan pilih username lain.',
-            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, tanda hubung (-) dan garis bawah (_).',
+            'username.regex' => 'Username hanya boleh berisi huruf, angka, titik (.), tanda hubung (-), garis bawah (_), dan (@).',
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter demi standar keamanan kedinasan.',
             'role_id.required' => 'Peran akun wajib dipilih.',
@@ -93,15 +93,31 @@ class UserController extends Controller
             $initials = 'AD';
         }
 
-        $user = User::create([
+        $user = new User([
             'nama' => $validated['nama'],
             'username' => strtolower($validated['username']),
             'password' => Hash::make($validated['password']),
-            'role_id' => $validated['role_id'],
-            'bidang_id' => $validated['bidang_id'],
             'avatar' => $initials,
             'is_active' => true,
         ]);
+
+        // Otorisasi eksplisit penetapan role_id & bidang_id (Remediasi vuln-0001 Mass Assignment)
+        $authUser = Auth::user();
+        if ($authUser && $authUser->isAdminPusat()) {
+            $user->role_id = $validated['role_id'];
+            $user->bidang_id = $validated['bidang_id'];
+        } else {
+            // Defense in depth: batasi penugasan non-Admin Pusat ke perannya sendiri
+            $allowedRoleNames = ['Admin Bidang', 'Teknisi'];
+            if ($selectedRole && in_array($selectedRole->nama_role, $allowedRoleNames)) {
+                $user->role_id = $validated['role_id'];
+            } else {
+                $user->role_id = Role::where('nama_role', 'Teknisi')->first()?->id;
+            }
+            $user->bidang_id = $authUser?->bidang_id;
+        }
+
+        $user->save();
 
         if ($roleName === 'Teknisi') {
             $user->technicianProfile()->firstOrCreate(
@@ -136,7 +152,7 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'alpha_dash', "unique:users,username,{$id}"],
+            'username' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z0-9._@-]+$/', "unique:users,username,{$id}"],
             'password' => ['nullable', 'string', 'min:8'],
             'role_id' => ['required', 'exists:roles,id'],
             'bidang_id' => ['nullable', 'exists:bidang,id'],
@@ -145,6 +161,7 @@ class UserController extends Controller
             'nama.required' => 'Nama lengkap petugas wajib diisi.',
             'username.required' => 'Username akun wajib diisi.',
             'username.unique' => 'Username ini sudah digunakan akun lain.',
+            'username.regex' => 'Username hanya boleh berisi huruf, angka, titik (.), tanda hubung (-), garis bawah (_), dan (@).',
             'password.min' => 'Kata sandi minimal 8 karakter jika diubah.',
         ]);
 
@@ -172,10 +189,26 @@ class UserController extends Controller
             }
         }
 
+        // Pengaman: Cegah admin mengubah peran akun miliknya sendiri saat sesi aktif
+        if (Auth::id() === $user->id && (int) $validated['role_id'] !== (int) $user->role_id) {
+            return back()->withInput()->with('error', 'Aksi Ditolak: Anda tidak dapat mengubah peran akun Anda sendiri saat sedang masuk.');
+        }
+
         $user->nama = $validated['nama'];
         $user->username = strtolower($validated['username']);
-        $user->role_id = $validated['role_id'];
-        $user->bidang_id = $validated['bidang_id'];
+
+        // Otorisasi eksplisit penetapan role_id & bidang_id (Remediasi vuln-0001 Mass Assignment)
+        $authUser = Auth::user();
+        if ($authUser && $authUser->isAdminPusat()) {
+            $user->role_id = $validated['role_id'];
+            $user->bidang_id = $validated['bidang_id'];
+        } else {
+            $allowedRoleNames = ['Admin Bidang', 'Teknisi'];
+            if ($selectedRole && in_array($selectedRole->nama_role, $allowedRoleNames)) {
+                $user->role_id = $validated['role_id'];
+            }
+            $user->bidang_id = $authUser?->bidang_id;
+        }
 
         if ($request->has('is_active')) {
             $user->is_active = $request->boolean('is_active');

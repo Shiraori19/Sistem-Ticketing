@@ -16,22 +16,9 @@ class TicketAssignmentPolicy
      */
     protected function checkOwnershipAndTlp(User $user, TicketAssignment $assignment): bool
     {
-        // 1. Kepemilikan tugas: hanya teknisi yang bersangkutan
+        // 1. Kepemilikan tugas: hanya teknisi yang bersangkutan yang sah ditugaskan
         if ($assignment->user_id !== $user->id) {
             abort(404, 'Penugasan tidak ditemukan.');
-        }
-
-        // 2. Proteksi TLP RED: hanya teknisi Bidang Persandian & CSIRT
-        $ticket = $assignment->relationLoaded('ticket') ? $assignment->ticket : $assignment->ticket()->first();
-        if ($ticket && strtoupper($ticket->tlp_level ?? '') === 'RED') {
-            $isPersandian = $user->bidang && (
-                strtoupper($user->bidang->kode ?? '') === 'PERSANDIAN' || 
-                str_contains(strtoupper($user->bidang->nama_bidang ?? ''), 'PERSANDIAN')
-            );
-
-            if (!$isPersandian) {
-                abort(404, 'Penugasan tidak ditemukan.');
-            }
         }
 
         return true;

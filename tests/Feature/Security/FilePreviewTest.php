@@ -71,7 +71,7 @@ class FilePreviewTest extends TestCase
             'tlp_level' => 'GREEN',
             'bidang_id' => $bidang->id,
             'category_id' => $category->id,
-            'pin_hash' => bcrypt('555666'),
+            'pin' => bcrypt('555666'),
         ]);
 
         $fakeImg = UploadedFile::fake()->image('lampiran_kendala.png', 800, 600);

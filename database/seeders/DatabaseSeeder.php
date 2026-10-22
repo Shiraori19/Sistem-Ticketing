@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\Ticket;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,6 +21,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Model::unguard();
+
         // =========================================================================
         // 1. SEED ROLES
         // =========================================================================
@@ -498,5 +501,7 @@ class DatabaseSeeder extends Seeder
             'detail' => 'Penutupan paksa tiket karena pelanggaran kebijakan software ilegal',
             'timestamp' => Carbon::now()->subDays(1)->addMinutes(15),
         ]);
+
+        Model::reguard();
     }
 }

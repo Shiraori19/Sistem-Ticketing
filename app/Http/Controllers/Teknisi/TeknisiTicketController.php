@@ -40,10 +40,6 @@ class TeknisiTicketController extends Controller
     protected function getBaseAssignmentQuery()
     {
         $user = Auth::user();
-        $isPersandian = $user->bidang && (
-            strtoupper($user->bidang->kode ?? '') === 'PERSANDIAN' || 
-            str_contains(strtoupper($user->bidang->nama_bidang ?? ''), 'PERSANDIAN')
-        );
 
         return TicketAssignment::with([
             'ticket.category:id,nama_kategori',
@@ -52,14 +48,7 @@ class TeknisiTicketController extends Controller
             'ticket.assignments.user:id,nama',
             'blockers' => fn($q) => $q->orderBy('created_at', 'desc'),
         ])
-        ->where('user_id', $user->id)
-        ->whereHas('ticket', function ($q) use ($isPersandian) {
-            if (!$isPersandian) {
-                $q->where(function ($sub) {
-                    $sub->whereNull('tlp_level')->orWhere('tlp_level', '!=', 'RED');
-                });
-            }
-        });
+        ->where('user_id', $user->id);
     }
 
     /**

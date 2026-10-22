@@ -61,7 +61,7 @@ class MultiAdminPusatVerificationTest extends TestCase
             'deskripsi' => 'Deskripsi kendala A',
             'status' => 'pending_verification',
             'category_id' => $this->category->id,
-            'pin_hash' => bcrypt('111111'),
+            'pin' => bcrypt('111111'),
         ]);
 
         $ticket2 = Ticket::create([
@@ -74,7 +74,7 @@ class MultiAdminPusatVerificationTest extends TestCase
             'deskripsi' => 'Deskripsi kendala B',
             'status' => 'pending_verification',
             'category_id' => $this->category->id,
-            'pin_hash' => bcrypt('222222'),
+            'pin' => bcrypt('222222'),
         ]);
 
         // Admin 1 klaim tiket pertama
@@ -108,7 +108,7 @@ class MultiAdminPusatVerificationTest extends TestCase
             'deskripsi' => 'Deskripsi kendala C',
             'status' => 'pending_verification',
             'category_id' => $this->category->id,
-            'pin_hash' => bcrypt('333333'),
+            'pin' => bcrypt('333333'),
             'claimed_by' => $this->admin1->id,
             'claimed_at' => now()->subMinutes(15), // Sudah 15 menit lalu
         ]);
@@ -140,7 +140,7 @@ class MultiAdminPusatVerificationTest extends TestCase
             'deskripsi' => 'Deskripsi kendala D',
             'status' => 'pending_verification',
             'category_id' => $this->category->id,
-            'pin_hash' => bcrypt('444444'),
+            'pin' => bcrypt('444444'),
             'row_version' => 1,
         ]);
 
