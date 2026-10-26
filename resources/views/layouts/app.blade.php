@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="{{ ($isLoginPage ?? false) ? 'bg-slate-950' : 'bg-slate-50' }} text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+<body class="{{ ($isLoginPage ?? false) ? 'bg-slate-950' : 'bg-slate-50' }} text-slate-800 font-sans min-h-screen flex flex-col antialiased overflow-x-hidden w-full">
     <!-- Navbar -->
     @if(!isset($hideNavbar) || !$hideNavbar)
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">

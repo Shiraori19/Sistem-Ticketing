@@ -8,7 +8,7 @@
     <!-- ══════════════════════════════════════════════════════════════════════
          A. HERO HEADER (Dark Navy Gradient)
          ══════════════════════════════════════════════════════════════════════ -->
-    <header class="relative bg-gradient-to-br from-slate-950 via-[#0f274a] to-[#1e3a6a] text-white pt-8 pb-24 overflow-hidden">
+    <header class="relative bg-gradient-to-br from-slate-950 via-[#0f274a] to-[#1e3a6a] text-white pt-5 pb-12 sm:pb-14 overflow-hidden w-full">
         <!-- Ambient Radial Highlight Background -->
         <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute top-1/2 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -16,14 +16,13 @@
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <!-- Top Navbar Bar inside Hero -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pb-10 border-b border-white/10">
-                <!-- DKIS Logo -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 border-b border-white/10">
+                <!-- DKIS Logo (Tanpa titik merah yang membingungkan) -->
                 <div class="flex items-center space-x-3.5">
                     <img src="{{ asset('images/logo-dkis.png') }}" alt="Logo DKIS" class="h-11 w-auto object-contain">
                     <div>
                         <div class="flex items-center">
                             <span class="text-2xl font-extrabold tracking-tight text-white">DKIS</span>
-                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 ml-1 mb-0.5 animate-pulse"></span>
                         </div>
                         <p class="text-xs text-slate-300 font-medium tracking-wide">
                             Dinas Komunikasi, Informatika dan Statistik Kota Cirebon
@@ -31,32 +30,31 @@
                     </div>
                 </div>
 
-                <!-- Top Navbar Right Actions -->
+                <!-- Top Navbar Right Actions: Tombol Lacak / Buat Pengaduan Diperbesar -->
                 <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
-                    <!-- Tombol Lacak / Buat Pengaduan di Pojok Kanan Atas -->
                     <button type="button" id="nav-btn-toggle" onclick="togglePortalTab()"
-                        class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-200 bg-blue-950/60 hover:bg-blue-900/80 border border-blue-400/30 shadow-sm transition backdrop-blur-sm hover:border-blue-400">
+                        class="inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-sm sm:text-base font-bold text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 shadow-md transition transform active:scale-95 cursor-pointer">
                         <span id="nav-btn-icon">{{ ($activeTab ?? 'buat') === 'lacak' ? '✍️' : '🔍' }}</span>
                         <span id="nav-btn-label">{{ ($activeTab ?? 'buat') === 'lacak' ? 'Buat Pengaduan Baru' : 'Lacak Status Tiket' }}</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Hero Headline & Description (Bersih tanpa tombol/tab di dekat form) -->
-            <div class="text-center max-w-3xl mx-auto mt-10 sm:mt-12 space-y-4">
-                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                    Layanan dan Laporan Pengaduan DKIS
+            <!-- Hero Headline & Description: Pendek, Bahasa Sehari-hari, Seragam -->
+            <div class="text-center max-w-3xl mx-auto mt-4 sm:mt-5 space-y-2">
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                    Layanan Pengaduan & Bantuan TIK DKIS
                 </h1>
 
-                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
-                    Sistem penanganan terpadu gangguan aplikasi pemerintahan, infrastruktur jaringan intra Pemkot, persandian, dan keamanan siber.
+                <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                    Pusat bantuan penanganan kendala internet kantor bermasalah, aplikasi kedinasan tidak bisa dibuka, reset kata sandi, dan perbaikan perangkat TIK di lingkungan Pemerintah Daerah Kota Cirebon.
                 </p>
             </div>
         </div>
 
-        <!-- Wave SVG Separator (Smooth curve to white/slate content below) -->
+        <!-- Wave SVG Separator: Diperpendek tingginya agar formulir tampak di layar pertama -->
         <div class="absolute bottom-0 left-0 right-0 leading-none overflow-hidden pointer-events-none">
-            <svg class="relative block w-full h-12 sm:h-16 text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <svg class="relative block w-full h-8 sm:h-10 text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
                 <path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,40 L1200,120 L0,120 Z" fill="currentColor"></path>
             </svg>
         </div>
@@ -65,7 +63,7 @@
     <!-- ══════════════════════════════════════════════════════════════════════
          MAIN CONTENT CONTAINER (Floating White Cards)
          ══════════════════════════════════════════════════════════════════════ -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 sm:-mt-6 pb-16 relative z-20">
 
         <!-- Flash Session Messages -->
         @if(session('success'))
@@ -108,92 +106,99 @@
         <div id="section-buat-laporan" class="{{ ($activeTab ?? 'buat') === 'buat' ? '' : 'hidden' }}">
             <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/70 border border-slate-200/80 overflow-hidden">
                 <!-- Form Header -->
-                <div class="px-6 sm:px-10 py-6 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+                <div class="px-6 sm:px-10 py-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
                             <span>📝</span>
-                            <span>Formulir Permohonan & Pengaduan Layanan DKIS</span>
+                            <span>Formulir Layanan Pengaduan TIK DKIS</span>
                         </h2>
-                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-                            Bidang bertanda bintang merah (<span class="text-rose-500 font-bold">*</span>) wajib diisi.
+                        <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                            Sampaikan permohonan bantuan atau laporan kendala Anda. Kolom bertanda <span class="text-rose-600 font-bold">* (Wajib)</span> harus diisi. Setelah dikirim, Anda akan langsung menerima <strong>Nomor Tiket (Nomor Laporan)</strong> dan PIN tanda terima resmi.
                         </p>
                     </div>
                 </div>
 
                 <!-- Form Body -->
-                <form action="{{ route('public.ticket.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-10 space-y-8" onsubmit="if (!validatePublicTicketForm(this)) return false; const btn = this.querySelector('button[type=submit]'); if (btn) { btn.disabled = true; btn.classList.add('opacity-75', 'cursor-not-allowed'); btn.innerHTML = '<span>⏳</span><span>Sedang Mengirim Tiket...</span>'; }">
+                <form action="{{ route('public.ticket.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-10 space-y-6" onsubmit="return handleFormSubmitWithValidation(this, event)">
                     @csrf
 
                     <!-- 1. Identitas ASN Pelapor -->
                     <div>
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">1</span>
                             Identitas Pegawai Pelapor (ASN)
                         </h3>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 items-start">
                             <!-- NIP / NIPK (Validasi Ketat 18 Digit BKN) -->
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <label for="nip_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                                        NIP / NIPK Pegawai <span class="text-rose-500 font-bold">*</span>
+                                    <label for="nip_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800">
+                                        NIP / NIPK Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
                                     </label>
-                                    <span class="text-[11px] text-slate-400 font-medium">Wajib 18 Digit Angka</span>
+                                    <span id="nip_char_hint" class="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">18 Angka</span>
                                 </div>
                                 <input type="text" id="nip_pelapor" name="nip_pelapor" value="{{ old('nip_pelapor') }}" 
                                     inputmode="numeric" minlength="18" maxlength="18" pattern="[0-9]{18}" 
-                                    placeholder="Contoh: 198503122010011003 (18 Digit Angka)" required
+                                    placeholder="Contoh: 198503122010011003" required
                                     oninput="handleNipInput(this)"
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5 font-mono">
+                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 font-mono text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Masukkan 18 angka NIP resmi tanpa spasi atau tanda hubung.</p>
+                                <div id="nip_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
                             </div>
 
                             <!-- Nama Lengkap -->
                             <div>
-                                <label for="nama_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    Nama Lengkap <span class="text-rose-500 font-bold">*</span>
+                                <label for="nama_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Nama Lengkap Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
                                 </label>
-                                <input type="text" id="nama_pelapor" name="nama_pelapor" value="{{ old('nama_pelapor') }}" placeholder="Contoh: Drs. Agus Prasetyo, M.Si." required
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
+                                <input type="text" id="nama_pelapor" name="nama_pelapor" value="{{ old('nama_pelapor') }}" 
+                                    placeholder="Contoh: Drs. Agus Prasetyo, M.Si." required
+                                    oninput="clearFieldInlineError(this, 'nama_error')"
+                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Nama lengkap pelapor beserta gelar jika ada.</p>
+                                <div id="nama_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
                             </div>
 
                             <!-- SKPD / Instansi (Searchable Combobox) -->
                             <div class="relative" id="skpd_search_container">
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label for="skpd_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                                        SKPD / Perangkat Daerah <span class="text-rose-500 font-bold">*</span>
-                                    </label>
-                                    <span class="text-[11px] text-blue-600 font-medium">Ketik atau klik untuk memilih</span>
-                                </div>
+                                <label for="skpd_search_input" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    SKPD / Perangkat Daerah <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                </label>
 
                                 <!-- Hidden input untuk form submit -->
                                 <input type="hidden" id="skpd" name="skpd" value="{{ old('skpd') }}" required>
 
                                 <!-- Kotak Input SKPD dengan Ikon Cari, Clear, & Chevron Dropdown -->
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
                                     <input type="text" id="skpd_search_input" autocomplete="off"
-                                        placeholder="Pilih dari daftar atau ketik nama instansi Anda..."
+                                        placeholder="Pilih atau cari instansi Anda..."
                                         value="{{ old('skpd') }}"
-                                        class="w-full rounded-xl border border-slate-300 shadow-xs focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm py-2.5 pl-10 pr-16 bg-white transition cursor-pointer"
+                                        class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
                                         onclick="openSkpdDropdown()"
                                         onfocus="openSkpdDropdown()"
                                         oninput="handleSkpdSearchInput(this.value)">
                                     
                                     <!-- Tombol Aksi Kanan: Clear & Chevron Toggle -->
-                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-0.5">
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-0.5">
                                         <button type="button" id="skpd_clear_btn" onclick="clearSkpdSelection()"
-                                            class="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer {{ old('skpd') ? '' : 'hidden' }}"
+                                            class="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer {{ old('skpd') ? '' : 'hidden' }}"
                                             title="Hapus pilihan">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                         <button type="button" id="skpd_chevron_btn" onclick="toggleSkpdDropdown()"
-                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
+                                            class="p-1.5 text-slate-500 hover:text-blue-600 cursor-pointer transition transform"
                                             title="Buka / tutup daftar instansi">
                                             <svg id="skpd_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -201,12 +206,16 @@
                                         </button>
                                     </div>
                                 </div>
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Pilih dari daftar atau ketikkan nama dinas / kantor Anda.</p>
+                                <div id="skpd_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
 
                                 <!-- Panel Dropdown SKPD: Ringkas & Dapat Di-Scroll -->
-                                <div id="skpd_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
-                                        <span>📜 PILIHAN TERSEDIA (GULIR KE BAWAH)</span>
-                                        <span class="text-blue-600 font-medium">Bisa scroll & ketik</span>
+                                <div id="skpd_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
+                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
+                                        <span>📜 DAFTAR INSTANSI (GULIR KE BAWAH)</span>
+                                        <span class="text-blue-700 font-semibold">Bisa scroll & ketik</span>
                                     </div>
                                     @php
                                         $daftarOpd = (isset($masterOpdList) && $masterOpdList->isNotEmpty())
@@ -264,35 +273,37 @@
 
                             <!-- Nomor Kontak / Telepon Pelapor -->
                             <div>
-                                <label for="no_whatsapp" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    Nomor Kontak / Telepon Pelapor <span class="text-rose-500 font-bold">*</span>
+                                <label for="no_whatsapp" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Nomor Kontak / WhatsApp Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
                                 </label>
-                                <input type="tel" id="no_whatsapp" name="no_whatsapp" value="{{ old('no_whatsapp') }}" placeholder="08xxxxxxxxxx" required
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
+                                <input type="tel" id="no_whatsapp" name="no_whatsapp" value="{{ old('no_whatsapp') }}" 
+                                    placeholder="Contoh: 081234567890" required
+                                    oninput="clearFieldInlineError(this, 'wa_error')"
+                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Nomor aktif telepon/WhatsApp untuk koordinasi teknisi.</p>
+                                <div id="wa_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 2. Rincian Permasalahan & Layanan -->
                     <div>
-                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-                            Rincian Permasalahan / Kebutuhan Layanan
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">2</span>
+                            Rincian Kendala & Kebutuhan Layanan
                         </h3>
 
                         <div class="space-y-5">
-                            <!-- Kategori Masalah / Layanan DKIS (Searchable Combobox Berkelompok) -->
+                            <!-- Kategori Masalah / Layanan DKIS (Searchable Combobox) -->
                             <div class="relative" id="cat_search_container">
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label for="cat_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                                        Kategori Masalah / Layanan DKIS <span class="text-rose-500 font-bold">*</span>
-                                    </label>
-                                    <span class="text-[11px] text-blue-600 font-medium">Ketik atau klik untuk memilih</span>
-                                </div>
+                                <label for="cat_search_input" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Kategori Masalah / Layanan DKIS <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                </label>
 
                                 <!-- Hidden input untuk form submit -->
                                 <input type="hidden" id="category_id" name="category_id" value="{{ old('category_id') }}" required>
-                                <!-- Hidden input untuk menyimpan nama kategori kustom jika mengetik sendiri -->
                                 <input type="hidden" id="custom_category_name" name="custom_category_name" value="">
 
                                 @php
@@ -311,30 +322,30 @@
 
                                 <!-- Kotak Input Kategori dengan Ikon Cari, Clear, & Chevron Dropdown -->
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
                                     <input type="text" id="cat_search_input" autocomplete="off"
-                                        placeholder="Pilih dari daftar atau ketik jenis kendala Anda..."
+                                        placeholder="Pilih atau cari jenis kendala..."
                                         value="{{ $selectedCatName }}"
-                                        class="w-full rounded-xl border border-slate-300 shadow-xs focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-sm py-2.5 pl-10 pr-16 bg-white transition cursor-pointer"
+                                        class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
                                         onclick="openCatDropdown()"
                                         onfocus="openCatDropdown()"
                                         oninput="handleCatSearchInput(this.value)">
                                     
                                     <!-- Tombol Aksi Kanan: Clear & Chevron Toggle -->
-                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-0.5">
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-0.5">
                                         <button type="button" id="cat_clear_btn" onclick="clearCatSelection()"
-                                            class="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer {{ $selectedCatName ? '' : 'hidden' }}"
+                                            class="p-1.5 text-slate-400 hover:text-slate-700 cursor-pointer {{ $selectedCatName ? '' : 'hidden' }}"
                                             title="Hapus pilihan">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                         <button type="button" id="cat_chevron_btn" onclick="toggleCatDropdown()"
-                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
+                                            class="p-1.5 text-slate-500 hover:text-blue-600 cursor-pointer transition transform"
                                             title="Buka / tutup daftar kategori">
                                             <svg id="cat_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -342,12 +353,16 @@
                                         </button>
                                     </div>
                                 </div>
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Pilih jenis layanan yang sesuai (contoh: Gangguan Internet, Reset Kata Sandi, dsb).</p>
+                                <div id="cat_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
 
                                 <!-- Panel Dropdown Kategori: Ringkas, Tanpa Judul Bidang & Dapat Di-Scroll -->
-                                <div id="cat_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400">
+                                <div id="cat_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
+                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
                                         <span>📜 DAFTAR KATEGORI (GULIR KE BAWAH)</span>
-                                        <span class="text-blue-600 font-medium">Bisa scroll & ketik</span>
+                                        <span class="text-blue-700 font-semibold">Bisa scroll & ketik</span>
                                     </div>
                                     <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="cat_items_container" style="scrollbar-width: thin;">
                                         <!-- Opsi Kategori Kustom (Muncul saat mengetik kategori yang belum ada) -->
@@ -380,93 +395,120 @@
 
                             <!-- Judul / Pokok Masalah -->
                             <div>
-                                <label for="judul" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    Judul / Pokok Masalah <span class="text-rose-500 font-bold">*</span>
+                                <label for="judul" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Judul / Pokok Masalah <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
                                 </label>
-                                <input type="text" id="judul" name="judul" value="{{ old('judul') }}" placeholder="Tuliskan ringkasan kendala (misal: Gangguan Jaringan FO Ruang Rapat Bappelitbangda)" required
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm py-2.5 px-3.5">
+                                <input type="text" id="judul" name="judul" value="{{ old('judul') }}" 
+                                    placeholder="Contoh: Internet kantor mati di Ruang Rapat / Lupa kata sandi email dinas" required
+                                    oninput="clearFieldInlineError(this, 'judul_error')"
+                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <p class="text-xs text-slate-600 font-medium mt-1.5">Tuliskan ringkasan singkat kendala yang sedang dialami.</p>
+                                <div id="judul_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
                             </div>
 
                             <!-- Deskripsi Lengkap -->
                             <div>
-                                <label for="deskripsi" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                                    Deskripsi Lengkap & Lokasi Fisik <span class="text-rose-500 font-bold">*</span>
+                                <label for="deskripsi" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Deskripsi Lengkap & Lokasi Kendala <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
                                 </label>
                                 <textarea id="deskripsi" name="deskripsi" rows="5" minlength="20" required
-                                    placeholder="Jelaskan secara rinci kendala yang dialami, letak lantai/ruangan, waktu mulai terjadinya gangguan, serta nomor alternatif yang dapat dihubungi teknisi lapangan..."
-                                    class="w-full rounded-xl border-slate-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 text-sm p-3.5">{{ old('deskripsi') }}</textarea>
-                                <p class="text-[11px] text-slate-400 mt-1">Minimal 20 karakter agar teknisi memahami ruang lingkup penanganan.</p>
+                                    placeholder="Jelaskan secara rinci kendala yang dialami, letak lantai atau ruangan, waktu mulai gangguan, dan nomor alternatif yang dapat dihubungi teknisi..."
+                                    oninput="updateDeskripsiCounter(this); clearFieldInlineError(this, 'deskripsi_error')"
+                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base p-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">{{ old('deskripsi') }}</textarea>
+                                
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm mt-1.5 gap-1 font-medium">
+                                    <span class="text-slate-600">Minimal 20 karakter agar teknisi memahami ruang lingkup penanganan.</span>
+                                    <span id="deskripsi-char-count" class="font-bold text-slate-600">
+                                        <span id="char-current">0</span> / 20 karakter
+                                    </span>
+                                </div>
+                                <div id="deskripsi_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    <span>⚠️</span><span class="error-msg"></span>
+                                </div>
                             </div>
 
-                            <!-- Upload Bukti (Multi-Upload, JPG/PNG/PDF, Max 5MB per file, Total Max 10MB, Max 5 file) -->
+                            <!-- Upload Bukti (Multi-Upload, Ringkas 1 Baris) -->
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label for="lampiran_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                                        Upload Bukti / Berkas Pendukung (Opsional, Maks 5 File)
-                                    </label>
-                                    <span class="text-[11px] text-slate-400 font-medium">Maks 5 MB per berkas (Total Maks 10 MB)</span>
-                                </div>
-                                <div class="mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/50" onclick="document.getElementById('lampiran_pelapor').click()">
-                                    <div class="space-y-1 text-center">
+                                <label for="lampiran_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
+                                    Lampiran Foto / Bukti Pendukung (Opsional)
+                                </label>
+                                <div class="mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/70" onclick="document.getElementById('lampiran_pelapor').click()">
+                                    <div class="space-y-1.5 text-center">
                                         <svg class="mx-auto h-10 w-10 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
-                                        <div class="flex text-xs sm:text-sm text-slate-600 justify-center">
-                                            <label for="lampiran_pelapor" class="relative cursor-pointer rounded-md font-bold text-blue-600 hover:text-blue-500 focus-within:outline-none" onclick="event.stopPropagation()">
+                                        <div class="flex text-sm text-slate-700 font-medium justify-center">
+                                            <label for="lampiran_pelapor" class="relative cursor-pointer rounded-md font-bold text-blue-600 hover:text-blue-700 focus-within:outline-none" onclick="event.stopPropagation()">
                                                 <span>Pilih Berkas Lampiran</span>
                                                 <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
                                             </label>
-                                            <p class="pl-1 text-slate-500">atau klik area ini</p>
+                                            <p class="pl-1 text-slate-600">atau klik area ini</p>
                                         </div>
-                                        <p class="text-[11px] text-slate-400">
-                                            Format diperbolehkan: JPG, PNG, atau PDF (Maksimal 5 MB per berkas, akumulasi total seluruh file maks 10 MB, hingga 5 berkas)
+                                        <p class="text-xs sm:text-sm text-slate-600 font-medium max-w-lg mx-auto">
+                                            Format berkas: JPG, PNG, atau PDF. Maksimal 5 berkas dengan total ukuran seluruhnya paling banyak 10 MB.
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Pesan Error Validasi Klien -->
-                                <div id="file-error-alert" class="hidden mt-2 p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-800 flex items-center justify-between shadow-xs">
-                                    <div class="flex items-center gap-1.5 font-medium">
+                                <div id="file-error-alert" class="hidden mt-2 p-3 bg-rose-50 border-2 border-rose-300 rounded-xl text-xs sm:text-sm text-rose-900 flex items-center justify-between shadow-xs">
+                                    <div class="flex items-center gap-1.5 font-bold">
                                         <span>⚠️</span>
                                         <span id="file-error-message"></span>
                                     </div>
-                                    <button type="button" onclick="document.getElementById('file-error-alert').classList.add('hidden')" class="font-bold text-rose-600 hover:text-rose-900 ml-2">✕</button>
+                                    <button type="button" onclick="document.getElementById('file-error-alert').classList.add('hidden')" class="font-bold text-rose-700 hover:text-rose-950 ml-2 cursor-pointer">✕</button>
                                 </div>
 
                                 <!-- Chips / Pills Berkas Terpilih -->
                                 <div id="file-list-preview" class="mt-3 flex flex-wrap gap-2"></div>
 
-                                <!-- Opsi Unggah Asli Tanpa Kompresi (BUTIR 4) -->
-                                <div class="mt-2.5 flex items-center justify-between text-xs px-1 pt-2 border-t border-slate-100">
-                                    <label class="flex items-center gap-2 cursor-pointer text-slate-600 select-none hover:text-slate-800">
-                                        <input type="checkbox" id="checkbox-raw-upload" name="is_raw_upload" value="1" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                                        <span class="font-semibold text-[11px] sm:text-xs">Unggah berkas asli tanpa kompresi (Resolusi penuh untuk forensik / insiden siber)</span>
+                                <!-- Opsi Unggah Asli Tanpa Kompresi (Point 9: Kotak Diperbesar, Bahasa Sehari-hari) -->
+                                <div class="mt-3 pt-3 border-t border-slate-200">
+                                    <label class="flex items-center gap-3 cursor-pointer text-slate-800 select-none hover:text-blue-900">
+                                        <input type="checkbox" id="checkbox-raw-upload" name="is_raw_upload" value="1" 
+                                            class="w-5 h-5 rounded-md border-2 border-slate-400 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                        <span class="font-semibold text-xs sm:text-sm">Kirim berkas dengan kualitas asli (centang hanya jika diminta oleh petugas keamanan DKIS)</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Verifikasi Keamanan Pelapor (Google reCAPTCHA) -->
-                    <div class="pt-3 pb-1 flex flex-col items-center justify-center">
-                        <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
-                        @error('g-recaptcha-response')
-                            <div class="text-xs font-bold text-rose-600 flex items-center gap-1 mt-2">
-                                <span>⚠️</span>
-                                <span>{{ $message }}</span>
+                    <!-- 3. Verifikasi Keamanan Pelapor (Google reCAPTCHA dalam Panel Rapi) -->
+                    <div class="pt-2">
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-3 pb-2 border-b border-slate-200 flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">3</span>
+                            Verifikasi Keamanan
+                        </h3>
+                        <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col items-center justify-center text-center">
+                            <p class="text-xs sm:text-sm text-slate-700 font-semibold mb-3">Centang kotak verifikasi di bawah ini untuk membuktikan Anda bukan program otomatis:</p>
+                            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                            <div id="recaptcha_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-2.5 flex items-center gap-1.5">
+                                <span>⚠️</span><span class="error-msg">Harap centang kotak verifikasi keamanan sebelum mengirim laporan.</span>
                             </div>
-                        @enderror
+                            @error('g-recaptcha-response')
+                                <div class="text-xs sm:text-sm font-bold text-rose-600 flex items-center gap-1 mt-2">
+                                    <span>⚠️</span>
+                                    <span>{{ $message }}</span>
+                                </div>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- Tombol Kirim Full Width -->
+                    <!-- Tombol Kirim Full Width (Ikon Resmi, Anti Dobel Klik & Bahasa Sehari-hari) -->
                     <div class="pt-2">
                         <button type="submit" id="btn-submit-ticket"
-                            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold text-base sm:text-lg shadow-xl shadow-blue-600/25 hover:shadow-blue-600/35 transition transform active:scale-[0.99] flex items-center justify-center gap-3">
-                            <span>🚀</span>
-                            <span>Kirim Tiket Layanan Sekarang</span>
+                            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold text-base sm:text-lg shadow-xl shadow-blue-600/25 hover:shadow-blue-600/35 transition transform active:scale-[0.99] flex items-center justify-center gap-3 cursor-pointer">
+                            <svg id="btn-submit-icon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                            <span id="btn-submit-label">Kirim Laporan Pengaduan Sekarang</span>
                         </button>
-                        <p class="text-center text-xs text-slate-400 mt-3">
-                            Tiket akan diverifikasi oleh Admin Pusat DKIS dalam hitungan jam sesuai standar SLA pelayanan.
+                        <p class="text-center text-xs sm:text-sm text-slate-600 font-medium mt-3 leading-relaxed">
+                            Laporan Anda akan segera diperiksa oleh petugas DKIS pada hari dan jam kerja. Simpan nomor laporan untuk memantau proses perbaikan.
+                        </p>
                     </div>
                 </form>
             </div>
@@ -1961,35 +2003,136 @@
     });
 
     // ══════════════════════════════════════════════════════════════════════
-    // FORM VALIDATION & CONTROLS
+    // FORM VALIDATION & INLINE ERROR HANDLING (RAMAH PENGGUNA & BAHASA SEHARI-HARI)
     // ══════════════════════════════════════════════════════════════════════
 
-    function validatePublicTicketForm(form) {
-        // 1. Validasi NIP (Wajib Tepat 18 Digit)
+    function showFieldInlineError(element, errorContainerId, message) {
+        if (!errorContainerId) return;
+        const errDiv = document.getElementById(errorContainerId);
+        if (errDiv) {
+            const msgSpan = errDiv.querySelector('.error-msg');
+            if (msgSpan) msgSpan.textContent = message;
+            errDiv.classList.remove('hidden');
+        }
+        if (element) {
+            element.classList.add('border-rose-500', 'ring-2', 'ring-rose-200', 'bg-rose-50/20');
+            element.classList.remove('border-slate-300');
+        }
+    }
+
+    function clearFieldInlineError(element, errorContainerId) {
+        if (errorContainerId) {
+            const errDiv = document.getElementById(errorContainerId);
+            if (errDiv) errDiv.classList.add('hidden');
+        }
+        if (element) {
+            element.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200', 'bg-rose-50/20');
+            element.classList.add('border-slate-300');
+        }
+    }
+
+    // 1. Filter NIP Tepat Angka, Maksimal 18 Digit & Live Hint
+    function handleNipInput(inputElem) {
+        if (!inputElem) return;
+        inputElem.value = inputElem.value.replace(/[^0-9]/g, '').slice(0, 18);
+        const len = inputElem.value.length;
+        const hint = document.getElementById('nip_char_hint');
+        if (hint) {
+            if (len === 18) {
+                hint.textContent = '✓ 18 Angka Lengkap';
+                hint.className = 'text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
+            } else if (len > 0) {
+                hint.textContent = `${len} dari 18 Angka`;
+                hint.className = 'text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md';
+            } else {
+                hint.textContent = '18 Angka';
+                hint.className = 'text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md';
+            }
+        }
+        if (len === 18) {
+            clearFieldInlineError(inputElem, 'nip_error');
+        }
+    }
+
+    // 2. Penghitung Karakter Deskripsi Real-Time
+    function updateDeskripsiCounter(textarea) {
+        if (!textarea) return;
+        const len = textarea.value.trim().length;
+        const charCurrent = document.getElementById('char-current');
+        const countBadge = document.getElementById('deskripsi-char-count');
+        if (charCurrent) charCurrent.textContent = len;
+
+        if (countBadge) {
+            if (len >= 20) {
+                countBadge.innerHTML = `<span class="text-emerald-700 font-bold">✓ ${len} karakter (memenuhi syarat)</span>`;
+                clearFieldInlineError(textarea, 'deskripsi_error');
+            } else if (len > 0) {
+                countBadge.innerHTML = `<span class="text-amber-700 font-bold">${len} dari 20 karakter (kurang ${20 - len} lagi)</span>`;
+            } else {
+                countBadge.innerHTML = `<span class="text-slate-600 font-bold">0 / 20 karakter</span>`;
+            }
+        }
+    }
+
+    // 3. Validasi Form Lengkap saat Pengiriman
+    function handleFormSubmitWithValidation(form, event) {
+        let firstInvalidElem = null;
+
+        // Reset semua error terlebih dahulu
+        ['nip', 'nama', 'skpd', 'wa', 'cat', 'judul', 'deskripsi', 'recaptcha'].forEach(field => {
+            const errDiv = document.getElementById(field + '_error');
+            if (errDiv) errDiv.classList.add('hidden');
+        });
+
+        // 1. Validasi NIP
         const nipElem = document.getElementById('nip_pelapor');
-        if (nipElem && nipElem.value.trim().length !== 18) {
-            nipElem.focus();
-            nipElem.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
-            alert('NIP / NIPK Pegawai wajib tepat 18 digit angka sesuai format resmi BKN.');
-            return false;
+        const nipVal = nipElem ? nipElem.value.trim() : '';
+        if (!nipVal) {
+            showFieldInlineError(nipElem, 'nip_error', 'NIP / NIPK Pegawai wajib diisi 18 angka.');
+            if (!firstInvalidElem) firstInvalidElem = nipElem;
+        } else if (nipVal.length !== 18) {
+            showFieldInlineError(nipElem, 'nip_error', `NIP harus 18 angka, saat ini baru terisi ${nipVal.length} angka.`);
+            if (!firstInvalidElem) firstInvalidElem = nipElem;
+        } else {
+            clearFieldInlineError(nipElem, 'nip_error');
         }
 
-        // 2. Validasi SKPD / Perangkat Daerah (Mendukung input bebas langsung)
+        // 2. Validasi Nama Lengkap
+        const namaElem = document.getElementById('nama_pelapor');
+        if (!namaElem || !namaElem.value.trim()) {
+            showFieldInlineError(namaElem, 'nama_error', 'Nama lengkap pegawai wajib diisi.');
+            if (!firstInvalidElem) firstInvalidElem = namaElem;
+        } else {
+            clearFieldInlineError(namaElem, 'nama_error');
+        }
+
+        // 3. Validasi SKPD / Perangkat Daerah
         const skpdHidden = document.getElementById('skpd');
         const skpdSearch = document.getElementById('skpd_search_input');
         if (skpdSearch && skpdSearch.value.trim().length > 0) {
             skpdHidden.value = skpdSearch.value.trim();
         }
         if (!skpdHidden || !skpdHidden.value.trim()) {
-            if (skpdSearch) {
-                skpdSearch.focus();
-                skpdSearch.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
-            }
-            alert('Silakan pilih dari daftar atau ketikkan Perangkat Daerah (OPD) tempat Anda bertugas.');
-            return false;
+            showFieldInlineError(skpdSearch, 'skpd_error', 'Silakan pilih dari daftar atau ketikkan nama instansi/SKPD tempat Anda bertugas.');
+            if (!firstInvalidElem) firstInvalidElem = skpdSearch;
+        } else {
+            clearFieldInlineError(skpdSearch, 'skpd_error');
         }
 
-        // 3. Validasi Kategori Layanan (Mendukung input bebas langsung)
+        // 4. Validasi Nomor Kontak / WhatsApp
+        const waElem = document.getElementById('no_whatsapp');
+        const waVal = waElem ? waElem.value.trim() : '';
+        if (!waVal) {
+            showFieldInlineError(waElem, 'wa_error', 'Nomor kontak / WhatsApp aktif wajib diisi.');
+            if (!firstInvalidElem) firstInvalidElem = waElem;
+        } else if (!/^(08|628|\+628)[0-9]{7,13}$/.test(waVal.replace(/\s+/g, ''))) {
+            showFieldInlineError(waElem, 'wa_error', 'Nomor kontak tidak valid (contoh format: 081234567890).');
+            if (!firstInvalidElem) firstInvalidElem = waElem;
+        } else {
+            clearFieldInlineError(waElem, 'wa_error');
+        }
+
+        // 5. Validasi Kategori Layanan
         const catId = document.getElementById('category_id');
         const catSearch = document.getElementById('cat_search_input');
         const customCat = document.getElementById('custom_category_name');
@@ -1998,34 +2141,77 @@
             if (customCat) customCat.value = catSearch.value.trim();
         }
         if (!catId || !catId.value) {
-            if (catSearch) {
-                catSearch.focus();
-                catSearch.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
+            showFieldInlineError(catSearch, 'cat_error', 'Silakan pilih dari daftar atau ketik jenis kendala Anda.');
+            if (!firstInvalidElem) firstInvalidElem = catSearch;
+        } else {
+            clearFieldInlineError(catSearch, 'cat_error');
+        }
+
+        // 6. Validasi Judul Pokok Masalah
+        const judulElem = document.getElementById('judul');
+        if (!judulElem || !judulElem.value.trim()) {
+            showFieldInlineError(judulElem, 'judul_error', 'Judul / pokok kendala wajib diisi ringkas.');
+            if (!firstInvalidElem) firstInvalidElem = judulElem;
+        } else {
+            clearFieldInlineError(judulElem, 'judul_error');
+        }
+
+        // 7. Validasi Deskripsi Lengkap (Minimal 20 Karakter)
+        const deskElem = document.getElementById('deskripsi');
+        const deskVal = deskElem ? deskElem.value.trim() : '';
+        if (!deskVal) {
+            showFieldInlineError(deskElem, 'deskripsi_error', 'Deskripsi kendala wajib diisi minimal 20 karakter.');
+            if (!firstInvalidElem) firstInvalidElem = deskElem;
+        } else if (deskVal.length < 20) {
+            showFieldInlineError(deskElem, 'deskripsi_error', `Deskripsi masih kurang: baru ${deskVal.length} dari minimal 20 karakter.`);
+            if (!firstInvalidElem) firstInvalidElem = deskElem;
+        } else {
+            clearFieldInlineError(deskElem, 'deskripsi_error');
+        }
+
+        // 8. Validasi Google reCAPTCHA
+        if (typeof grecaptcha !== 'undefined') {
+            try {
+                const recaptchaResp = grecaptcha.getResponse();
+                if (!recaptchaResp || recaptchaResp.trim().length === 0) {
+                    const recaptchaErr = document.getElementById('recaptcha_error');
+                    if (recaptchaErr) recaptchaErr.classList.remove('hidden');
+                    const recaptchaBox = document.querySelector('.g-recaptcha');
+                    if (!firstInvalidElem && recaptchaBox) firstInvalidElem = recaptchaBox;
+                }
+            } catch (e) {
+                console.warn('reCAPTCHA check error', e);
             }
-            alert('Silakan pilih dari daftar atau ketikkan Kategori Masalah / Layanan DKIS terlebih dahulu.');
+        }
+
+        // Jika terdapat isian yang belum benar, arahkan fokus ke kolom tersebut
+        if (firstInvalidElem) {
+            if (event && event.preventDefault) event.preventDefault();
+            firstInvalidElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (typeof firstInvalidElem.focus === 'function') {
+                firstInvalidElem.focus();
+            }
             return false;
         }
 
-        // 4. Validasi Keamanan Google reCAPTCHA
-        if (typeof grecaptcha !== 'undefined') {
-            const recaptchaResp = grecaptcha.getResponse();
-            if (!recaptchaResp || recaptchaResp.trim().length === 0) {
-                alert('Harap centang verifikasi keamanan "Saya bukan robot" (reCAPTCHA) sebelum mengirim tiket.');
-                const recaptchaBox = document.querySelector('.g-recaptcha');
-                if (recaptchaBox) {
-                    recaptchaBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return false;
+        // Ubah tombol menjadi "Sedang Mengirim..." dan nonaktifkan agar tidak terklik dua kali
+        const btn = document.getElementById('btn-submit-ticket');
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            const label = document.getElementById('btn-submit-label');
+            if (label) label.textContent = 'Sedang Mengirim Laporan...';
+            const icon = document.getElementById('btn-submit-icon');
+            if (icon) {
+                icon.outerHTML = '<span class="inline-block animate-spin mr-1">⏳</span>';
             }
         }
 
         return true;
     }
 
-    // 3. Filter NIP Tepat Angka & Maksimal 18 Digit
-    function handleNipInput(inputElem) {
-        if (!inputElem) return;
-        inputElem.value = inputElem.value.replace(/[^0-9]/g, '').slice(0, 18);
+    function validatePublicTicketForm(form) {
+        return handleFormSubmitWithValidation(form, null);
     }
 
     // 4. Unggah Banyak Bukti (Multiple File Upload) dengan Chips & Validasi Klien
@@ -2210,6 +2396,10 @@
         const nipInput = document.getElementById('nip_pelapor');
         if (nipInput) {
             handleNipInput(nipInput);
+        }
+        const deskripsiInput = document.getElementById('deskripsi');
+        if (deskripsiInput) {
+            updateDeskripsiCounter(deskripsiInput);
         }
     });
 
