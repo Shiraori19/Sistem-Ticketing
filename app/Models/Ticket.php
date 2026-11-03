@@ -254,11 +254,6 @@ class Ticket extends Model
         return (string) ($this->teknisi_lapangan ?: 'Belum ditugaskan');
     }
 
-    public function obstacles(): HasMany
-    {
-        return $this->hasMany(TicketObstacle::class, 'ticket_id');
-    }
-
     /**
      * Token akses aman pelapor untuk konfirmasi & reopen via tautan WhatsApp (Magic Link)
      */
@@ -268,11 +263,21 @@ class Ticket extends Model
     }
 
     /**
-     * Label status kontekstual berdasarkan Role Pengguna (Pelapor, Admin Pusat, Admin Bidang)
+     * Label status kontekstual berdasarkan Role Pengguna (Pelapor, Admin Pusat, Admin Bidang, Teknisi)
      */
     public function getDisplayStatusAttribute(): string
     {
-        $role = auth()->user()?->role?->name ?? (auth()->user()?->role ?? 'pelapor');
+        $user = auth()->user();
+        $role = 'pelapor';
+        if ($user) {
+            if ($user->isAdminPusat()) {
+                $role = 'admin_pusat';
+            } elseif ($user->isAdminBidang()) {
+                $role = 'admin_bidang';
+            } elseif ($user->isTeknisi()) {
+                $role = 'teknisi';
+            }
+        }
 
         return match ($this->status) {
             'pending_verification' => match ($role) {

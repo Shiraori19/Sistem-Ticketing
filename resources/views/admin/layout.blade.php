@@ -201,13 +201,17 @@
         <aside id="sidebar" style="background-color: {{ $sidebarBg }};" class="fixed inset-y-0 left-0 top-[61px] z-30 w-64 text-slate-300 flex flex-col justify-between p-4 border-r border-slate-800/80 transform -translate-x-full lg:translate-x-0 lg:static lg:h-full lg:overflow-y-auto transition-transform duration-300 ease-in-out flex-shrink-0 shadow-xl lg:shadow-none scrollbar-thin">
             <div class="space-y-6">
                 @if($isPusat)
+                    @php
+                        $isMasterActive = request()->routeIs('admin.users.*') || request()->routeIs('admin.bidang-master.*') || request()->routeIs('admin.kategori.*') || request()->routeIs('admin.opd.*');
+                    @endphp
                     <!-- ADMIN PUSAT MENU -->
+                    <!-- 1. Operasional Harian -->
                     <div>
-                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider px-3">Tata Kelola Pusat</span>
+                        <span class="text-xs uppercase font-bold text-slate-400 tracking-wider px-3">Operasional Harian</span>
                         <nav class="mt-2 space-y-1 text-xs font-semibold">
                             <!-- 1. Dashboard -->
                             <a href="{{ route('admin.dashboard') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -218,7 +222,7 @@
 
                             <!-- 2. Antrean Verifikasi (badge) -->
                             <a href="{{ route('admin.verifikasi.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.verifikasi.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.verifikasi.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -226,7 +230,7 @@
                                     Antrean Verifikasi
                                 </span>
                                 @if(($pendingVerifikasiCount ?? 0) > 0)
-                                    <span class="bg-amber-500 text-slate-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+                                    <span class="bg-amber-500 text-slate-950 font-extrabold text-xs px-2 py-0.5 rounded-full shadow-xs">
                                         {{ $pendingVerifikasiCount }}
                                     </span>
                                 @endif
@@ -234,7 +238,7 @@
 
                             <!-- 3. Semua Tiket -->
                             <a href="{{ route('admin.tiket.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.tiket.index') || request()->routeIs('admin.tiket.show') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.tiket.index') || request()->routeIs('admin.tiket.show') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -245,7 +249,7 @@
 
                             <!-- 4. Pengawasan SLA (Watchtower) -->
                             <a href="{{ route('admin.sla.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.sla.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.sla.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -253,7 +257,7 @@
                                     Pengawasan SLA
                                 </span>
                                 @if(($slaKritisCount ?? 0) > 0)
-                                    <span class="bg-rose-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full animate-pulse shadow-xs">
+                                    <span class="bg-rose-600 text-white font-extrabold text-xs px-2 py-0.5 rounded-full shadow-xs">
                                         {{ $slaKritisCount }}
                                     </span>
                                 @endif
@@ -261,7 +265,7 @@
 
                             <!-- 5. Eskalasi (badge) -->
                             <a href="{{ route('admin.eskalasi.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.eskalasi.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.eskalasi.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -269,15 +273,15 @@
                                     Eskalasi
                                 </span>
                                 @if(($eskalasiCount ?? 0) > 0)
-                                    <span class="bg-rose-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full animate-pulse shadow-xs">
+                                    <span class="bg-rose-600 text-white font-extrabold text-xs px-2 py-0.5 rounded-full shadow-xs">
                                         {{ $eskalasiCount }}
                                     </span>
                                 @endif
                             </a>
 
-                            <!-- 5. Laporan -->
+                            <!-- 6. Laporan Kinerja -->
                             <a href="{{ route('admin.laporan') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.laporan*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.laporan*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
                                 <span class="flex items-center gap-2.5">
                                     <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -285,51 +289,67 @@
                                     Laporan Kinerja
                                 </span>
                             </a>
-
-                            <!-- 6. Kelola Petugas / Admin Bidang -->
-                            <a href="{{ route('admin.users.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.users.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
-                                <span class="flex items-center gap-2.5">
-                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    Kelola Petugas
-                                </span>
-                            </a>
-
-                            <!-- 7. Kelola Bidang -->
-                            <a href="{{ route('admin.bidang-master.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.bidang-master.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
-                                <span class="flex items-center gap-2.5">
-                                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                    Kelola Bidang
-                                </span>
-                            </a>
-
-                            <!-- 8. Kelola Kategori Layanan -->
-                            <a href="{{ route('admin.kategori.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.kategori.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
-                                <span class="flex items-center gap-2.5">
-                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                    </svg>
-                                    Kategori Layanan
-                                </span>
-                            </a>
-
-                            <!-- 9. Kelola Master OPD -->
-                            <a href="{{ route('admin.opd.index') }}"
-                               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.opd.*') ? 'bg-sky-600 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
-                                <span class="flex items-center gap-2.5">
-                                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                    Master OPD / SKPD
-                                </span>
-                            </a>
                         </nav>
+                    </div>
+
+                    <!-- 2. Master Data (Collapsible) -->
+                    <div class="pt-2 border-t border-slate-700/60">
+                        <details class="group" {{ $isMasterActive ? 'open' : '' }}>
+                            <summary class="flex items-center justify-between px-3 py-1.5 cursor-pointer text-xs uppercase font-bold text-slate-400 hover:text-white tracking-wider select-none rounded-lg transition">
+                                <span class="flex items-center gap-2">
+                                    <span>⚙️</span>
+                                    <span>Master Data</span>
+                                </span>
+                                <svg class="w-3.5 h-3.5 transition-transform duration-200 group-open:rotate-180 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </summary>
+                            <nav class="mt-2 space-y-1 text-xs font-semibold pl-2">
+                                <!-- Kelola Petugas -->
+                                <a href="{{ route('admin.users.index') }}"
+                                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.users.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                        Kelola Petugas
+                                    </span>
+                                </a>
+
+                                <!-- Kelola Bidang -->
+                                <a href="{{ route('admin.bidang-master.index') }}"
+                                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.bidang-master.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        Kelola Bidang
+                                    </span>
+                                </a>
+
+                                <!-- Kelola Kategori Layanan -->
+                                <a href="{{ route('admin.kategori.index') }}"
+                                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.kategori.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        Kategori Layanan
+                                    </span>
+                                </a>
+
+                                <!-- Kelola Master OPD -->
+                                <a href="{{ route('admin.opd.index') }}"
+                                   class="w-full flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.opd.*') ? 'bg-sky-700 text-white shadow-sm font-bold' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                                    <span class="flex items-center gap-2.5">
+                                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        Master OPD / SKPD
+                                    </span>
+                                </a>
+                            </nav>
+                        </details>
                     </div>
                 @else
                     <!-- ADMIN BIDANG MENU -->
@@ -571,8 +591,21 @@
                 <h3 id="admin-confirm-title" class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                     Konfirmasi Tindakan
                 </h3>
-                <p id="admin-confirm-message" class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
+                <p id="admin-confirm-message" class="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
                     Apakah Anda yakin ingin melanjutkan tindakan ini?
+                </p>
+            </div>
+
+            <!-- Optional Reason Input Box (for Force Close, Delete, Deactivate) -->
+            <div id="admin-confirm-reason-box" class="hidden text-left space-y-1.5 pt-1">
+                <label id="admin-confirm-reason-label" class="block text-xs font-bold text-slate-700">
+                    Alasan Tindakan <span class="text-rose-500">*</span>
+                </label>
+                <textarea id="admin-confirm-reason-input" rows="3"
+                    class="w-full text-xs sm:text-sm p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition resize-none placeholder:text-slate-400 text-slate-900"
+                    placeholder="Wajib tuliskan alasan tindakan ini (minimal 5 karakter)..."></textarea>
+                <p id="admin-confirm-reason-hint" class="text-xs text-rose-600 font-medium">
+                    ⚠️ Tombol konfirmasi baru aktif setelah Anda mengisi alasan (minimal 5 karakter).
                 </p>
             </div>
 
@@ -599,6 +632,10 @@
             confirmText = 'Ya, Lanjutkan',
             confirmBtnClass = 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black',
             cancelText = 'Batal',
+            requireReason = false,
+            reasonLabel = 'Alasan Tindakan',
+            reasonPlaceholder = 'Wajib tuliskan alasan tindakan ini (minimal 5 karakter)...',
+            minReasonLength = 5,
             onConfirm = null,
             onCancel = null
         }) {
@@ -610,12 +647,15 @@
                 const msgElem = document.getElementById('admin-confirm-message');
                 const btnCancel = document.getElementById('admin-confirm-btn-cancel');
                 const btnOk = document.getElementById('admin-confirm-btn-ok');
+                const reasonBox = document.getElementById('admin-confirm-reason-box');
+                const reasonInput = document.getElementById('admin-confirm-reason-input');
+                const reasonLabelElem = document.getElementById('admin-confirm-reason-label');
 
                 if (!modal) {
                     const res = window.confirm(message);
-                    if (res && onConfirm) onConfirm();
+                    if (res && onConfirm) onConfirm('');
                     else if (!res && onCancel) onCancel();
-                    resolve(res);
+                    resolve(res ? '' : false);
                     return;
                 }
 
@@ -629,17 +669,45 @@
                 btnOk.className = `flex-1 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5 ${confirmBtnClass}`;
                 btnOk.innerHTML = `<span>${confirmText}</span>`;
 
+                if (requireReason) {
+                    reasonBox.classList.remove('hidden');
+                    reasonLabelElem.innerHTML = `${reasonLabel} <span class="text-rose-500">*</span>`;
+                    reasonInput.placeholder = reasonPlaceholder;
+                    reasonInput.value = '';
+                    btnOk.disabled = true;
+                    btnOk.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+
+                    reasonInput.oninput = function() {
+                        const val = reasonInput.value.trim();
+                        if (val.length >= minReasonLength) {
+                            btnOk.disabled = false;
+                            btnOk.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                        } else {
+                            btnOk.disabled = true;
+                            btnOk.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                        }
+                    };
+                    setTimeout(() => reasonInput.focus(), 100);
+                } else {
+                    reasonBox.classList.add('hidden');
+                    if (reasonInput) reasonInput.oninput = null;
+                    btnOk.disabled = false;
+                    btnOk.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                }
+
                 const close = () => {
                     modal.classList.add('hidden');
                     modal.style.display = 'none';
                     btnOk.onclick = null;
                     btnCancel.onclick = null;
+                    if (reasonInput) reasonInput.oninput = null;
                 };
 
                 btnOk.onclick = () => {
+                    const reason = reasonInput ? reasonInput.value.trim() : '';
                     close();
-                    if (onConfirm) onConfirm();
-                    resolve(true);
+                    if (onConfirm) onConfirm(reason);
+                    resolve(reason || true);
                 };
 
                 btnCancel.onclick = () => {
@@ -651,6 +719,49 @@
                 modal.classList.remove('hidden');
                 modal.style.display = 'flex';
             });
+        };
+
+        window.confirmActionWithReason = function(event, formOrButton, {
+            title = 'Konfirmasi Tindakan',
+            message = 'Tindakan ini memerlukan alasan penjelasan.',
+            icon = '⚠️',
+            iconBg = 'bg-rose-50 text-rose-600 border-rose-200',
+            confirmText = 'Ya, Lanjutkan',
+            confirmBtnClass = 'bg-rose-600 hover:bg-rose-700 text-white font-bold',
+            requireReason = true,
+            reasonInputName = 'alasan',
+            reasonLabel = 'Alasan Tindakan',
+            reasonPlaceholder = 'Wajib tuliskan alasan tindakan ini (minimal 5 karakter)...'
+        }) {
+            if (event) event.preventDefault();
+            const form = formOrButton.tagName === 'FORM' ? formOrButton : formOrButton.closest('form');
+            window.showAdminConfirm({
+                title,
+                message,
+                icon,
+                iconBg,
+                confirmText,
+                confirmBtnClass,
+                requireReason,
+                reasonLabel,
+                reasonPlaceholder,
+                onConfirm: (reason) => {
+                    if (form) {
+                        if (reason && reasonInputName) {
+                            let input = form.querySelector(`input[name="${reasonInputName}"]`);
+                            if (!input) {
+                                input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = reasonInputName;
+                                form.appendChild(input);
+                            }
+                            input.value = reason;
+                        }
+                        form.submit();
+                    }
+                }
+            });
+            return false;
         };
 
         window.showAdminAlert = function({

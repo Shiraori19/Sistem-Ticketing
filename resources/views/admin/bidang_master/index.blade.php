@@ -155,11 +155,20 @@
                                 </button>
 
                                 <form action="{{ route('admin.bidang-master.destroy', $b->id) }}" method="POST" class="inline"
-                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus bidang {{ $b->nama_lengkap }}?')">
+                                    onsubmit="return window.confirmActionWithReason(event, this, {
+                                        title: 'Hapus Bidang Pengampu',
+                                        message: 'Apakah Anda yakin ingin menghapus bidang {{ $b->nama_lengkap }}?',
+                                        icon: '🏢',
+                                        iconBg: 'bg-rose-50 text-rose-600 border-rose-200',
+                                        confirmText: 'Ya, Lanjutkan',
+                                        confirmBtnClass: 'bg-rose-600 hover:bg-rose-700 text-white font-bold',
+                                        requireReason: true,
+                                        reasonLabel: 'Alasan Penghapusan Bidang'
+                                    })">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                        class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px]">
+                                        class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-xs cursor-pointer">
                                         🗑️ Hapus
                                     </button>
                                 </form>

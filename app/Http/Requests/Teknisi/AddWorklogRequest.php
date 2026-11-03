@@ -15,7 +15,7 @@ class AddWorklogRequest extends FormRequest
     {
         return [
             'catatan' => ['required', 'string', 'min:5', 'max:3000'],
-            'berkas' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,txt,log', 'max:10240'], // Max 10MB
+            'berkas' => ['nullable', 'file', 'max:10240', new \App\Rules\ValidSecureFile(['image', 'pdf', 'text'])], // Max 10MB
             'row_version' => ['nullable', 'integer'],
         ];
     }

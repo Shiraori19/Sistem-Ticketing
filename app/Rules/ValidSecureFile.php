@@ -24,17 +24,25 @@ class ValidSecureFile implements ValidationRule
             return;
         }
 
+        if (!$value->isValid()) {
+            $fail('Berkas yang diunggah tidak valid atau proses pengunggahan terputus.');
+            return;
+        }
+
         /** @var SecureUploadService $uploadService */
         $uploadService = app(SecureUploadService::class);
 
         try {
-            // 1. Validasi nama berkas
-            $uploadService->validateFilename($value->getClientOriginalName());
+            $originalName = $value->getClientOriginalName();
+            $clientExt = strtolower($value->getClientOriginalExtension());
 
-            // 2. Validasi isi berkas
+            // 1. Validasi nama berkas (ekstensi ganda, path traversal, karakter kontrol, blacklist)
+            $uploadService->validateFilename($originalName);
+
+            // 2. Validasi berkas fisik dan ukuran
             $realPath = $value->getRealPath();
             if (!$realPath || !file_exists($realPath)) {
-                $fail('Berkas fisik tidak ditemukan.');
+                $fail('Berkas fisik sementara tidak ditemukan.');
                 return;
             }
 
@@ -44,24 +52,33 @@ class ValidSecureFile implements ValidationRule
                 return;
             }
 
-            // Refleksi method protected inspectFileContent
-            $reflection = new \ReflectionClass($uploadService);
-            $method = $reflection->getMethod('inspectFileContent');
-            $method->setAccessible(true);
-            $info = $method->invoke($uploadService, $realPath, $size, [
+            if ($this->maxSizeKb && $size > ($this->maxSizeKb * 1024)) {
+                $maxMb = round($this->maxSizeKb / 1024, 1);
+                $fail("Ukuran berkas melebihi batas maksimal ({$maxMb} MB).");
+                return;
+            }
+
+            // 3. Pemeriksaan isi berkas secara ketat (Whitelist Ekstensi, MIME, dan Magic Bytes / Signature)
+            $info = $uploadService->inspectFileContent($realPath, $size, [
                 'allowed_categories' => $this->allowedCategories,
+                'original_name'      => $originalName,
+                'client_extension'   => $clientExt,
             ]);
 
-            // Jika PDF, periksa struktur aktif
-            if ($info['category'] === 'pdf') {
-                $pdfMethod = $reflection->getMethod('validatePdfStructure');
-                $pdfMethod->setAccessible(true);
-                $pdfMethod->invoke($uploadService, $realPath);
+            // 4. Validasi integritas dan struktur spesifik format (mencegah payload terselubung)
+            if ($info['category'] === 'image') {
+                $uploadService->validateImageStructure($realPath, $info['extension']);
+            } elseif ($info['category'] === 'pdf') {
+                $uploadService->validatePdfStructure($realPath);
+            } elseif ($info['category'] === 'text') {
+                $uploadService->validateTextStructure($realPath);
+            } elseif ($info['category'] === 'video') {
+                $uploadService->validateVideoStructure($realPath);
             }
         } catch (\InvalidArgumentException $e) {
             $fail($e->getMessage());
         } catch (\Throwable $e) {
-            $fail('Isi berkas tidak sesuai dengan jenisnya atau rusak.');
+            $fail('Isi berkas tidak sesuai dengan jenisnya atau mengalami kerusakan.');
         }
     }
 }

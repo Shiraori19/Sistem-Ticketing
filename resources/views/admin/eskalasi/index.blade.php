@@ -172,16 +172,16 @@
                 </label>
                 <textarea name="force_close_notes" id="fc-notes" rows="4" required minlength="10" placeholder="Jelaskan dasar hukum, koordinasi kebijakan, atau alasan penutupan tiket secara permanen..."
                     class="w-full text-xs rounded-xl border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-rose-500 transition leading-relaxed"></textarea>
-                <p class="text-[11px] text-slate-400 mt-1">Catatan ini akan tersimpan permanen pada jejak audit dan dapat dibaca pelapor.</p>
+                <p class="text-xs text-slate-600 mt-1">Catatan ini akan tersimpan permanen pada jejak audit dan dapat dibaca pelapor.</p>
             </div>
 
             <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
                 <button type="button" onclick="closeForceCloseModal()"
-                    class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                    class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
                     Batal
                 </button>
-                <button type="submit" onclick="return confirm('Apakah Anda yakin ingin mengeksekusi Force Close untuk tiket ini? Tindakan ini permanen.')"
-                    class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+                <button type="button" onclick="confirmForceCloseExecution(this)"
+                    class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
                     <span>Eksekusi Force Close</span>
                 </button>
             </div>
@@ -190,6 +190,31 @@
 </div>
 
 <script>
+    window.confirmForceCloseExecution = function(btn) {
+        const form = document.getElementById('fc-form');
+        const notes = document.getElementById('fc-notes')?.value.trim() || '';
+        if (notes.length < 10) {
+            window.showAdminAlert({
+                title: 'Catatan Belum Lengkap',
+                message: 'Harap isi catatan pertimbangan pimpinan minimal 10 karakter sebelum melakukan Force Close.',
+                icon: '⚠️',
+                iconBg: 'bg-rose-50 text-rose-600 border-rose-200'
+            });
+            document.getElementById('fc-notes')?.focus();
+            return;
+        }
+        window.showAdminConfirm({
+            title: 'Konfirmasi Eksekusi Force Close',
+            message: 'Apakah Anda yakin ingin mengeksekusi Force Close untuk tiket ini? Tindakan penutupan paksa ini bersifat permanen dan tercatat dalam jejak audit resmi.',
+            icon: '🚨',
+            iconBg: 'bg-rose-50 text-rose-600 border-rose-200',
+            confirmText: 'Ya, Eksekusi Sekarang',
+            confirmBtnClass: 'bg-rose-600 hover:bg-rose-700 text-white font-bold',
+            onConfirm: () => {
+                form.submit();
+            }
+        });
+    };
     window.openForceCloseModalFromBtn = function(btn) {
         if (!btn) return;
         const ticketId = btn.getAttribute('data-id');

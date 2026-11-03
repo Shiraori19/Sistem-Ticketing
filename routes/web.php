@@ -108,11 +108,15 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
             ->names('admin.bidang-master');
 
         // Kelola Master Kategori Layanan
+        Route::post('/kelola-kategori/{id}/toggle-status', [CategoryManagementController::class, 'toggleStatus'])
+            ->name('admin.kategori.toggleStatus');
         Route::resource('kelola-kategori', CategoryManagementController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->names('admin.kategori');
 
         // Kelola Master OPD / SKPD
+        Route::post('/kelola-opd/{id}/toggle-status', [OpdManagementController::class, 'toggleStatus'])
+            ->name('admin.opd.toggleStatus');
         Route::resource('kelola-opd', OpdManagementController::class)
             ->only(['index', 'store', 'update', 'destroy'])
             ->names('admin.opd');

@@ -117,10 +117,10 @@
                                         <div class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
                                             <span>{{ $u->nama }}</span>
                                             @if(Auth::id() === $u->id)
-                                                <span class="text-[9px] px-1.5 py-0.2 bg-amber-100 text-amber-800 border border-amber-300 rounded font-bold">Akun Anda</span>
+                                                <span class="text-xs px-1.5 py-0.2 bg-amber-100 text-amber-800 border border-amber-300 rounded font-bold">Akun Anda</span>
                                             @endif
                                         </div>
-                                        <div class="font-mono text-[11px] text-slate-400">@<span>{{ $u->username }}</span></div>
+                                        <div class="font-mono text-xs text-slate-600">@<span>{{ $u->username }}</span></div>
                                     </div>
                                 </div>
                             </td>
@@ -128,15 +128,15 @@
                             <!-- Peran -->
                             <td class="py-3 px-4 whitespace-nowrap">
                                 @if($u->isAdminPusat())
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-200">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-200">
                                         🛡️ Admin Pusat
                                     </span>
                                 @elseif($u->isTeknisi())
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-blue-100 text-blue-800 border border-blue-200">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide bg-blue-100 text-blue-800 border border-blue-200">
                                         👷 Teknisi Lapangan
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-200">
                                         🏢 Admin Bidang
                                     </span>
                                 @endif
@@ -145,30 +145,30 @@
                             <!-- Bidang -->
                             <td class="py-3 px-4">
                                 @if($u->bidang)
-                                    <div class="font-semibold text-slate-800">{{ $u->bidang->nama_bidang }}</div>
-                                    <span class="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                    <div class="font-semibold text-slate-800 text-xs">{{ $u->bidang->nama_bidang }}</div>
+                                    <span class="text-xs font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                                         {{ $u->bidang->kode }}
                                     </span>
                                 @else
-                                    <span class="text-slate-400 italic">Pusat Komando (Lintas Bidang)</span>
+                                    <span class="text-slate-600 italic text-xs">Pusat Komando (Lintas Bidang)</span>
                                 @endif
                             </td>
 
                             <!-- Status Aktif -->
                             <td class="py-3 px-4 whitespace-nowrap">
                                 @if($u->is_active)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-300">
                                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Nonaktif
                                     </span>
                                 @endif
                             </td>
 
                             <!-- Tanggal Buat -->
-                            <td class="py-3 px-4 text-slate-500 whitespace-nowrap font-mono text-[11px]">
+                            <td class="py-3 px-4 text-slate-600 whitespace-nowrap font-mono text-xs">
                                 {{ $u->created_at ? $u->created_at->translatedFormat('d M Y') : '-' }}
                             </td>
 
@@ -184,15 +184,25 @@
                                 @if(Auth::id() !== $u->id)
                                     <form action="{{ route('admin.users.toggleStatus', $u->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="px-2 py-1.5 {{ $u->is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200' }} font-bold rounded-lg border transition text-[11px]" title="{{ $u->is_active ? 'Nonaktifkan akun' : 'Aktifkan kembali akun' }}">
+                                        <button type="submit" class="px-2 py-1.5 {{ $u->is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200' }} font-bold rounded-lg border transition text-xs cursor-pointer" title="{{ $u->is_active ? 'Nonaktifkan akun' : 'Aktifkan kembali akun' }}">
                                             {{ $u->is_active ? '⏸️ Nonaktifkan' : '▶️ Aktifkan' }}
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('admin.users.destroy', $u->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $u->nama }} ({{ $u->username }})?')">
+                                    <form action="{{ route('admin.users.destroy', $u->id) }}" method="POST" class="inline"
+                                        onsubmit="return window.confirmActionWithReason(event, this, {
+                                            title: 'Hapus / Nonaktifkan Akun Petugas',
+                                            message: 'Apakah Anda yakin ingin menghapus atau menonaktifkan akun {{ $u->nama }} ({{ $u->username }})?',
+                                            icon: '🗑️',
+                                            iconBg: 'bg-rose-50 text-rose-600 border-rose-200',
+                                            confirmText: 'Ya, Lanjutkan',
+                                            confirmBtnClass: 'bg-rose-600 hover:bg-rose-700 text-white font-bold',
+                                            requireReason: true,
+                                            reasonLabel: 'Alasan Tindakan'
+                                        })">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px]">
+                                        <button type="submit" class="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-xs cursor-pointer">
                                             🗑️ Hapus
                                         </button>
                                     </form>

@@ -22,84 +22,71 @@
             <div class="flex flex-wrap gap-2">
                 @if($user->isAdminPusat())
                     <a href="{{ route('admin.verifikasi.index') }}"
-                        class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5">
+                        class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Antrean Verifikasi ({{ $stats['pending'] }})
+                        <span>Antrean Verifikasi</span>
                     </a>
                     <a href="{{ route('admin.eskalasi.index') }}"
-                        class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5">
+                        class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        Eskalasi Pusat ({{ $stats['eskalasi'] }})
+                        <span>Eskalasi Pusat</span>
                     </a>
                 @else
                     <a href="{{ route('admin.bidang.tiket.index', ['filter' => 'antrean']) }}"
-                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5">
+                        class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20" />
                         </svg>
-                        Antrean Bidang ({{ $bidangAntreanCount ?? 0 }})
+                        <span>Antrean Bidang ({{ $bidangAntreanCount ?? 0 }})</span>
                     </a>
                 @endif
             </div>
         </div>
 
-        <!-- Peringatan SLA Respon Terlambat untuk Admin Pusat -->
-        @if($user->isAdminPusat() && ($stats['pending_respon_breach'] ?? 0) > 0)
-            <div
-                class="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs mb-4">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0 animate-bounce">
-                        ⏱️
+        <!-- ⚡ BAGIAN PERLU TINDAKAN (TAMPIL DI PALING ATAS DENGAN AKSI LANGSUNG) -->
+        @if($user->isAdminPusat() && ($stats['pending'] > 0 || $stats['eskalasi'] > 0 || ($stats['sla_breach'] ?? 0) > 0))
+            <div class="bg-slate-900 text-white rounded-2xl p-5 border border-slate-700 shadow-md">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="inline-flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                            <span>⚡</span>
+                            <span>Perlu Tindakan Admin Pusat Hari Ini</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Terdapat tiket yang memerlukan verifikasi masuk, telaah eskalasi pimpinan, atau percepatan batas waktu SLA.
+                        </p>
                     </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-amber-950">Peringatan SLA Respon Helpdesk: Terdapat
-                            {{ $stats['pending_respon_breach'] }} Tiket Masuk Melebihi Batas Waktu Respon</h3>
-                        <p class="text-xs text-amber-800 mt-0.5">Tiket di antrean verifikasi telah melewati batas target respon awal dan memerlukan
-                            tindakan penelaahan serta disposisi segera oleh Admin Pusat.</p>
-                    </div>
-                </div>
-                <a href="{{ route('admin.verifikasi.index') }}"
-                    class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition shadow-xs whitespace-nowrap text-center">
-                    Tinjau Antrean Verifikasi &rarr;
-                </a>
-            </div>
-        @endif
-
-        <!-- Peringatan SLA Breach Resolusi Teknis (Jika Ada) -->
-        @if(($stats['sla_breach'] ?? 0) > 0)
-            <div
-                class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-900 shadow-xs">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0 animate-pulse">
-                        ⚠️
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-rose-900">Peringatan Kepatuhan SLA: Terdapat
-                            {{ $stats['sla_breach'] }} Tiket Melebihi Batas Waktu</h3>
-                        <p class="text-xs text-rose-700 mt-0.5">Tiket telah melewati batas target resolusi dan memerlukan
-                            tindakan percepatan teknisi atau koordinasi eskalasi.</p>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        @if($stats['pending'] > 0)
+                            <a href="{{ route('admin.verifikasi.index') }}"
+                                class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition shadow-sm inline-flex items-center gap-1.5 cursor-pointer">
+                                <span>⏳ Verifikasi Masuk</span>
+                                <span class="bg-slate-950/20 px-2 py-0.5 rounded-full text-xs font-black">{{ $stats['pending'] }}</span>
+                            </a>
+                        @endif
+                        @if($stats['eskalasi'] > 0)
+                            <a href="{{ route('admin.eskalasi.index') }}"
+                                class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-sm inline-flex items-center gap-1.5 cursor-pointer">
+                                <span>🚨 Eskalasi Pusat</span>
+                                <span class="bg-black/25 px-2 py-0.5 rounded-full text-xs font-black">{{ $stats['eskalasi'] }}</span>
+                            </a>
+                        @endif
+                        @if(($stats['sla_breach'] ?? 0) > 0)
+                            <a href="{{ route('admin.tiket.index', ['sla_breach' => 1]) }}"
+                                class="px-3.5 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-xl text-xs transition shadow-sm inline-flex items-center gap-1.5 cursor-pointer">
+                                <span>⏱️ SLA Kritis</span>
+                                <span class="bg-black/25 px-2 py-0.5 rounded-full text-xs font-black">{{ $stats['sla_breach'] }}</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
-                @if($user->isAdminPusat())
-                    <a href="{{ route('admin.tiket.index', ['sla_breach' => 1]) }}"
-                        class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs whitespace-nowrap text-center">
-                        Tinjau Tiket Breach &rarr;
-                    </a>
-                @else
-                    <a href="{{ route('admin.bidang.tiket.index', ['filter' => 'pengerjaan']) }}"
-                        class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs whitespace-nowrap text-center">
-                        Periksa Pengerjaan Bidang &rarr;
-                    </a>
-                @endif
             </div>
         @endif
 
@@ -175,7 +162,7 @@
                     <div class="absolute -right-3 -bottom-3 text-rose-800/30 text-6xl font-black">🔴</div>
                     <div class="flex items-center justify-between relative z-10">
                         <span class="text-xs font-extrabold tracking-wider text-rose-300 flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-ping"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-400 ring-2 ring-rose-300"></span>
                             TLP: RED
                         </span>
                         <span

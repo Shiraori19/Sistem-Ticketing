@@ -13,21 +13,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->call(function () {
-            // 1. Sinkronkan pelanggaran SLA Resolusi berbasis deadline_at terindeks
-            Ticket::whereIn('status', ['verified', 'in_progress', 'reopened'])
-                ->where('sla_breach', false)
-                ->whereNotNull('sla_deadline_at')
-                ->where('sla_deadline_at', '<=', now())
-                ->update(['sla_breach' => true]);
-
-            // 2. Sinkronkan pelanggaran SLA Respon berbasis respon_deadline_at terindeks
-            Ticket::whereIn('status', ['pending_verification', 'pending_info'])
-                ->where('sla_respon_breach', false)
-                ->whereNotNull('sla_respon_deadline_at')
-                ->where('sla_respon_deadline_at', '<=', now())
-                ->update(['sla_respon_breach' => true]);
-        })->everyMinute()->withoutOverlapping();
+        // 1 & 2. Sinkronkan pelanggaran SLA Resolusi & Respon via CheckSlaBreachCommand (tiap menit)
+        $schedule->command('tickets:check-sla')->everyMinute()->withoutOverlapping();
 
         // 3. Lepas otomatis penugasan teknisi yang melewati respond_deadline (tiap menit)
         $schedule->command('assignments:release-expired')->everyMinute()->withoutOverlapping();

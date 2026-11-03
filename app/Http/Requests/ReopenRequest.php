@@ -15,7 +15,7 @@ class ReopenRequest extends FormRequest
     {
         return [
             'alasan' => ['required', 'string', 'min:5', 'max:1000'],
-            'bukti_reopen' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // WAJIB ada berkas bukti
+            'bukti_reopen' => ['required', 'file', 'max:5120', new \App\Rules\ValidSecureFile(['image', 'pdf'])], // WAJIB ada berkas bukti yang sah dan aman
         ];
     }
 

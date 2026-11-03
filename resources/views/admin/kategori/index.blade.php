@@ -79,10 +79,21 @@
                                 {{ $categories->firstItem() + $idx }}
                             </td>
                             <td class="py-3.5 px-4 font-bold text-slate-900">
-                                {{ $cat->nama_kategori }}
+                                <div class="flex items-center gap-2">
+                                    <span>{{ $cat->nama_kategori }}</span>
+                                    @if(isset($cat->is_active) && !$cat->is_active)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                                            Nonaktif
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Aktif
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="py-3.5 px-4">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold
                                     @if(str_contains(strtoupper($cat->bidang?->kode ?? ''), 'PERSANDIAN')) bg-purple-50 text-purple-700 border border-purple-200
                                     @elseif(str_contains(strtoupper($cat->bidang?->kode ?? ''), 'ITIK')) bg-blue-50 text-blue-700 border border-blue-200
                                     @else bg-emerald-50 text-emerald-700 border border-emerald-200 @endif">
@@ -94,26 +105,42 @@
                                 {{ (float)$cat->sla_respon_jam }} Jam
                             </td>
                             <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-700">
-                                {{ $cat->sla_resolusi_jam }} Jam <span class="text-slate-400 font-normal">({{ round($cat->sla_resolusi_jam / 24, 1) }} hari)</span>
+                                {{ $cat->sla_resolusi_jam }} Jam <span class="text-slate-600 font-normal">({{ round($cat->sla_resolusi_jam / 24, 1) }} hari)</span>
                             </td>
                             <td class="py-3.5 px-4 text-center">
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-700">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700">
                                     {{ $cat->tickets_count }}
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-right space-x-1">
                                 <button type="button"
                                     onclick="openEditKategoriModal({{ json_encode($cat) }})"
-                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold rounded-lg border border-slate-200 transition text-[11px]">
+                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold rounded-lg border border-slate-200 transition text-xs cursor-pointer">
                                     ✏️ Ubah
                                 </button>
-                                @if($cat->tickets_count === 0)
+                                @if(isset($cat->is_active) && !$cat->is_active)
+                                    <form action="{{ route('admin.kategori.toggleStatus', $cat->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg border border-emerald-200 transition text-xs cursor-pointer">
+                                            🔄 Aktifkan
+                                        </button>
+                                    </form>
+                                @else
                                     <form action="{{ route('admin.kategori.destroy', $cat->id) }}" method="POST" class="inline"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori {{ $cat->nama_kategori }}?')">
+                                        onsubmit="return window.confirmActionWithReason(event, this, {
+                                            title: 'Nonaktifkan Kategori Layanan',
+                                            message: 'Apakah Anda yakin ingin menonaktifkan kategori {{ $cat->nama_kategori }}?',
+                                            icon: '🏷️',
+                                            iconBg: 'bg-amber-50 text-amber-600 border-amber-200',
+                                            confirmText: 'Ya, Lanjutkan',
+                                            confirmBtnClass: 'bg-amber-600 hover:bg-amber-700 text-white font-bold',
+                                            requireReason: true,
+                                            reasonLabel: 'Alasan Penonaktifan Kategori'
+                                        })">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px]">
-                                            🗑️ Hapus
+                                        <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-xs cursor-pointer">
+                                            🗑️ Nonaktifkan
                                         </button>
                                     </form>
                                 @endif

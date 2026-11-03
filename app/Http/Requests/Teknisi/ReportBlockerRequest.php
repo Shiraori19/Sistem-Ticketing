@@ -17,7 +17,7 @@ class ReportBlockerRequest extends FormRequest
             'jenis' => ['required', 'in:isp,vendor,opd_lain,suku_cadang'],
             'bukti' => ['required', 'string', 'max:500'],
             'keterangan' => ['required', 'string', 'min:10', 'max:3000'],
-            'berkas_bukti' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,txt,log', 'max:10240'],
+            'berkas_bukti' => ['nullable', 'file', 'max:10240', new \App\Rules\ValidSecureFile(['image', 'pdf', 'text'])],
             'row_version' => ['nullable', 'integer'],
         ];
     }

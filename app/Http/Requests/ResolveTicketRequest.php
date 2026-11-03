@@ -14,7 +14,7 @@ class ResolveTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bukti_resolusi' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // Maks 5MB (Opsional)
+            'bukti_resolusi' => ['nullable', 'file', 'max:5120', new \App\Rules\ValidSecureFile(['image', 'pdf'])], // Maks 5MB (Opsional)
             'catatan_resolusi' => ['required', 'string', 'min:5'],
             'is_confidential_evidence' => ['nullable', 'boolean'],
         ];

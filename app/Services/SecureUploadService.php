@@ -122,7 +122,8 @@ class SecureUploadService
         // 5. Sanitasi dan Pembersihan Spesifik Format
         $cleanedTempPath = null;
         if ($category === 'image') {
-            $cleanedTempPath = $this->sanitizeImage($realPath, $detectedExt);
+            $this->validateImageStructure($realPath, $detectedExt);
+            $cleanedTempPath = $this->sanitizeImage($realPath, $detectedExt, $options);
             $pathToStore = $cleanedTempPath;
             $finalSize = filesize($cleanedTempPath);
         } elseif ($category === 'pdf') {
@@ -268,59 +269,88 @@ class SecureUploadService
 
     /**
      * Pemeriksaan Mendalam Isi Berkas (Content-Based)
+     * Menggunakan Whitelist Ketat: Ekstensi, MIME Type, dan File Signature / Magic Bytes
      */
-    protected function inspectFileContent(string $path, int $size, array $options): array
+    public function inspectFileContent(string $path, int $size, array $options = []): array
     {
+        $clientExt = strtolower($options['client_extension'] ?? pathinfo($options['original_name'] ?? '', PATHINFO_EXTENSION));
+        $allowedCategories = $options['allowed_categories'] ?? null;
+
+        // 1. Pemetaan Whitelist Ekstensi Resmi per Kategori
+        $categoryExtMap = [
+            'image' => ['jpg', 'jpeg', 'png'],
+            'pdf'   => ['pdf'],
+            'text'  => ['txt', 'log'],
+            'video' => ['mp4'],
+        ];
+
+        // Validasi Whitelist Ekstensi Nama Berkas di Awal (jika kategori dibatasi)
+        if (is_array($allowedCategories)) {
+            $allowedExtensions = [];
+            foreach ($allowedCategories as $cat) {
+                if (isset($categoryExtMap[$cat])) {
+                    $allowedExtensions = array_merge($allowedExtensions, $categoryExtMap[$cat]);
+                }
+            }
+            $allowedExtensions = array_unique($allowedExtensions);
+
+            if ($clientExt && !in_array($clientExt, $allowedExtensions, true)) {
+                $allowedList = strtoupper(implode(', ', $allowedExtensions));
+                throw new InvalidArgumentException("Format ekstensi berkas (.{$clientExt}) tidak diizinkan. Ekstensi yang diperbolehkan: {$allowedList}.");
+            }
+        }
+
+        // 2. Deteksi MIME Asli dari Isi Berkas (finfo)
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $realMime = finfo_file($finfo, $path);
         finfo_close($finfo);
 
-        $allowedTypes = config('files.allowed_types', []);
-        $matchedExt = null;
-        $matchedCategory = null;
-
-        // Baca magic bytes 16 byte pertama
+        // 3. Baca File Signature / Magic Bytes (16 byte pertama)
         $handle = fopen($path, 'rb');
         $magicBytes = fread($handle, 16);
         fclose($handle);
 
-        // Verifikasi Magic Bytes spesifik
+        $matchedExt = null;
+        $matchedCategory = null;
+
+        // 4. Verifikasi Kecocokan Signature (Magic Bytes) + MIME Whitelist
         if (str_starts_with($magicBytes, "\xFF\xD8\xFF")) {
-            // JPEG Image
-            if ($realMime === 'image/jpeg') {
+            // JPEG / JPG: Signature FF D8 FF
+            if (in_array($realMime, ['image/jpeg', 'image/pjpeg'], true)) {
                 $matchedExt = 'jpg';
                 $matchedCategory = 'image';
             }
         } elseif (str_starts_with($magicBytes, "\x89PNG\r\n\x1a\n")) {
-            // PNG Image
+            // PNG: Signature 89 50 4E 47 0D 0A 1A 0A
             if ($realMime === 'image/png') {
                 $matchedExt = 'png';
                 $matchedCategory = 'image';
             }
         } elseif (str_starts_with($magicBytes, "%PDF-")) {
-            // PDF Document
+            // PDF: Signature 25 50 44 46 2D (%PDF-)
             if ($realMime === 'application/pdf') {
                 $matchedExt = 'pdf';
                 $matchedCategory = 'pdf';
             }
         } elseif (str_contains($magicBytes, 'ftyp')) {
-            // MP4 Video Container
+            // MP4: Kontainer video 'ftyp'
             if ($realMime === 'video/mp4' || $realMime === 'application/mp4') {
                 $matchedExt = 'mp4';
                 $matchedCategory = 'video';
             }
         } elseif ($realMime === 'text/plain') {
-            // Plain text or log
-            $matchedExt = 'txt';
-            $matchedCategory = 'text';
+            // Teks murni / log (hanya jika UTF-8 murni dan tanpa byte null)
+            if (!str_contains($magicBytes, "\0")) {
+                $matchedExt = 'txt';
+                $matchedCategory = 'text';
+            }
         }
 
         if (!$matchedExt || !$matchedCategory) {
-            throw new InvalidArgumentException('Isi berkas tidak sesuai dengan jenisnya atau format tidak diizinkan.');
+            throw new InvalidArgumentException('Isi berkas tidak sesuai dengan jenisnya atau signature (magic bytes) dan MIME tidak cocok.');
         }
 
-        // Validasi kesesuaian ekstensi nama berkas dengan konten sebenarnya (Anti-Disguised File)
-        $clientExt = strtolower($options['client_extension'] ?? pathinfo($options['original_name'] ?? '', PATHINFO_EXTENSION));
+        // 5. Validasi Kesesuaian Ekstensi vs Konten Sebenarnya (Anti-Disguised / Anti-Spoofing)
         if ($clientExt) {
             $allowedForExt = match($matchedExt) {
                 'jpg' => ['jpg', 'jpeg'],
@@ -336,8 +366,7 @@ class SecureUploadService
             }
         }
 
-        // Validasi pembatasan kategori jika ditentukan konteks pemanggil
-        $allowedCategories = $options['allowed_categories'] ?? null;
+        // 6. Validasi Pembatasan Kategori Pemanggil
         if (is_array($allowedCategories) && !in_array($matchedCategory, $allowedCategories, true)) {
             $allowedList = implode(', ', $allowedCategories);
             throw new InvalidArgumentException("Jenis berkas [{$matchedCategory}] tidak diizinkan untuk konteks ini. Diizinkan: {$allowedList}.");
@@ -351,10 +380,51 @@ class SecureUploadService
     }
 
     /**
-     * Sanitasi Gambar: Decode lalu Encode ulang dengan GD (Membersihkan EXIF, GPS, Muatan Tersembunyi)
+     * Validasi Struktur Integritas Gambar Mendalam
+     * Memastikan header, dimensi, MIME internal, dan parsing GD valid (bukan file palsu ber-magic-bytes)
      */
-    protected function sanitizeImage(string $path, string $ext): string
+    public function validateImageStructure(string $path, string $ext): void
     {
+        $imageInfo = @getimagesize($path);
+        if ($imageInfo === false) {
+            throw new InvalidArgumentException('Berkas gambar rusak, corrupt, atau bukan gambar valid.');
+        }
+
+        $detectedMime = $imageInfo['mime'] ?? '';
+        $expectedMime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            default => null,
+        };
+
+        if ($expectedMime && $detectedMime !== $expectedMime) {
+            throw new InvalidArgumentException("Format internal gambar ({$detectedMime}) tidak sesuai dengan ekstensi (.{$ext}).");
+        }
+
+        // Pastikan pustaka GD dapat mem-parsing data piksel gambar secara penuh jika ekstensi GD tersedia
+        if (function_exists('imagecreatefromstring')) {
+            $raw = file_get_contents($path);
+            $gdImg = @imagecreatefromstring($raw);
+            if (!$gdImg) {
+                throw new InvalidArgumentException('Isi data gambar tidak dapat diproses atau mengalami kerusakan.');
+            }
+            imagedestroy($gdImg);
+        }
+    }
+
+    /**
+     * Sanitasi Gambar: Decode lalu Encode ulang dengan GD (Membersihkan EXIF, GPS, Muatan Tersembunyi)
+     * Otomatis mengompresi dan menurunkan resolusi ke ukuran di bawah 1 MB (Maksimal 1920px),
+     * kecuali opsi 'is_raw' bernilai true (atas permintaan forensik keamanan DKIS).
+     */
+    public function sanitizeImage(string $path, string $ext, array $options = []): string
+    {
+        if (!function_exists('imagecreatefromstring') || !function_exists('imagecreatetruecolor')) {
+            $tempPath = tempnam(sys_get_temp_dir(), 'sec_img_');
+            copy($path, $tempPath);
+            return $tempPath;
+        }
+
         $rawContent = file_get_contents($path);
         $image = @imagecreatefromstring($rawContent);
 
@@ -373,24 +443,115 @@ class SecureUploadService
             throw new InvalidArgumentException("Dimensi gambar ({$width}x{$height} piksel) melebihi batas maksimum {$maxWidth}x{$maxHeight}.");
         }
 
+        $isRaw = (bool) ($options['is_raw'] ?? false);
         $tempPath = tempnam(sys_get_temp_dir(), 'sec_img_');
 
-        if ($ext === 'png') {
-            imagealphablending($image, false);
-            imagesavealpha($image, true);
-            imagepng($image, $tempPath, 8);
-        } else {
-            imagejpeg($image, $tempPath, 88);
+        // Jika opsi "Kualitas Asli" aktif (misal investigasi insiden DKIS), pertahankan dimensi asli
+        if ($isRaw) {
+            if ($ext === 'png') {
+                imagealphablending($image, false);
+                imagesavealpha($image, true);
+                imagepng($image, $tempPath, 8);
+            } else {
+                imagejpeg($image, $tempPath, 88);
+            }
+            imagedestroy($image);
+            return $tempPath;
         }
 
+        // Mode Standar (Otomatis Kompresi di bawah 1 MB)
+        // 1. Resample gambar ke resolusi optimal (maksimal 1920px pada sisi terpanjang)
+        $targetDim = 1920;
+        $workImage = $image;
+
+        if ($width > $targetDim || $height > $targetDim) {
+            $ratio = min($targetDim / $width, $targetDim / $height);
+            $newWidth = (int) max(1, round($width * $ratio));
+            $newHeight = (int) max(1, round($height * $ratio));
+
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            if ($ext === 'png') {
+                imagealphablending($resized, false);
+                imagesavealpha($resized, true);
+                $transparent = imagecolorallocatealpha($resized, 0, 0, 0, 127);
+                imagefilledrectangle($resized, 0, 0, $newWidth, $newHeight, $transparent);
+            }
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            $workImage = $resized;
+        }
+
+        $maxTargetBytes = 1024 * 1024; // Batas Maksimal 1 MB (1.048.576 bytes)
+
+        if ($ext === 'png') {
+            imagealphablending($workImage, false);
+            imagesavealpha($workImage, true);
+            imagepng($workImage, $tempPath, 9); // Kompresi PNG maksimal
+
+            // Jika berkas PNG masih melebihi 1 MB (misal screenshot sangat detail), downscale ke 1280px
+            if (filesize($tempPath) > $maxTargetBytes) {
+                $curW = imagesx($workImage);
+                $curH = imagesy($workImage);
+                if ($curW > 1280 || $curH > 1280) {
+                    $ratio2 = min(1280 / $curW, 1280 / $curH);
+                    $newW2 = (int) max(1, round($curW * $ratio2));
+                    $newH2 = (int) max(1, round($curH * $ratio2));
+
+                    $resized2 = imagecreatetruecolor($newW2, $newH2);
+                    imagealphablending($resized2, false);
+                    imagesavealpha($resized2, true);
+                    $transparent2 = imagecolorallocatealpha($resized2, 0, 0, 0, 127);
+                    imagefilledrectangle($resized2, 0, 0, $newW2, $newH2, $transparent2);
+                    imagecopyresampled($resized2, $workImage, 0, 0, 0, 0, $newW2, $newH2, $curW, $curH);
+                    imagepng($resized2, $tempPath, 9);
+                    if ($workImage !== $image) {
+                        imagedestroy($workImage);
+                    }
+                    $workImage = $resized2;
+                }
+            }
+        } else {
+            // Format JPEG: Simpan dengan kualitas adaptif agar ukuran di bawah 1 MB
+            $quality = 80;
+            imagejpeg($workImage, $tempPath, $quality);
+
+            // Jika masih > 1MB, turunkan kualitas bertahap
+            while (filesize($tempPath) > $maxTargetBytes && $quality > 50) {
+                $quality -= 10;
+                imagejpeg($workImage, $tempPath, $quality);
+            }
+
+            // Jika masih > 1MB pada quality 50, downscale dimensi ke 1280px
+            if (filesize($tempPath) > $maxTargetBytes) {
+                $curW = imagesx($workImage);
+                $curH = imagesy($workImage);
+                if ($curW > 1280 || $curH > 1280) {
+                    $ratio2 = min(1280 / $curW, 1280 / $curH);
+                    $newW2 = (int) max(1, round($curW * $ratio2));
+                    $newH2 = (int) max(1, round($curH * $ratio2));
+
+                    $resized2 = imagecreatetruecolor($newW2, $newH2);
+                    imagecopyresampled($resized2, $workImage, 0, 0, 0, 0, $newW2, $newH2, $curW, $curH);
+                    imagejpeg($resized2, $tempPath, 72);
+                    if ($workImage !== $image) {
+                        imagedestroy($workImage);
+                    }
+                    $workImage = $resized2;
+                }
+            }
+        }
+
+        if ($workImage !== $image) {
+            imagedestroy($workImage);
+        }
         imagedestroy($image);
+
         return $tempPath;
     }
 
     /**
      * Validasi Struktur Dokumen PDF (Tolak JavaScript, Launch Action, dan Lampiran Berbahaya)
      */
-    protected function validatePdfStructure(string $path): void
+    public function validatePdfStructure(string $path): void
     {
         $content = file_get_contents($path);
 

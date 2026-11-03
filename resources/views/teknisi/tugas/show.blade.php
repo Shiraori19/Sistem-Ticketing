@@ -267,90 +267,142 @@
                 </div>
             </div>
 
-            <!-- Hambatan Lapangan (Blockers) -->
-            <div class="card" style="padding: 20px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px;">
-                        <span>⚠️</span> Hambatan Lapangan (Blockers)
-                    </h3>
-                    @if(in_array($a->status, ['assigned', 'working']) && !$isTerminalTicket)
-                        <button type="button" class="btn o" style="font-size: 12px; padding: 5px 12px;" onclick="document.getElementById('modal-blocker').showModal()">
-                            + Laporkan Hambatan
-                        </button>
-                    @endif
+            <!-- Tabs Container: Worklog, Hambatan, & Riwayat -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <!-- Tab Headers (Min. 44px touch target) -->
+                <div style="display: flex; border-bottom: 1px solid var(--line); background: #F8FAFC; overflow-x: auto;">
+                    <button type="button" onclick="switchTechTab('worklog')" id="tab-btn-worklog"
+                        style="flex: 1; min-height: 44px; padding: 12px 14px; font-size: 13px; font-weight: 700; border: 0; border-bottom: 2px solid var(--navy); background: #fff; color: var(--navy); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
+                        <span>📝</span> Worklog (Progres)
+                    </button>
+                    <button type="button" onclick="switchTechTab('blockers')" id="tab-btn-blockers"
+                        style="flex: 1; min-height: 44px; padding: 12px 14px; font-size: 13px; font-weight: 700; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--mut); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
+                        <span>⚠️</span> Hambatan ({{ $a->blockers->count() }})
+                    </button>
+                    <button type="button" onclick="switchTechTab('history')" id="tab-btn-history"
+                        style="flex: 1; min-height: 44px; padding: 12px 14px; font-size: 13px; font-weight: 700; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--mut); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
+                        <span>📜</span> Riwayat ({{ $t->events->count() }})
+                    </button>
                 </div>
 
-                @if($a->blockers->isNotEmpty())
-                    <div style="display: grid; gap: 10px;">
-                        @foreach($a->blockers as $blocker)
-                            <div style="padding: 12px 14px; border-radius: 10px; border: 1px solid {{ $blocker->isOpen() ? '#FECACA' : '#E2E8F0' }}; background: {{ $blocker->isOpen() ? '#FFF5F5' : '#F8FAFC' }};">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                                    <span style="font-weight: 700; font-size: 12px; color: {{ $blocker->isOpen() ? '#991B1B' : '#0F766E' }};">
-                                        {{ $blocker->jenis_label }}
-                                    </span>
-                                    @if($blocker->isOpen())
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <span style="font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: #FEE2E2; color: #991B1B;">
-                                                🔴 TERBUKA
-                                            </span>
-                                            <form action="{{ route('teknisi.tugas.hambatan.resolve', ['id' => $a->id, 'blockerId' => $blocker->id]) }}" method="POST" style="margin: 0;">
-                                                @csrf
-                                                <button type="submit" style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #059669; color: #fff; border: 0; cursor: pointer;">
-                                                    Tandai Selesai
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @else
-                                        <span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #ECFDF5; color: #065F46;">
-                                            ✓ SELESAI ({{ $blocker->resolved_at?->diffForHumans() }})
-                                        </span>
-                                    @endif
-                                </div>
-                                <div style="font-size: 13px; color: var(--ink); margin-top: 4px;">
-                                    {{ $blocker->keterangan }}
-                                </div>
-                                <div style="font-size: 11.5px; color: var(--mut); margin-top: 6px;">
-                                    Bukti / Tiket: <b>{{ $blocker->bukti }}</b> • Waktu: {{ $blocker->created_at->translatedFormat('d M Y, H:i') }}
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p style="margin: 0; font-size: 13px; color: var(--mut);">Belum ada hambatan lapangan yang dilaporkan. Pengerjaan berjalan lancar.</p>
-                @endif
-            </div>
+                <div style="padding: 20px;">
+                    <!-- Tab 1: Worklog (Catatan Progres Lapangan) -->
+                    <div id="tab-content-worklog">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--ink);">
+                                📝 Catatan Progres / Log Pekerjaan Lapangan
+                            </h3>
+                        </div>
 
-            <!-- Timeline Aktivitas (Ticket Events) -->
-            <div class="card" style="padding: 20px;">
-                <h3 style="margin: 0 0 14px; font-size: 15px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px;">
-                    <span>📜</span> Rekam Jejak Aktivitas (Audit Events)
-                </h3>
-                @if($t->events->isNotEmpty())
-                    <ol class="stp" style="margin: 0; padding-left: 18px;">
-                        @foreach($t->events as $event)
-                            <li style="margin-bottom: 14px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <b style="font-size: 13px; color: var(--ink);">
-                                        {{ ucfirst(str_replace('_', ' ', $event->type)) }}
-                                    </b>
-                                    <span style="font-size: 11.5px; color: var(--mut);">
-                                        • {{ $event->created_at ? $event->created_at->translatedFormat('d M Y, H:i') : '' }}
-                                    </span>
-                                </div>
-                                <div style="font-size: 12.5px; color: var(--mut); margin-top: 2px;">
-                                    Oleh: <b>{{ $event->actor?->nama ?: 'Sistem Otomatis' }}</b>
-                                </div>
-                                @if(!empty($event->payload['note']) || !empty($event->payload['message']) || !empty($event->payload['reason']))
-                                    <div style="font-size: 12.5px; color: var(--ink); margin-top: 4px; background: #F8FAFC; padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--g);">
-                                        {{ $event->payload['note'] ?? $event->payload['message'] ?? $event->payload['reason'] ?? '' }}
+                        @php
+                            $worklogs = $t->events->filter(fn($e) => in_array($e->type, ['worklog_added', 'catatan_teknisi', 'progres_teknisi', 'status_changed']));
+                        @endphp
+
+                        @if($worklogs->isNotEmpty())
+                            <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+                                @foreach($worklogs as $wl)
+                                    <div style="padding: 12px 14px; border-radius: 10px; background: #F8FAFC; border: 1px solid var(--line);">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                            <b style="font-size: 13px; color: var(--ink);">{{ $wl->actor?->nama ?: 'Teknisi Lapangan' }}</b>
+                                            <span style="font-size: 11.5px; color: var(--mut);">{{ $wl->created_at?->translatedFormat('d M Y, H:i') }}</span>
+                                        </div>
+                                        <p style="margin: 4px 0 0; font-size: 13px; color: var(--ink); line-height: 1.5;">
+                                            {{ $wl->payload['note'] ?? $wl->payload['message'] ?? $wl->payload['catatan'] ?? '-' }}
+                                        </p>
                                     </div>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ol>
-                @else
-                    <p style="margin: 0; font-size: 13px; color: var(--mut);">Belum ada rekam jejak event pada tiket ini.</p>
-                @endif
+                                @endforeach
+                            </div>
+                        @else
+                            <p style="margin: 0 0 16px; font-size: 13px; color: var(--mut);">Belum ada catatan progres tercatat. Gunakan formulir di sebelah kanan untuk memperbarui progres.</p>
+                        @endif
+                    </div>
+
+                    <!-- Tab 2: Hambatan Lapangan (Blockers) -->
+                    <div id="tab-content-blockers" style="display: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px;">
+                                <span>⚠️</span> Hambatan Lapangan (Blockers)
+                            </h3>
+                            @if(in_array($a->status, ['assigned', 'working']) && !$isTerminalTicket)
+                                <button type="button" class="btn o" style="font-size: 12px; padding: 8px 14px; min-height: 44px; display: inline-flex; align-items: center;" onclick="document.getElementById('modal-blocker').showModal()">
+                                    + Laporkan Hambatan
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($a->blockers->isNotEmpty())
+                            <div style="display: grid; gap: 10px;">
+                                @foreach($a->blockers as $blocker)
+                                    <div style="padding: 12px 14px; border-radius: 10px; border: 1px solid {{ $blocker->isOpen() ? '#FECACA' : '#E2E8F0' }}; background: {{ $blocker->isOpen() ? '#FFF5F5' : '#F8FAFC' }};">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="font-weight: 700; font-size: 12px; color: {{ $blocker->isOpen() ? '#991B1B' : '#0F766E' }};">
+                                                {{ $blocker->jenis_label }}
+                                            </span>
+                                            @if($blocker->isOpen())
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <span style="font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: #FEE2E2; color: #991B1B;">
+                                                        🔴 TERBUKA
+                                                    </span>
+                                                    <form action="{{ route('teknisi.tugas.hambatan.resolve', ['id' => $a->id, 'blockerId' => $blocker->id]) }}" method="POST" style="margin: 0;">
+                                                        @csrf
+                                                        <button type="submit" style="font-size: 11px; font-weight: 700; padding: 6px 12px; min-height: 44px; border-radius: 6px; background: #059669; color: #fff; border: 0; cursor: pointer; display: inline-flex; align-items: center;">
+                                                            Tandai Selesai
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @else
+                                                <span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #ECFDF5; color: #065F46;">
+                                                    ✓ SELESAI ({{ $blocker->resolved_at?->diffForHumans() }})
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div style="font-size: 13px; color: var(--ink); margin-top: 4px;">
+                                            {{ $blocker->keterangan }}
+                                        </div>
+                                        <div style="font-size: 11.5px; color: var(--mut); margin-top: 6px;">
+                                            Bukti / Tiket: <b>{{ $blocker->bukti }}</b> • Waktu: {{ $blocker->created_at->translatedFormat('d M Y, H:i') }}
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p style="margin: 0; font-size: 13px; color: var(--mut);">Belum ada hambatan lapangan yang dilaporkan. Pengerjaan berjalan lancar.</p>
+                        @endif
+                    </div>
+
+                    <!-- Tab 3: Timeline Aktivitas (Ticket Events) -->
+                    <div id="tab-content-history" style="display: none;">
+                        <h3 style="margin: 0 0 14px; font-size: 15px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px;">
+                            <span>📜</span> Rekam Jejak Aktivitas (Audit Events)
+                        </h3>
+                        @if($t->events->isNotEmpty())
+                            <ol class="stp" style="margin: 0; padding-left: 18px;">
+                                @foreach($t->events as $event)
+                                    <li style="margin-bottom: 14px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <b style="font-size: 13px; color: var(--ink);">
+                                                {{ ucfirst(str_replace('_', ' ', $event->type)) }}
+                                            </b>
+                                            <span style="font-size: 11.5px; color: var(--mut);">
+                                                • {{ $event->created_at ? $event->created_at->translatedFormat('d M Y, H:i') : '' }}
+                                            </span>
+                                        </div>
+                                        <div style="font-size: 12.5px; color: var(--mut); margin-top: 2px;">
+                                            Oleh: <b>{{ $event->actor?->nama ?: 'Sistem Otomatis' }}</b>
+                                        </div>
+                                        @if(!empty($event->payload['note']) || !empty($event->payload['message']) || !empty($event->payload['reason']))
+                                            <div style="font-size: 12.5px; color: var(--ink); margin-top: 4px; background: #F8FAFC; padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--g);">
+                                                {{ $event->payload['note'] ?? $event->payload['message'] ?? $event->payload['reason'] ?? '' }}
+                                            </div>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                        @else
+                            <p style="margin: 0; font-size: 13px; color: var(--mut);">Belum ada rekam jejak event pada tiket ini.</p>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -442,16 +494,16 @@
                             <label style="font-size: 11.5px; color: var(--mut); display: block; margin-bottom: 2px;">Lampirkan Foto/File Progres (Opsional):</label>
                             <input type="file" name="berkas" accept=".jpg,.jpeg,.png,.pdf,.txt,.log" style="font-size: 12px; width: 100%;">
                         </div>
-                        <button type="submit" class="btn o" style="width: 100%; font-size: 13px; justify-content: center;">
+                        <button type="submit" class="btn o" style="width: 100%; min-height: 44px; font-size: 13px; justify-content: center; display: inline-flex; align-items: center;">
                             + Simpan Catatan Progres
                         </button>
                     </form>
 
                     <hr style="border: 0; border-top: 1px solid var(--line); margin: 16px 0;">
 
-                    <!-- Tombol Ajukan Selesai -->
-                    <button type="button" class="btn" style="width: 100%; padding: 12px; font-size: 14px; justify-content: center; background: #059669;" onclick="document.getElementById('modal-submit-review').showModal()">
-                        🚀 Selesaikan Pekerjaan (Kirim ke Pelapor)
+                    <!-- Single Next Action: Tombol Ajukan Selesai (44px min touch target) -->
+                    <button type="button" class="btn" style="width: 100%; min-height: 48px; padding: 12px; font-size: 14px; font-weight: 800; justify-content: center; background: #059669; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(5,150,105,0.25);" onclick="document.getElementById('modal-submit-review').showModal()">
+                        <span>🚀</span> Selesaikan Pekerjaan (Kirim ke Pelapor)
                     </button>
 
                 @elseif($a->status === 'submitted')
@@ -538,32 +590,131 @@
     </form>
 </dialog>
 
-<!-- Modal 3: Selesaikan Pekerjaan (Kirim Langsung ke Pelapor) -->
+<!-- Modal 3: Selesaikan Pekerjaan (Form Isian) -->
 <dialog id="modal-submit-review" style="border: 0; border-radius: 16px; padding: 0; width: 500px; max-width: 90vw; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
     <div style="padding: 18px 20px; background: #059669; color: #fff; display: flex; justify-content: space-between; align-items: center;">
         <b style="font-size: 16px;">Selesaikan Pekerjaan & Teruskan ke Pelapor</b>
         <button type="button" onclick="this.closest('dialog').close()" style="background: none; border: 0; color: #fff; font-size: 20px; cursor: pointer;">✕</button>
     </div>
-    <form action="{{ route('teknisi.tugas.selesai', $a->id) }}" method="POST" enctype="multipart/form-data" style="padding: 20px;">
+    <form id="form-submit-review" action="{{ route('teknisi.tugas.selesai', $a->id) }}" method="POST" enctype="multipart/form-data" style="padding: 20px;" onsubmit="handleReviewSubmitPreview(event)">
         @csrf
         <input type="hidden" name="row_version" value="{{ $a->row_version }}">
         <p style="margin: 0 0 12px; font-size: 13px; color: var(--mut);">
             Tuliskan tindakan teknis perbaikan yang telah Anda selesaikan. Tiket akan langsung beralih ke status Selesai (Resolved) dan pelapor dapat langsung mengonfirmasi penyelesaian kendala.
         </p>
         <div style="margin-bottom: 12px;">
-            <label style="font-size: 12px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px;">Catatan Solusi / Tindakan Perbaikan (Min. 10 Karakter):</label>
-            <textarea name="catatan" rows="4" class="in" placeholder="Contoh: Splicing core FO putus di tiang #14 dan pengecekan sinyal optical power meter (-18 dBm)..." required minlength="10" style="width: 100%; font-size: 13px;"></textarea>
+            <label style="font-size: 12px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px;">Catatan Solusi / Tindakan Perbaikan (Min. 10 Karakter): *</label>
+            <textarea name="catatan" id="tech-catatan-input" rows="4" class="in" placeholder="Contoh: Splicing core FO putus di tiang #14 dan pengecekan sinyal optical power meter (-18 dBm)..." required minlength="10" style="width: 100%; font-size: 13px;"></textarea>
         </div>
         <div style="margin-bottom: 16px;">
             <label style="font-size: 12px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px;">Foto Bukti Hasil Perbaikan (Opsional, Max 10MB):</label>
-            <input type="file" name="bukti_foto" accept=".jpg,.jpeg,.png,.pdf,.txt,.log,.mp4" style="font-size: 12px; width: 100%;">
-            <p style="font-size: 11px; color: var(--mut); margin: 4px 0 0;">Format didukung: JPG, PNG, PDF, TXT, LOG, MP4 (Maks. 10MB). Foto otomatis dioptimalkan sebelum terkirim.</p>
+            <input type="file" name="bukti_foto" id="tech-foto-input" accept=".jpg,.jpeg,.png,.pdf,.txt,.log,.mp4" style="font-size: 12px; width: 100%;">
+            <p style="font-size: 11px; color: var(--mut); margin: 4px 0 0;">Format didukung: JPG, PNG, PDF, TXT, LOG, MP4 (Maks. 10MB).</p>
         </div>
         <div style="display: flex; gap: 8px; justify-content: flex-end;">
-            <button type="button" class="btn o" onclick="this.closest('dialog').close()">Batal</button>
-            <button type="submit" class="btn" style="background: #059669;">Kirim & Selesaikan Tiket</button>
+            <button type="button" class="btn o" onclick="this.closest('dialog').close()" style="min-height: 44px; padding: 10px 16px;">Batal</button>
+            <button type="submit" class="btn" style="background: #059669; min-height: 44px; padding: 10px 20px;">Lanjut Ringkasan &rarr;</button>
         </div>
     </form>
 </dialog>
+
+<!-- Modal 4: Layar Ringkasan "Selesaikan" (Review Sebelum Kirim ke Pelapor) -->
+<dialog id="modal-summary-review" style="border: 0; border-radius: 16px; padding: 0; width: 490px; max-width: 90vw; box-shadow: 0 25px 50px rgba(0,0,0,0.35);">
+    <div style="padding: 18px 20px; background: #059669; color: #fff; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">📋</span>
+            <b style="font-size: 16px;">Ringkasan Penyelesaian Pekerjaan</b>
+        </div>
+        <button type="button" onclick="this.closest('dialog').close()" style="background: none; border: 0; color: #fff; font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+    <div style="padding: 20px; display: grid; gap: 14px;">
+        <p style="margin: 0; font-size: 13px; color: var(--mut); line-height: 1.5;">
+            Periksa kembali rincian solusi di bawah ini sebelum dikirim ke pelapor:
+        </p>
+
+        <div style="background: #F8FAFC; border: 1px solid var(--line); border-radius: 12px; padding: 14px;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--mut); text-transform: uppercase; display: block; margin-bottom: 4px;">Catatan Solusi:</span>
+            <div id="summary-catatan-text" style="font-size: 13px; color: var(--ink); white-space: pre-wrap; line-height: 1.5; font-weight: 600;"></div>
+        </div>
+
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; font-weight: 700; color: #166534;">Foto / Berkas Bukti:</span>
+            <span id="summary-foto-count" style="font-size: 12px; font-weight: 700; color: #047857;"></span>
+        </div>
+
+        <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 12px 14px;">
+            <span style="font-size: 12px; color: #1E40AF; display: block; line-height: 1.4;">
+                ℹ️ Status tiket akan langsung beralih ke <b>Resolved (Selesai)</b> dan pelapor dapat langsung mengonfirmasi penyelesaian kendala.
+            </span>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
+            <button type="button" class="btn o" onclick="backToCompletionForm()" style="min-height: 44px; padding: 10px 16px; font-size: 13px;">
+                Kembali Ubah
+            </button>
+            <button type="button" class="btn" onclick="confirmSendToReporter()" style="min-height: 44px; padding: 10px 20px; font-size: 13px; background: #059669; font-weight: 800;">
+                ✓ Ya, kirim ke pelapor
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    function switchTechTab(tabName) {
+        ['worklog', 'blockers', 'history'].forEach(tab => {
+            const btn = document.getElementById('tab-btn-' + tab);
+            const content = document.getElementById('tab-content-' + tab);
+            if (tab === tabName) {
+                if (btn) {
+                    btn.style.borderBottom = '2px solid var(--navy)';
+                    btn.style.background = '#fff';
+                    btn.style.color = 'var(--navy)';
+                }
+                if (content) content.style.display = 'block';
+            } else {
+                if (btn) {
+                    btn.style.borderBottom = '2px solid transparent';
+                    btn.style.background = 'transparent';
+                    btn.style.color = 'var(--mut)';
+                }
+                if (content) content.style.display = 'none';
+            }
+        });
+    }
+
+    function handleReviewSubmitPreview(event) {
+        event.preventDefault();
+        const form = document.getElementById('form-submit-review');
+        const notes = document.getElementById('tech-catatan-input')?.value.trim() || '';
+        const fileInput = document.getElementById('tech-foto-input');
+        const fileCount = fileInput && fileInput.files ? fileInput.files.length : 0;
+        const fileName = fileCount > 0 ? fileInput.files[0].name : '';
+
+        if (notes.length < 10) {
+            alert('Catatan solusi perbaikan wajib diisi minimal 10 karakter.');
+            document.getElementById('tech-catatan-input')?.focus();
+            return;
+        }
+
+        document.getElementById('summary-catatan-text').textContent = notes;
+        document.getElementById('summary-foto-count').textContent = fileCount > 0 
+            ? `📸 1 Berkas Foto Terlampir (${fileName})` 
+            : 'Tidak ada lampiran foto (Opsional)';
+
+        document.getElementById('modal-submit-review').close();
+        document.getElementById('modal-summary-review').showModal();
+    }
+
+    function confirmSendToReporter() {
+        const form = document.getElementById('form-submit-review');
+        document.getElementById('modal-summary-review').close();
+        form.submit();
+    }
+
+    function backToCompletionForm() {
+        document.getElementById('modal-summary-review').close();
+        document.getElementById('modal-submit-review').showModal();
+    }
+</script>
 <script src="{{ asset('js/secure-client-upload.js') }}"></script>
 @endsection

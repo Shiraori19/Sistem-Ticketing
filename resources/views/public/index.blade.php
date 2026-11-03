@@ -8,7 +8,7 @@
     <!-- ══════════════════════════════════════════════════════════════════════
          A. HERO HEADER (Dark Navy Gradient)
          ══════════════════════════════════════════════════════════════════════ -->
-    <header class="relative bg-gradient-to-br from-slate-950 via-[#0f274a] to-[#1e3a6a] text-white pt-5 pb-12 sm:pb-14 overflow-hidden w-full">
+    <header class="relative bg-gradient-to-br from-slate-950 via-[#0f274a] to-[#1e3a6a] text-white pt-5 pb-20 sm:pb-24 overflow-hidden w-full">
         <!-- Ambient Radial Highlight Background -->
         <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute top-1/2 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -17,15 +17,13 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <!-- Top Navbar Bar inside Hero -->
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 border-b border-white/10">
-                <!-- DKIS Logo (Tanpa titik merah yang membingungkan) -->
+                <!-- DKIS Logo & Branding -->
                 <div class="flex items-center space-x-3.5">
                     <img src="{{ asset('images/logo-dkis.png') }}" alt="Logo DKIS" class="h-11 w-auto object-contain">
-                    <div>
-                        <div class="flex items-center">
-                            <span class="text-2xl font-extrabold tracking-tight text-white">DKIS</span>
-                        </div>
+                    <div class="border-l border-white/20 pl-3 text-left">
+                        <span class="text-sm sm:text-base font-extrabold tracking-tight text-white block leading-tight">Pemerintah Daerah Kota Cirebon</span>
                         <p class="text-xs text-slate-300 font-medium tracking-wide">
-                            Dinas Komunikasi, Informatika dan Statistik Kota Cirebon
+                            Dinas Komunikasi, Informatika dan Statistik
                         </p>
                     </div>
                 </div>
@@ -33,28 +31,32 @@
                 <!-- Top Navbar Right Actions: Tombol Lacak / Buat Pengaduan Diperbesar -->
                 <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
                     <button type="button" id="nav-btn-toggle" onclick="togglePortalTab()"
-                        class="inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-sm sm:text-base font-bold text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 shadow-md transition transform active:scale-95 cursor-pointer">
+                        class="inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-sm sm:text-base font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-400/50 shadow-md transition transform active:scale-95 cursor-pointer">
                         <span id="nav-btn-icon">{{ ($activeTab ?? 'buat') === 'lacak' ? '✍️' : '🔍' }}</span>
                         <span id="nav-btn-label">{{ ($activeTab ?? 'buat') === 'lacak' ? 'Buat Pengaduan Baru' : 'Lacak Status Tiket' }}</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Hero Headline & Description: Pendek, Bahasa Sehari-hari, Seragam -->
-            <div class="text-center max-w-3xl mx-auto mt-4 sm:mt-5 space-y-2">
-                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+            <!-- Hero Headline & Description -->
+            <div class="text-center max-w-3xl mx-auto mt-6 sm:mt-8 mb-4 sm:mb-6 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold backdrop-blur-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Portal Resmi Layanan & Pengaduan TIK
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight drop-shadow-xs">
                     Layanan Pengaduan & Bantuan TIK DKIS
                 </h1>
 
-                <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                    Pusat bantuan penanganan kendala internet kantor bermasalah, aplikasi kedinasan tidak bisa dibuka, reset kata sandi, dan perbaikan perangkat TIK di lingkungan Pemerintah Daerah Kota Cirebon.
+                <p class="text-sm sm:text-base text-slate-200 max-w-xl mx-auto leading-relaxed">
+                    Pusat bantuan kendala jaringan, aplikasi kedinasan, dan perangkat TIK Pemerintah Kota Cirebon.
                 </p>
             </div>
         </div>
 
-        <!-- Wave SVG Separator: Diperpendek tingginya agar formulir tampak di layar pertama -->
+        <!-- Wave SVG Separator: Menghubungkan Hero dengan Kartu Formulir Secara Mulus -->
         <div class="absolute bottom-0 left-0 right-0 leading-none overflow-hidden pointer-events-none">
-            <svg class="relative block w-full h-8 sm:h-10 text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <svg class="relative block w-full h-10 sm:h-12 text-slate-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
                 <path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,40 L1200,120 L0,120 Z" fill="currentColor"></path>
             </svg>
         </div>
@@ -63,7 +65,7 @@
     <!-- ══════════════════════════════════════════════════════════════════════
          MAIN CONTENT CONTAINER (Floating White Cards)
          ══════════════════════════════════════════════════════════════════════ -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 sm:-mt-6 pb-16 relative z-20">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10 pb-16 relative z-20">
 
         <!-- Flash Session Messages -->
         @if(session('success'))
@@ -106,14 +108,14 @@
         <div id="section-buat-laporan" class="{{ ($activeTab ?? 'buat') === 'buat' ? '' : 'hidden' }}">
             <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/70 border border-slate-200/80 overflow-hidden">
                 <!-- Form Header -->
-                <div class="px-6 sm:px-10 py-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="px-6 sm:px-10 py-5 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
                             <span>📝</span>
-                            <span>Formulir Layanan Pengaduan TIK DKIS</span>
+                            <span>Formulir Pengaduan Layanan TIK</span>
                         </h2>
-                        <p class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-                            Sampaikan permohonan bantuan atau laporan kendala Anda. Kolom bertanda <span class="text-rose-600 font-bold">* (Wajib)</span> harus diisi. Setelah dikirim, Anda akan langsung menerima <strong>Nomor Tiket (Nomor Laporan)</strong> dan PIN tanda terima resmi.
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                            Sampaikan kendala atau permohonan layanan TIK Anda pada formulir di bawah ini.
                         </p>
                     </div>
                 </div>
@@ -122,52 +124,50 @@
                 <form action="{{ route('public.ticket.store') }}" method="POST" enctype="multipart/form-data" class="p-6 sm:p-10 space-y-6" onsubmit="return handleFormSubmitWithValidation(this, event)">
                     @csrf
 
-                    <!-- 1. Identitas ASN Pelapor -->
+                    <!-- 1. Identitas Pelapor -->
                     <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">1</span>
-                            Identitas Pegawai Pelapor (ASN)
+                        <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+                            Identitas Pelapor
                         </h3>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 items-start">
-                            <!-- NIP / NIPK (Validasi Ketat 18 Digit BKN) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start">
+                            <!-- NIP / NIPK Pegawai -->
                             <div>
                                 <div class="flex items-center justify-between mb-1.5">
-                                    <label for="nip_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800">
-                                        NIP / NIPK Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                    <label for="nip_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700">
+                                        NIP / NIPK Pegawai <span class="text-rose-500">*</span>
                                     </label>
-                                    <span id="nip_char_hint" class="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">18 Angka</span>
+                                    <span id="nip_char_hint" class="hidden"></span>
                                 </div>
                                 <input type="text" id="nip_pelapor" name="nip_pelapor" value="{{ old('nip_pelapor') }}" 
                                     inputmode="numeric" minlength="18" maxlength="18" pattern="[0-9]{18}" 
                                     placeholder="Contoh: 198503122010011003" required
                                     oninput="handleNipInput(this)"
-                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 font-mono text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Masukkan 18 angka NIP resmi tanpa spasi atau tanda hubung.</p>
-                                <div id="nip_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 px-3.5 font-mono text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <div id="nip_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
                             </div>
 
                             <!-- Nama Lengkap -->
                             <div>
-                                <label for="nama_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Nama Lengkap Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                <label for="nama_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Nama Lengkap <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" id="nama_pelapor" name="nama_pelapor" value="{{ old('nama_pelapor') }}" 
-                                    placeholder="Contoh: Drs. Agus Prasetyo, M.Si." required
+                                    placeholder="Nama lengkap beserta gelar" required
                                     oninput="clearFieldInlineError(this, 'nama_error')"
-                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Nama lengkap pelapor beserta gelar jika ada.</p>
-                                <div id="nama_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 px-3.5 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <div id="nama_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
                             </div>
 
                             <!-- SKPD / Instansi (Searchable Combobox) -->
                             <div class="relative" id="skpd_search_container">
-                                <label for="skpd_search_input" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    SKPD / Perangkat Daerah <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                <label for="skpd_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Instansi / SKPD <span class="text-rose-500">*</span>
                                 </label>
 
                                 <!-- Hidden input untuk form submit -->
@@ -175,15 +175,15 @@
 
                                 <!-- Kotak Input SKPD dengan Ikon Cari, Clear, & Chevron Dropdown -->
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
                                     <input type="text" id="skpd_search_input" autocomplete="off"
-                                        placeholder="Pilih atau cari instansi Anda..."
+                                        placeholder="Pilih atau cari instansi..."
                                         value="{{ old('skpd') }}"
-                                        class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
+                                        class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
                                         onclick="openSkpdDropdown()"
                                         onfocus="openSkpdDropdown()"
                                         oninput="handleSkpdSearchInput(this.value)">
@@ -198,7 +198,7 @@
                                             </svg>
                                         </button>
                                         <button type="button" id="skpd_chevron_btn" onclick="toggleSkpdDropdown()"
-                                            class="p-1.5 text-slate-500 hover:text-blue-600 cursor-pointer transition transform"
+                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
                                             title="Buka / tutup daftar instansi">
                                             <svg id="skpd_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -206,16 +206,14 @@
                                         </button>
                                     </div>
                                 </div>
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Pilih dari daftar atau ketikkan nama dinas / kantor Anda.</p>
-                                <div id="skpd_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                <div id="skpd_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
 
                                 <!-- Panel Dropdown SKPD: Ringkas & Dapat Di-Scroll -->
                                 <div id="skpd_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
-                                        <span>📜 DAFTAR INSTANSI (GULIR KE BAWAH)</span>
-                                        <span class="text-blue-700 font-semibold">Bisa scroll & ketik</span>
+                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                        Pilih Instansi
                                     </div>
                                     @php
                                         $daftarOpd = (isset($masterOpdList) && $masterOpdList->isNotEmpty())
@@ -241,14 +239,15 @@
                                                 'Dinas Pemuda dan Olahraga (Dispora)',
                                                 'Badan Penanggulangan Bencana Daerah (BPBD)',
                                                 'RSUD Gunung Jati Kota Cirebon',
+                                                'Lainnya (Jelaskan di Deskripsi)',
                                             ];
                                     @endphp
                                     <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="skpd_items_container" style="scrollbar-width: thin;">
                                         <!-- Opsi Custom Teks Ketikan (Muncul saat mengetik nama yang belum ada) -->
-                                        <div id="skpd_custom_option" class="hidden px-3.5 py-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectSkpdCustom()">
+                                        <div id="skpd_custom_option" class="hidden px-3.5 py-2.5 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectSkpdCustom()">
                                             <div class="flex items-center gap-2">
                                                 <span>✍️</span>
-                                                <span>Gunakan: <strong id="skpd_custom_label" class="underline"></strong></span>
+                                                <span>Pilih Lainnya dan jelaskan di deskripsi (<strong id="skpd_custom_label" class="underline"></strong>)</span>
                                             </div>
                                         </div>
 
@@ -264,42 +263,41 @@
                                     </div>
                                     <div id="skpd_empty_state" class="hidden p-3.5 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
                                         <span>Tidak menemukan nama instansi dalam daftar?</span>
-                                        <button type="button" onclick="selectSkpdCustom()" class="block w-full mt-1 text-blue-600 hover:underline font-bold cursor-pointer">
-                                            ✍️ Gunakan nama yang Anda ketik sebagai instansi baru
+                                        <button type="button" onclick="selectSkpdCustom()" class="block w-full mt-1.5 text-blue-700 hover:underline font-bold cursor-pointer">
+                                            ✍️ Pilih Lainnya dan jelaskan di deskripsi
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Nomor Kontak / Telepon Pelapor -->
+                            <!-- Nomor WhatsApp -->
                             <div>
-                                <label for="no_whatsapp" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Nomor Kontak / WhatsApp Pegawai <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                <label for="no_whatsapp" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Nomor WhatsApp <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="tel" id="no_whatsapp" name="no_whatsapp" value="{{ old('no_whatsapp') }}" 
                                     placeholder="Contoh: 081234567890" required
                                     oninput="clearFieldInlineError(this, 'wa_error')"
-                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Nomor aktif telepon/WhatsApp untuk koordinasi teknisi.</p>
-                                <div id="wa_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 px-3.5 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <div id="wa_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. Rincian Permasalahan & Layanan -->
+                    <!-- 2. Rincian Kendala -->
                     <div>
-                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">2</span>
-                            Rincian Kendala & Kebutuhan Layanan
+                        <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                            Rincian Kendala
                         </h3>
 
-                        <div class="space-y-5">
+                        <div class="space-y-4 sm:space-y-5">
                             <!-- Kategori Masalah / Layanan DKIS (Searchable Combobox) -->
                             <div class="relative" id="cat_search_container">
-                                <label for="cat_search_input" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Kategori Masalah / Layanan DKIS <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                <label for="cat_search_input" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Kategori Kendala <span class="text-rose-500">*</span>
                                 </label>
 
                                 <!-- Hidden input untuk form submit -->
@@ -330,7 +328,7 @@
                                     <input type="text" id="cat_search_input" autocomplete="off"
                                         placeholder="Pilih atau cari jenis kendala..."
                                         value="{{ $selectedCatName }}"
-                                        class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
+                                        class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 pl-10 pr-16 bg-white transition cursor-pointer text-slate-900 shadow-2xs placeholder:text-slate-400"
                                         onclick="openCatDropdown()"
                                         onfocus="openCatDropdown()"
                                         oninput="handleCatSearchInput(this.value)">
@@ -345,7 +343,7 @@
                                             </svg>
                                         </button>
                                         <button type="button" id="cat_chevron_btn" onclick="toggleCatDropdown()"
-                                            class="p-1.5 text-slate-500 hover:text-blue-600 cursor-pointer transition transform"
+                                            class="p-1.5 text-slate-400 hover:text-blue-600 cursor-pointer transition transform"
                                             title="Buka / tutup daftar kategori">
                                             <svg id="cat_chevron_icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -353,23 +351,21 @@
                                         </button>
                                     </div>
                                 </div>
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Pilih jenis layanan yang sesuai (contoh: Gangguan Internet, Reset Kata Sandi, dsb).</p>
-                                <div id="cat_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                <div id="cat_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
 
                                 <!-- Panel Dropdown Kategori: Ringkas, Tanpa Judul Bidang & Dapat Di-Scroll -->
                                 <div id="cat_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-600">
-                                        <span>📜 DAFTAR KATEGORI (GULIR KE BAWAH)</span>
-                                        <span class="text-blue-700 font-semibold">Bisa scroll & ketik</span>
+                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                        Pilih Kategori
                                     </div>
                                     <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="cat_items_container" style="scrollbar-width: thin;">
                                         <!-- Opsi Kategori Kustom (Muncul saat mengetik kategori yang belum ada) -->
-                                        <div id="cat_custom_option" class="hidden px-3.5 py-2 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectCatCustom('{{ $fallbackCatId }}')">
+                                        <div id="cat_custom_option" class="hidden px-3.5 py-2.5 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectCatCustom('{{ $fallbackCatId }}')">
                                             <div class="flex items-center gap-2">
                                                 <span>✍️</span>
-                                                <span>Gunakan: <strong id="cat_custom_label" class="underline"></strong> (Kategori Baru)</span>
+                                                <span>Pilih Lainnya dan jelaskan di deskripsi (<strong id="cat_custom_label" class="underline"></strong>)</span>
                                             </div>
                                         </div>
 
@@ -384,10 +380,10 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                    <div id="cat_empty_state" class="hidden p-3.5 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
-                                        <span>Tidak menemukan kategori yang dicari?</span>
-                                        <button type="button" onclick="selectCatCustom('{{ $fallbackCatId }}')" class="block w-full mt-1 text-blue-600 hover:underline font-bold cursor-pointer">
-                                            ✍️ Gunakan nama yang Anda ketik sebagai kategori baru
+                                    <div id="cat_empty_state" class="hidden p-3.5 text-center text-xs text-slate-600 bg-slate-50 border-t border-slate-100">
+                                        <span>Tidak menemukan kategori yang sesuai?</span>
+                                        <button type="button" onclick="selectCatCustom('{{ $fallbackCatId }}')" class="block w-full mt-1.5 text-blue-700 hover:underline font-bold cursor-pointer">
+                                            ✍️ Pilih Lainnya dan jelaskan di deskripsi
                                         </button>
                                     </div>
                                 </div>
@@ -395,65 +391,62 @@
 
                             <!-- Judul / Pokok Masalah -->
                             <div>
-                                <label for="judul" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Judul / Pokok Masalah <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
+                                <label for="judul" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Judul Kendala <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" id="judul" name="judul" value="{{ old('judul') }}" 
-                                    placeholder="Contoh: Internet kantor mati di Ruang Rapat / Lupa kata sandi email dinas" required
+                                    placeholder="Contoh: Gangguan jaringan internet di Ruang Rapat" required
                                     oninput="clearFieldInlineError(this, 'judul_error')"
-                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-3 px-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
-                                <p class="text-xs text-slate-600 font-medium mt-1.5">Tuliskan ringkasan singkat kendala yang sedang dialami.</p>
-                                <div id="judul_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                    class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base py-2.5 px-3.5 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">
+                                <div id="judul_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
                             </div>
 
                             <!-- Deskripsi Lengkap -->
                             <div>
-                                <label for="deskripsi" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Deskripsi Lengkap & Lokasi Kendala <span class="text-rose-600 font-bold ml-1 text-xs sm:text-sm">* (Wajib)</span>
-                                </label>
-                                <textarea id="deskripsi" name="deskripsi" rows="5" minlength="20" required
-                                    placeholder="Jelaskan secara rinci kendala yang dialami, letak lantai atau ruangan, waktu mulai gangguan, dan nomor alternatif yang dapat dihubungi teknisi..."
-                                    oninput="updateDeskripsiCounter(this); clearFieldInlineError(this, 'deskripsi_error')"
-                                    class="w-full rounded-xl border-2 border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base p-4 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">{{ old('deskripsi') }}</textarea>
-                                
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm mt-1.5 gap-1 font-medium">
-                                    <span class="text-slate-600">Minimal 20 karakter agar teknisi memahami ruang lingkup penanganan.</span>
-                                    <span id="deskripsi-char-count" class="font-bold text-slate-600">
-                                        <span id="char-current">0</span> / 20 karakter
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label for="deskripsi" class="block text-xs sm:text-sm font-semibold text-slate-700">
+                                        Deskripsi Kendala <span class="text-rose-500">*</span>
+                                    </label>
+                                    <span id="deskripsi-char-count" class="text-xs text-slate-400">
+                                        <span id="char-current">0</span> / 20 min.
                                     </span>
                                 </div>
-                                <div id="deskripsi_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-1.5 flex items-center gap-1.5">
+                                <textarea id="deskripsi" name="deskripsi" rows="4" minlength="20" required
+                                    placeholder="Jelaskan secara rinci kendala yang dialami, letak lantai atau ruangan, waktu kejadian..."
+                                    oninput="updateDeskripsiCounter(this); clearFieldInlineError(this, 'deskripsi_error')"
+                                    class="w-full rounded-xl border border-slate-300 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 text-sm sm:text-base p-3.5 text-slate-900 bg-white transition shadow-2xs placeholder:text-slate-400">{{ old('deskripsi') }}</textarea>
+                                <div id="deskripsi_error" class="hidden text-xs font-bold text-rose-600 mt-1 flex items-center gap-1.5">
                                     <span>⚠️</span><span class="error-msg"></span>
                                 </div>
                             </div>
 
-                            <!-- Upload Bukti (Multi-Upload, Ringkas 1 Baris) -->
+                            <!-- Upload Bukti (Multi-Upload, Ringkas) -->
                             <div>
-                                <label for="lampiran_pelapor" class="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
-                                    Lampiran Foto / Bukti Pendukung (Opsional)
+                                <label for="lampiran_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Lampiran Foto / Dokumen (Opsional)
                                 </label>
-                                <div class="mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/70" onclick="document.getElementById('lampiran_pelapor').click()">
-                                    <div class="space-y-1.5 text-center">
-                                        <svg class="mx-auto h-10 w-10 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <div class="flex flex-col items-center justify-center px-4 py-4 border-2 border-slate-200 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/50 hover:bg-blue-50/20" onclick="document.getElementById('lampiran_pelapor').click()">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-7 w-7 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
-                                        <div class="flex text-sm text-slate-700 font-medium justify-center">
+                                        <div class="text-xs sm:text-sm text-slate-700 font-medium">
                                             <label for="lampiran_pelapor" class="relative cursor-pointer rounded-md font-bold text-blue-600 hover:text-blue-700 focus-within:outline-none" onclick="event.stopPropagation()">
-                                                <span>Pilih Berkas Lampiran</span>
+                                                <span>Pilih berkas</span>
                                                 <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
                                             </label>
-                                            <p class="pl-1 text-slate-600">atau klik area ini</p>
+                                            <span class="text-slate-500">atau seret ke sini</span>
                                         </div>
-                                        <p class="text-xs sm:text-sm text-slate-600 font-medium max-w-lg mx-auto">
-                                            Format berkas: JPG, PNG, atau PDF. Maksimal 5 berkas dengan total ukuran seluruhnya paling banyak 10 MB.
+                                        <p class="text-[11px] text-slate-400">
+                                            JPG, PNG, atau PDF • Maks. 5 berkas (Otomatis dioptimasi &lt; 1 MB)
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Pesan Error Validasi Klien -->
-                                <div id="file-error-alert" class="hidden mt-2 p-3 bg-rose-50 border-2 border-rose-300 rounded-xl text-xs sm:text-sm text-rose-900 flex items-center justify-between shadow-xs">
+                                <div id="file-error-alert" class="hidden mt-2 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-center justify-between shadow-xs">
                                     <div class="flex items-center gap-1.5 font-bold">
                                         <span>⚠️</span>
                                         <span id="file-error-message"></span>
@@ -462,34 +455,33 @@
                                 </div>
 
                                 <!-- Chips / Pills Berkas Terpilih -->
-                                <div id="file-list-preview" class="mt-3 flex flex-wrap gap-2"></div>
+                                <div id="file-list-preview" class="mt-2.5 flex flex-wrap gap-2"></div>
 
-                                <!-- Opsi Unggah Asli Tanpa Kompresi (Point 9: Kotak Diperbesar, Bahasa Sehari-hari) -->
-                                <div class="mt-3 pt-3 border-t border-slate-200">
-                                    <label class="flex items-center gap-3 cursor-pointer text-slate-800 select-none hover:text-blue-900">
+                                <!-- Opsi Unggah Kualitas Asli -->
+                                <div class="mt-2.5 pt-2.5 border-t border-slate-100">
+                                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-700 select-none hover:text-blue-900">
                                         <input type="checkbox" id="checkbox-raw-upload" name="is_raw_upload" value="1" 
-                                            class="w-5 h-5 rounded-md border-2 border-slate-400 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                                        <span class="font-semibold text-xs sm:text-sm">Kirim berkas dengan kualitas asli (centang hanya jika diminta oleh petugas keamanan DKIS)</span>
+                                            class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                        <span class="text-xs text-slate-500 font-medium">Kirim berkas kualitas asli tanpa kompresi (opsional, jika diminta petugas DKIS)</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Verifikasi Keamanan Pelapor (Google reCAPTCHA dalam Panel Rapi) -->
+                    <!-- 3. Verifikasi & Kirim -->
                     <div class="pt-2">
-                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-3 pb-2 border-b border-slate-200 flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-full bg-blue-600 text-white text-xs sm:text-sm flex items-center justify-center font-bold">3</span>
-                            Verifikasi Keamanan
+                        <h3 class="text-sm sm:text-base font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                            Verifikasi & Kirim
                         </h3>
-                        <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-200 flex flex-col items-center justify-center text-center">
-                            <p class="text-xs sm:text-sm text-slate-700 font-semibold mb-3">Centang kotak verifikasi di bawah ini untuk membuktikan Anda bukan program otomatis:</p>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
                             <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
-                            <div id="recaptcha_error" class="hidden text-xs sm:text-sm font-bold text-rose-600 mt-2.5 flex items-center gap-1.5">
-                                <span>⚠️</span><span class="error-msg">Harap centang kotak verifikasi keamanan sebelum mengirim laporan.</span>
+                            <div id="recaptcha_error" class="hidden text-xs font-bold text-rose-600 mt-2 flex items-center gap-1.5">
+                                <span>⚠️</span><span class="error-msg">Harap centang verifikasi keamanan sebelum mengirim.</span>
                             </div>
                             @error('g-recaptcha-response')
-                                <div class="text-xs sm:text-sm font-bold text-rose-600 flex items-center gap-1 mt-2">
+                                <div class="text-xs font-bold text-rose-600 flex items-center gap-1 mt-2">
                                     <span>⚠️</span>
                                     <span>{{ $message }}</span>
                                 </div>
@@ -497,17 +489,17 @@
                         </div>
                     </div>
 
-                    <!-- Tombol Kirim Full Width (Ikon Resmi, Anti Dobel Klik & Bahasa Sehari-hari) -->
+                    <!-- Tombol Kirim -->
                     <div class="pt-2">
                         <button type="submit" id="btn-submit-ticket"
-                            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold text-base sm:text-lg shadow-xl shadow-blue-600/25 hover:shadow-blue-600/35 transition transform active:scale-[0.99] flex items-center justify-center gap-3 cursor-pointer">
+                            class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2.5 cursor-pointer">
                             <svg id="btn-submit-icon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                             </svg>
-                            <span id="btn-submit-label">Kirim Laporan Pengaduan Sekarang</span>
+                            <span id="btn-submit-label">Kirim Laporan Pengaduan</span>
                         </button>
-                        <p class="text-center text-xs sm:text-sm text-slate-600 font-medium mt-3 leading-relaxed">
-                            Laporan Anda akan segera diperiksa oleh petugas DKIS pada hari dan jam kerja. Simpan nomor laporan untuk memantau proses perbaikan.
+                        <p class="text-center text-xs text-slate-400 font-medium mt-2.5">
+                            Nomor tiket dan PIN tanda terima akan diterbitkan secara otomatis setelah pengiriman.
                         </p>
                     </div>
                 </form>
@@ -521,10 +513,10 @@
             <!-- Tracking Search Form Card (On-Page, Form Validasi Kode Tiket + Nomor Kontak) -->
             <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/70 border border-slate-200/80 p-6 sm:p-8">
                 <div class="max-w-3xl mx-auto space-y-6">
-                    <div class="text-center space-y-2">
-                        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Lacak Status Pengaduan</h2>
-                        <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-                            Masukkan Kode Tiket pengaduan Anda dan Nomor Kontak / Telepon yang terdaftar untuk memantau perkembangan penanganan secara langsung dari tim DKIS.
+                    <div class="text-center space-y-1">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Lacak Status Pengaduan</h2>
+                        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+                            Masukkan kode tiket dan nomor WhatsApp terdaftar.
                         </p>
                     </div>
 
@@ -534,8 +526,8 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Field 1: Kode Tiket -->
                             <div>
-                                <label for="track_q" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                    Kode Tiket <span class="text-rose-500">*</span>
+                                <label for="track_q" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Nomor / Kode Tiket <span class="text-rose-500">*</span>
                                 </label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -543,14 +535,14 @@
                                     </span>
                                     <input type="text" id="track_q" name="q" value="{{ request('q') }}" required
                                         placeholder="Contoh: TIK-202609-0001"
-                                        class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-mono font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs uppercase">
+                                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-mono font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs uppercase">
                                 </div>
                             </div>
 
                             <!-- Field 2: Nomor Kontak Terdaftar -->
                             <div>
-                                <label for="track_wa" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                                    Nomor Kontak / Telepon Terdaftar <span class="text-rose-500">*</span>
+                                <label for="track_wa" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
+                                    Nomor WhatsApp <span class="text-rose-500">*</span>
                                 </label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -558,16 +550,12 @@
                                     </span>
                                     <input type="tel" id="track_wa" name="no_whatsapp" value="{{ request('no_whatsapp') }}" required
                                         placeholder="Contoh: 081234567890"
-                                        class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs">
+                                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-2xs">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                            <div class="flex items-center gap-2 text-[11px] text-slate-500">
-                                <span>🔒</span>
-                                <span>Privasi terlindungi: Hanya pelapor sah yang dapat melihat rincian tiket.</span>
-                            </div>
+                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-1">
                             <div class="flex items-center gap-2 w-full sm:w-auto">
                                 @if(!empty($query))
                                     <a href="{{ route('public.index', ['tab' => 'lacak']) }}"
@@ -1494,24 +1482,40 @@
                         </div>
                     </div>
 
-                    <!-- 3 Action Buttons on Deep Navy -->
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; padding: 0 2px;">
+                    <!-- Inline Feedback Message -->
+                    <div id="struk-inline-feedback" class="hidden" style="margin-top: 12px; padding: 8px 12px; background-color: #ecfdf5; border: 1.5px solid #10b981; border-radius: 10px; color: #065f46; font-size: 12px; font-weight: 700; text-align: center;">
+                    </div>
+
+                    <!-- Warning Alert Sebelum Menutup Modal -->
+                    <div style="margin-top: 12px; padding: 10px 12px; background-color: #fef3c7; border: 1.5px dashed #d97706; border-radius: 12px; color: #92400e; font-size: 11.5px; line-height: 1.45; font-weight: 700; display: flex; align-items: start; gap: 8px;">
+                        <span style="font-size: 16px;">⚠️</span>
+                        <span><strong>PENTING:</strong> Simpan PIN ini baik-baik. PIN tidak akan ditampilkan lagi setelah Anda menutup jendela ini!</span>
+                    </div>
+
+                    <!-- 4 Action Buttons on Deep Navy -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr) 1.2fr 1.2fr; gap: 8px; margin-top: 14px; padding: 0 2px;">
                         <button type="button" onclick="copyTicketCode('{{ $strukData['kode_tiket'] }}')"
-                            style="background-color: #e2e8f0; color: #0f172a; font-weight: 800; font-size: 12.5px; padding: 10px 12px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                            style="background-color: #e2e8f0; color: #0f172a; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s;">
                             <span id="copy-btn-icon">📋</span>
                             <span id="copy-btn-text">Salin Kode</span>
+                        </button>
+
+                        <button type="button" onclick="copyTicketPin('{{ $strukData['pin'] }}')"
+                            style="background-color: #fef3c7; color: #92400e; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: 1px solid #fcd34d; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s;">
+                            <span id="copy-pin-icon">🔒</span>
+                            <span id="copy-pin-text">Salin PIN</span>
                         </button>
 
                         <button type="button" 
                             id="btn-print-struk"
                             data-struk="{{ json_encode($strukData) }}"
                             onclick="triggerPrintStruk(JSON.parse(this.dataset.struk))"
-                            style="background-color: #2563eb; color: #ffffff; font-weight: 800; font-size: 12.5px; padding: 10px 12px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
+                            style="background-color: #2563eb; color: #ffffff; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
                             <span>🖨️ Cetak / PDF</span>
                         </button>
 
                         <button type="button" onclick="closeSuccessModal()"
-                            style="background-color: #1d4ed8; color: #ffffff; font-weight: 800; font-size: 12.5px; padding: 10px 12px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
+                            style="background-color: #1d4ed8; color: #ffffff; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
                             <span>🔍 Pantau Tiket</span>
                         </button>
                     </div>
@@ -1680,11 +1684,6 @@
             else clearBtn.classList.add('hidden');
         }
 
-        // Sinkronisasi langsung nilai teks yang diketik ke input form
-        if (hiddenInput) {
-            hiddenInput.value = q;
-        }
-
         openSkpdDropdown();
         filterSkpdOptions(q);
     }
@@ -1759,12 +1758,26 @@
         const searchInput = document.getElementById('skpd_search_input');
         const hiddenInput = document.getElementById('skpd');
         const clearBtn = document.getElementById('skpd_clear_btn');
+        const descArea = document.getElementById('deskripsi');
         const val = (searchInput ? searchInput.value : '').trim();
 
         if (val) {
-            if (hiddenInput) hiddenInput.value = val;
+            if (hiddenInput) hiddenInput.value = 'Lainnya (Jelaskan di Deskripsi)';
+            if (searchInput) {
+                searchInput.value = 'Lainnya (Jelaskan di Deskripsi)';
+                searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+            }
             if (clearBtn) clearBtn.classList.remove('hidden');
-            if (searchInput) searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+
+            if (descArea) {
+                const note = '[Instansi Pelapor: ' + val + ']\n';
+                if (!descArea.value.includes('[Instansi Pelapor:')) {
+                    descArea.value = note + descArea.value;
+                    if (typeof updateDeskripsiCounter === 'function') {
+                        updateDeskripsiCounter(descArea);
+                    }
+                }
+            }
         }
         closeSkpdDropdown();
     }
@@ -1910,13 +1923,27 @@
         const hiddenInput = document.getElementById('category_id');
         const customInput = document.getElementById('custom_category_name');
         const clearBtn = document.getElementById('cat_clear_btn');
+        const descArea = document.getElementById('deskripsi');
         const val = (searchInput ? searchInput.value : '').trim();
 
         if (val) {
             if (hiddenInput) hiddenInput.value = fallbackId;
             if (customInput) customInput.value = val;
+            if (searchInput) {
+                searchInput.value = 'Lainnya (Jelaskan di Deskripsi)';
+                searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+            }
             if (clearBtn) clearBtn.classList.remove('hidden');
-            if (searchInput) searchInput.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200');
+
+            if (descArea) {
+                const note = '[Kategori Kendala: ' + val + ']\n';
+                if (!descArea.value.includes('[Kategori Kendala:')) {
+                    descArea.value = note + descArea.value;
+                    if (typeof updateDeskripsiCounter === 'function') {
+                        updateDeskripsiCounter(descArea);
+                    }
+                }
+            }
         }
         closeCatDropdown();
     }
@@ -1957,8 +1984,6 @@
             if (hiddenSkpd && searchSkpd) {
                 if (hiddenSkpd.value) {
                     searchSkpd.value = hiddenSkpd.value;
-                } else if (searchSkpd.value.trim().length > 0) {
-                    hiddenSkpd.value = searchSkpd.value.trim();
                 } else {
                     searchSkpd.value = '';
                     const clearBtn = document.getElementById('skpd_clear_btn');
@@ -1979,12 +2004,8 @@
                     if (selectedOption) {
                         searchCat.value = selectedOption.getAttribute('data-name') || '';
                     }
-                } else if (customCat?.value) {
-                    searchCat.value = customCat.value;
-                } else if (searchCat.value.trim().length > 0) {
-                    // Simpan ketikan bebas jika belum terpilih
-                    hiddenCat.value = '{{ $fallbackCatId }}';
-                    if (customCat) customCat.value = searchCat.value.trim();
+                } else if (hiddenCat.value && customCat?.value) {
+                    searchCat.value = 'Lainnya (Jelaskan di Deskripsi)';
                 } else {
                     searchCat.value = '';
                     const clearBtn = document.getElementById('cat_clear_btn');
@@ -2039,14 +2060,14 @@
         const hint = document.getElementById('nip_char_hint');
         if (hint) {
             if (len === 18) {
-                hint.textContent = '✓ 18 Angka Lengkap';
-                hint.className = 'text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md';
+                hint.textContent = '✓ 18 Digit';
+                hint.className = 'text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md';
             } else if (len > 0) {
-                hint.textContent = `${len} dari 18 Angka`;
-                hint.className = 'text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md';
+                hint.textContent = `${len}/18`;
+                hint.className = 'text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md';
             } else {
-                hint.textContent = '18 Angka';
-                hint.className = 'text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md';
+                hint.textContent = '';
+                hint.className = 'hidden';
             }
         }
         if (len === 18) {
@@ -2109,11 +2130,8 @@
         // 3. Validasi SKPD / Perangkat Daerah
         const skpdHidden = document.getElementById('skpd');
         const skpdSearch = document.getElementById('skpd_search_input');
-        if (skpdSearch && skpdSearch.value.trim().length > 0) {
-            skpdHidden.value = skpdSearch.value.trim();
-        }
         if (!skpdHidden || !skpdHidden.value.trim()) {
-            showFieldInlineError(skpdSearch, 'skpd_error', 'Silakan pilih dari daftar atau ketikkan nama instansi/SKPD tempat Anda bertugas.');
+            showFieldInlineError(skpdSearch, 'skpd_error', 'Silakan pilih instansi/SKPD resmi dari daftar atau pilih opsi "Lainnya (Jelaskan di Deskripsi)".');
             if (!firstInvalidElem) firstInvalidElem = skpdSearch;
         } else {
             clearFieldInlineError(skpdSearch, 'skpd_error');
@@ -2135,13 +2153,8 @@
         // 5. Validasi Kategori Layanan
         const catId = document.getElementById('category_id');
         const catSearch = document.getElementById('cat_search_input');
-        const customCat = document.getElementById('custom_category_name');
-        if (catSearch && catSearch.value.trim().length > 0 && (!catId.value || catId.value === '')) {
-            catId.value = '{{ $fallbackCatId }}';
-            if (customCat) customCat.value = catSearch.value.trim();
-        }
         if (!catId || !catId.value) {
-            showFieldInlineError(catSearch, 'cat_error', 'Silakan pilih dari daftar atau ketik jenis kendala Anda.');
+            showFieldInlineError(catSearch, 'cat_error', 'Silakan pilih jenis kendala dari daftar atau pilih opsi "Lainnya (Jelaskan di Deskripsi)".');
             if (!firstInvalidElem) firstInvalidElem = catSearch;
         } else {
             clearFieldInlineError(catSearch, 'cat_error');
@@ -2214,24 +2227,87 @@
         return handleFormSubmitWithValidation(form, null);
     }
 
-    // 4. Unggah Banyak Bukti (Multiple File Upload) dengan Chips & Validasi Klien
+    // 4. Unggah Banyak Bukti (Multiple File Upload) dengan Chips, Kompresi Klien, & Validasi Klien
     let selectedFilesList = [];
 
-    function handleMultipleFiles(inputElem) {
+    // Helper: Kompresi Gambar Klien (HTML5 Canvas) ke < 1 MB jika opsi Kualitas Asli tidak dicentang
+    async function compressImageIfEligible(file) {
+        const isRaw = document.getElementById('checkbox-raw-upload')?.checked;
+        const ext = file.name.split('.').pop().toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+
+        // Jika diminta kualitas asli (DKIS) atau bukan gambar (misal PDF) atau sudah di bawah 1 MB, tidak perlu kompresi kanvas
+        if (isRaw || !isImage || file.size <= 1024 * 1024) {
+            file._isCompressed = false;
+            return file;
+        }
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxDim = 1920;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxDim || height > maxDim) {
+                        const ratio = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+
+                    if (ext === 'png') {
+                        ctx.clearRect(0, 0, width, height);
+                    }
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const outMime = ext === 'png' ? 'image/png' : 'image/jpeg';
+                    const quality = ext === 'png' ? 0.85 : 0.78;
+
+                    canvas.toBlob((blob) => {
+                        if (blob && blob.size < file.size) {
+                            const compressed = new File([blob], file.name, {
+                                type: outMime,
+                                lastModified: Date.now()
+                            });
+                            compressed._isCompressed = true;
+                            compressed._originalSize = file.size;
+                            resolve(compressed);
+                        } else {
+                            file._isCompressed = false;
+                            resolve(file);
+                        }
+                    }, outMime, quality);
+                };
+                img.onerror = () => { file._isCompressed = false; resolve(file); };
+                img.src = e.target.result;
+            };
+            reader.onerror = () => { file._isCompressed = false; resolve(file); };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function handleMultipleFiles(inputElem) {
         const errorAlert = document.getElementById('file-error-alert');
         const errorMessage = document.getElementById('file-error-message');
         if (errorAlert) errorAlert.classList.add('hidden');
 
         const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-        const maxSingleSizeBytes = 5 * 1024 * 1024; // 5MB per berkas
+        const maxSingleSizeBytes = 10 * 1024 * 1024; // Batas fisik unggah awal 10MB per berkas
         const maxTotalSizeBytes = 10 * 1024 * 1024; // 10MB total akumulasi
         const maxTotalFiles = 5;
 
-        const newFiles = Array.from(inputElem.files);
+        const rawFiles = Array.from(inputElem.files);
         let hasError = false;
         let errorText = '';
 
-        for (let f of newFiles) {
+        for (let f of rawFiles) {
             const ext = f.name.split('.').pop().toLowerCase();
             if (!allowedExtensions.includes(ext)) {
                 hasError = true;
@@ -2240,7 +2316,7 @@
             }
             if (f.size > maxSingleSizeBytes) {
                 hasError = true;
-                errorText = `Ukuran berkas "${f.name}" (${(f.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 5 MB per berkas.`;
+                errorText = `Ukuran berkas "${f.name}" (${(f.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 10 MB per berkas.`;
                 break;
             }
         }
@@ -2252,10 +2328,17 @@
             return;
         }
 
+        // Lakukan kompresi otomatis untuk gambar yang berukuran besar (> 1 MB) jika bukan mode raw
+        const processedFiles = [];
+        for (let f of rawFiles) {
+            const processed = await compressImageIfEligible(f);
+            processedFiles.push(processed);
+        }
+
         // Simulasikan daftar gabungan untuk mengecek batas akumulasi total ukuran dan jumlah
         let simulatedList = [...selectedFilesList];
-        for (let f of newFiles) {
-            if (!simulatedList.some(item => item.name === f.name && item.size === f.size)) {
+        for (let f of processedFiles) {
+            if (!simulatedList.some(item => item.name === f.name && Math.abs(item.size - f.size) < 100)) {
                 if (simulatedList.length >= maxTotalFiles) {
                     hasError = true;
                     errorText = `Maksimal hanya dapat mengunggah ${maxTotalFiles} berkas lampiran.`;
@@ -2317,13 +2400,15 @@
             const ext = file.name.split('.').pop().toLowerCase();
             const isPdf = ext === 'pdf';
             const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+            const sizeKb = Math.round(file.size / 1024);
+            const sizeDisplay = file.size >= 1048576 ? `${sizeMb} MB` : `${sizeKb} KB`;
 
             const chip = document.createElement('div');
             chip.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium shadow-2xs animate-in fade-in';
             chip.innerHTML = `
                 <span>${isPdf ? '📄' : '🖼️'}</span>
-                <span class="max-w-[180px] truncate" title="${file.name}">${file.name}</span>
-                <span class="text-[10px] text-blue-600 font-bold uppercase">(${sizeMb} MB)</span>
+                <span class="max-w-[180px] truncate font-semibold" title="${file.name}">${file.name}</span>
+                <span class="text-[10px] text-blue-700 font-bold uppercase">(${sizeDisplay}${file._isCompressed ? ' • Kompresi <1MB' : ''})</span>
                 <button type="button" onclick="removeSelectedFile(${idx})" class="w-4 h-4 rounded-full bg-blue-200/80 hover:bg-rose-500 hover:text-white flex items-center justify-center text-[10px] font-bold text-blue-800 transition cursor-pointer" title="Hapus berkas">✕</button>
             `;
             container.appendChild(chip);
@@ -2433,18 +2518,46 @@
         }
     }
 
+    function showStrukInlineFeedback(msg) {
+        const el = document.getElementById('struk-inline-feedback');
+        if (el) {
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 4000);
+        }
+    }
+
     function copyTicketCode(code) {
         navigator.clipboard.writeText(code).then(() => {
             const btnText = document.getElementById('copy-btn-text');
             const btnIcon = document.getElementById('copy-btn-icon');
-            btnText.textContent = 'Kode Disalin!';
-            btnIcon.textContent = '✅';
+            if (btnText) btnText.textContent = 'Kode Disalin!';
+            if (btnIcon) btnIcon.textContent = '✅';
+            showStrukInlineFeedback('Kode tiket resmi ' + code + ' berhasil disalin!');
             setTimeout(() => {
-                btnText.textContent = 'Salin Kode';
-                btnIcon.textContent = '📋';
+                if (btnText) btnText.textContent = 'Salin Kode';
+                if (btnIcon) btnIcon.textContent = '📋';
             }, 3000);
         }).catch(err => {
-            alert('Kode tiket: ' + code);
+            showStrukInlineFeedback('Kode Tiket Anda: ' + code);
+        });
+    }
+
+    function copyTicketPin(pin) {
+        navigator.clipboard.writeText(pin).then(() => {
+            const btnText = document.getElementById('copy-pin-text');
+            const btnIcon = document.getElementById('copy-pin-icon');
+            if (btnText) btnText.textContent = 'PIN Disalin!';
+            if (btnIcon) btnIcon.textContent = '✅';
+            showStrukInlineFeedback('PIN keamanan ' + pin + ' berhasil disalin! Simpan baik-baik.');
+            setTimeout(() => {
+                if (btnText) btnText.textContent = 'Salin PIN';
+                if (btnIcon) btnIcon.textContent = '🔒';
+            }, 3000);
+        }).catch(err => {
+            showStrukInlineFeedback('PIN Keamanan Anda: ' + pin);
         });
     }
 

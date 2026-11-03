@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignTechnicianRequest;
 use App\Http\Requests\ResolveTicketRequest;
 use App\Models\Ticket;
 use App\Models\User;
@@ -125,7 +126,7 @@ class BidangTicketController extends Controller
     /**
      * Penunjukan / disposisi teknisi lapangan terhubung akun & beban kerja
      */
-    public function assignTechnician(Request $request, int $id)
+    public function assignTechnician(AssignTechnicianRequest $request, int $id)
     {
         $ticket = Ticket::findOrFail($id);
         $user = Auth::user();

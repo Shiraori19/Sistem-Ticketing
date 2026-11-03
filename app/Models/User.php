@@ -43,11 +43,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function roleRel(): BelongsTo
-    {
-        return $this->belongsTo(Role::class, 'role_id');
-    }
-
     public function bidang(): BelongsTo
     {
         return $this->belongsTo(Bidang::class, 'bidang_id');
@@ -117,11 +112,7 @@ class User extends Authenticatable
 
     public function scopeTeknisi(Builder $query, ?int $bidangId = null): Builder
     {
-        return $query->where(function ($sub) {
-            $sub->whereHas('role', fn($r) => $r->where('nama_role', 'Teknisi'));
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
-                $sub->orWhere('role', 'teknisi');
-            }
-        })->when($bidangId, fn($q) => $q->where('bidang_id', $bidangId));
+        return $query->whereHas('role', fn($r) => $r->where('nama_role', 'Teknisi'))
+            ->when($bidangId, fn($q) => $q->where('bidang_id', $bidangId));
     }
 }

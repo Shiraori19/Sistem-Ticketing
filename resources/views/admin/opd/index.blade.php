@@ -144,23 +144,39 @@
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-center">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $opd->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
+                                <span class="px-2 py-0.5 rounded-full text-xs font-bold {{ $opd->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
                                     {{ $opd->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-right space-x-1">
                                 <button type="button"
                                     onclick="openEditOpdModal({{ json_encode($opd) }})"
-                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold rounded-lg border border-slate-200 transition text-[11px]">
+                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold rounded-lg border border-slate-200 transition text-xs cursor-pointer">
                                     ✏️ Ubah
                                 </button>
-                                @if($opd->tickets_count === 0)
+                                @if(!$opd->is_active)
+                                    <form action="{{ route('admin.opd.toggleStatus', $opd->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg border border-emerald-200 transition text-xs cursor-pointer">
+                                            🔄 Aktifkan
+                                        </button>
+                                    </form>
+                                @else
                                     <form action="{{ route('admin.opd.destroy', $opd->id) }}" method="POST" class="inline"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus OPD {{ $opd->nama_opd }}?')">
+                                        onsubmit="return window.confirmActionWithReason(event, this, {
+                                            title: 'Nonaktifkan Master OPD',
+                                            message: 'Apakah Anda yakin ingin menonaktifkan Master OPD {{ $opd->nama_opd }}?',
+                                            icon: '🏛️',
+                                            iconBg: 'bg-amber-50 text-amber-600 border-amber-200',
+                                            confirmText: 'Ya, Lanjutkan',
+                                            confirmBtnClass: 'bg-amber-600 hover:bg-amber-700 text-white font-bold',
+                                            requireReason: true,
+                                            reasonLabel: 'Alasan Penonaktifan OPD'
+                                        })">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px]">
-                                            🗑️ Hapus
+                                        <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-xs cursor-pointer">
+                                            🗑️ Nonaktifkan
                                         </button>
                                     </form>
                                 @endif

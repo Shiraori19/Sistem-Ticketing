@@ -136,30 +136,51 @@ class OpdManagementController extends Controller
     }
 
     /**
-     * Hapus Master OPD jika belum memiliki tiket tertaut
+    /**
+     * Nonaktifkan Master OPD (Soft Deactivation)
      */
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        $opd = MasterOpd::withCount('tickets')->findOrFail($id);
+        $opd = MasterOpd::findOrFail($id);
+        $reason = $request->input('reason', 'Dinonaktifkan oleh Admin Pusat');
 
-        if ($opd->tickets_count > 0) {
-            return back()->with('error', "Master OPD '{$opd->nama_opd}' tidak dapat dihapus karena telah terhubung ke {$opd->tickets_count} tiket.");
-        }
-
-        $nama = $opd->nama_opd;
-        $opd->delete();
+        $opd->update(['is_active' => false]);
 
         AuditLog::create([
             'user_id' => Auth::id(),
-            'aksi' => 'HAPUS_MASTER_OPD',
+            'aksi' => 'NONAKTIFKAN_MASTER_OPD',
             'target_kode' => (string) $id,
-            'ip_address' => request()->ip(),
-            'detail' => "Admin Pusat menghapus Master OPD: '{$nama}'",
+            'ip_address' => $request->ip(),
+            'detail' => "Admin Pusat menonaktifkan Master OPD: '{$opd->nama_opd}'. Alasan: {$reason}",
             'timestamp' => now(),
         ]);
 
         return redirect()->route('admin.opd.index')
-            ->with('success', "Master OPD '{$nama}' berhasil dihapus.");
+            ->with('success', "Master OPD '{$opd->nama_opd}' berhasil dinonaktifkan dari sistem.");
+    }
+
+    /**
+     * Toggle status aktif / nonaktif Master OPD
+     */
+    public function toggleStatus(Request $request, int $id)
+    {
+        $opd = MasterOpd::findOrFail($id);
+        $newStatus = !$opd->is_active;
+        $opd->update(['is_active' => $newStatus]);
+
+        $statusText = $newStatus ? 'diaktifkan kembali' : 'dinonaktifkan';
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'aksi' => $newStatus ? 'AKTIFKAN_MASTER_OPD' : 'NONAKTIFKAN_MASTER_OPD',
+            'target_kode' => (string) $id,
+            'ip_address' => $request->ip(),
+            'detail' => "Admin Pusat mengubah status Master OPD '{$opd->nama_opd}' menjadi: {$statusText}",
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->route('admin.opd.index')
+            ->with('success', "Master OPD '{$opd->nama_opd}' berhasil {$statusText}.");
     }
 
     /**

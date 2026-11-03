@@ -18,16 +18,19 @@ class Category extends Model
         'bidang_id',
         'sla_respon_jam',
         'sla_resolusi_jam',
+        'is_active',
     ];
 
     protected $attributes = [
         'sla_respon_jam' => 72.00,
         'sla_resolusi_jam' => 336,
+        'is_active' => true,
     ];
 
     protected $casts = [
         'sla_respon_jam' => 'decimal:2',
         'sla_resolusi_jam' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function bidang(): BelongsTo

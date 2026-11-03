@@ -102,29 +102,49 @@ class CategoryManagementController extends Controller
     }
 
     /**
-     * Hapus kategori layanan jika belum memiliki tiket tertaut
+     * Nonaktifkan kategori layanan (Soft Deactivation)
      */
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        $category = Category::withCount('tickets')->findOrFail($id);
+        $category = Category::findOrFail($id);
+        $reason = $request->input('reason', 'Dinonaktifkan oleh Admin Pusat');
 
-        if ($category->tickets_count > 0) {
-            return back()->with('error', "Kategori '{$category->nama_kategori}' tidak dapat dihapus karena telah memiliki {$category->tickets_count} tiket yang tertaut.");
-        }
-
-        $nama = $category->nama_kategori;
-        $category->delete();
+        $category->update(['is_active' => false]);
 
         AuditLog::create([
             'user_id' => Auth::id(),
-            'aksi' => 'HAPUS_KATEGORI_LAYANAN',
+            'aksi' => 'NONAKTIFKAN_KATEGORI_LAYANAN',
             'target_kode' => (string) $id,
-            'ip_address' => request()->ip(),
-            'detail' => "Admin Pusat menghapus kategori layanan: '{$nama}'",
+            'ip_address' => $request->ip(),
+            'detail' => "Admin Pusat menonaktifkan kategori layanan: '{$category->nama_kategori}'. Alasan: {$reason}",
             'timestamp' => now(),
         ]);
 
         return redirect()->route('admin.kategori.index')
-            ->with('success', "Kategori '{$nama}' berhasil dihapus.");
+            ->with('success', "Kategori '{$category->nama_kategori}' berhasil dinonaktifkan dari formulir pelapor.");
+    }
+
+    /**
+     * Toggle status aktif / nonaktif kategori layanan
+     */
+    public function toggleStatus(Request $request, int $id)
+    {
+        $category = Category::findOrFail($id);
+        $newStatus = !$category->is_active;
+        $category->update(['is_active' => $newStatus]);
+
+        $statusText = $newStatus ? 'diaktifkan kembali' : 'dinonaktifkan';
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'aksi' => $newStatus ? 'AKTIFKAN_KATEGORI_LAYANAN' : 'NONAKTIFKAN_KATEGORI_LAYANAN',
+            'target_kode' => (string) $id,
+            'ip_address' => $request->ip(),
+            'detail' => "Admin Pusat mengubah status kategori '{$category->nama_kategori}' menjadi: {$statusText}",
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->route('admin.kategori.index')
+            ->with('success', "Kategori '{$category->nama_kategori}' berhasil {$statusText}.");
     }
 }

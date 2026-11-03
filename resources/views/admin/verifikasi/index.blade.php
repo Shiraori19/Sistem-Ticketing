@@ -139,18 +139,18 @@
                                     </div>
                                     @if($t->is_parent)
                                         <div class="mt-0.5">
-                                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 text-[9px] font-black tracking-wider uppercase shadow-xs border border-amber-500" title="Induk Tiket (Master Incident)">
+                                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 text-xs font-black tracking-wider uppercase shadow-xs border border-amber-500" title="Induk Tiket (Master Incident)">
                                                 👑 INDUK
                                             </span>
                                         </div>
                                     @elseif($t->parent_id)
                                         <div class="mt-0.5">
-                                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 text-[9px] font-bold border border-indigo-200" title="Tiket Anak dari {{ $t->parent?->kode_tiket }}">
+                                            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 text-xs font-bold border border-indigo-200" title="Tiket Anak dari {{ $t->parent?->kode_tiket }}">
                                                 🔗 Anak
                                             </span>
                                         </div>
                                         @if($t->parent)
-                                            <div class="text-[9px] font-mono text-indigo-600 font-medium truncate block" title="Induk: {{ $t->parent->kode_tiket }}">
+                                            <div class="text-xs font-mono text-indigo-600 font-medium truncate block" title="Induk: {{ $t->parent->kode_tiket }}">
                                                 ↳ {{ $t->parent->kode_tiket }}
                                             </div>
                                         @endif
@@ -158,8 +158,8 @@
                                 </td>
 
                                 <!-- Waktu Masuk & SLA Respon -->
-                                <td class="w-28 px-2 py-2.5 text-slate-500 whitespace-nowrap overflow-hidden">
-                                    <div class="font-semibold text-slate-700 text-[11px]">{{ $t->created_at->translatedFormat('d M, H:i') }}</div>
+                                <td class="w-28 px-2 py-2.5 text-slate-600 whitespace-nowrap overflow-hidden">
+                                    <div class="font-semibold text-slate-700 text-xs">{{ $t->created_at->translatedFormat('d M, H:i') }}</div>
                                     @php
                                         $targetMins = max(1, (int) round(($t->sla_respon_jam ?: 72) * 60));
                                         $deadlineRespon = $t->sla_respon_deadline_at ? \Carbon\Carbon::parse($t->sla_respon_deadline_at) : $t->created_at->copy()->addMinutes($targetMins);
@@ -168,11 +168,11 @@
                                     @endphp
                                     <div class="mt-0.5">
                                         @if($isOverdue)
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[9px] font-bold font-mono">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold font-mono">
                                                 <span>⚠️ Telat {{ $diffMins >= 60 ? floor($diffMins/60).'j '.($diffMins%60).'m' : $diffMins.'m' }}</span>
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[9px] font-semibold font-mono">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold font-mono">
                                                 <span>⏱️ Sisa {{ $diffMins >= 60 ? floor($diffMins/60).'j '.($diffMins%60).'m' : $diffMins.'m' }}</span>
                                             </span>
                                         @endif
@@ -182,29 +182,29 @@
                                 <!-- Pelapor & OPD -->
                                 <td class="w-40 px-2.5 py-2.5 overflow-hidden">
                                     <div class="font-bold text-slate-900 leading-snug text-xs truncate block" title="{{ $t->nama_pelapor }}">{{ $t->nama_pelapor }}</div>
-                                    <div class="text-slate-500 text-[11px] truncate block mt-0.5" title="{{ $t->skpd }}">{{ $t->skpd }}</div>
-                                    <div class="text-[10px] font-mono text-slate-400 mt-0.5 truncate block">NIP: {{ $t->nip_pelapor }}</div>
+                                    <div class="text-slate-600 text-xs truncate block mt-0.5" title="{{ $t->skpd }}">{{ $t->skpd }}</div>
+                                    <div class="text-xs font-mono text-slate-600 mt-0.5 truncate block">NIP: {{ $t->nip_pelapor }}</div>
                                 </td>
 
                                 <!-- Pokok Masalah -->
                                 <td class="px-3 py-2.5 overflow-hidden">
                                     <div class="font-bold text-slate-900 text-xs truncate block" title="{{ $t->judul }}">{{ $t->judul }}</div>
-                                    <div class="text-slate-500 text-[11px] truncate block mt-0.5" title="{{ $t->deskripsi }}">{{ $t->deskripsi }}</div>
+                                    <div class="text-slate-600 text-xs truncate block mt-0.5" title="{{ $t->deskripsi }}">{{ $t->deskripsi }}</div>
                                     @if(str_contains($t->catatan_kelengkapan ?? '', 'Dikembalikan oleh Bidang'))
                                         <div class="mt-1">
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-orange-100 text-orange-950 border border-orange-300 text-[9px] font-extrabold animate-pulse">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-orange-100 text-orange-950 border border-orange-300 text-xs font-extrabold animate-pulse">
                                                 <span>↩️ DISPOSISI DIKEMBALIKAN</span>
                                             </span>
                                         </div>
                                     @elseif($t->catatan_kelengkapan)
                                         <div class="mt-1">
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold">
                                                 <span>⚠️ Menunggu Data</span>
                                             </span>
                                         </div>
                                     @elseif(collect($t->status_history ?? [])->contains(fn($h) => str_contains($h['note'] ?? '', 'Pelapor telah melengkapi data')))
                                         <div class="mt-1">
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 text-[9px] font-bold">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold">
                                                 <span>✨ Data Dilengkapi</span>
                                             </span>
                                         </div>
@@ -219,7 +219,7 @@
                                             <div class="mt-1">
                                                 <button type="button" 
                                                     onclick="event.stopPropagation(); openInAppPreview('/admin/tiket/{{ $t->kode_tiket }}/berkas/lampiran?file={{ urlencode($firstL) }}', 'Bukti Lampiran ({{ $t->kode_tiket }})')"
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[10px] font-semibold transition cursor-pointer shadow-2xs">
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-semibold transition cursor-pointer shadow-2xs">
                                                     <span>👁️ Preview Bukti ({{ $lCount }})</span>
                                                 </button>
                                             </div>
@@ -230,7 +230,7 @@
                                 <!-- Kategori Layanan -->
                                 <td class="w-36 px-2.5 py-2.5 overflow-hidden">
                                     <span class="font-medium text-slate-800 text-xs truncate block" title="{{ $t->category?->nama_kategori }}">{{ $t->category?->nama_kategori ?? '-' }}</span>
-                                    <span class="text-[10px] text-slate-400 mt-0.5 block">SLA: {{ round(((float)($t->sla_resolusi_jam ?? 336))/24) }} Hari ({{ (int)($t->sla_resolusi_jam ?? 336) }} Jam)</span>
+                                    <span class="text-xs text-slate-600 mt-0.5 block">SLA: {{ round(((float)($t->sla_resolusi_jam ?? 336))/24) }} Hari ({{ (int)($t->sla_resolusi_jam ?? 336) }} Jam)</span>
                                 </td>
 
                                 <!-- Status Badge Universal & Soft-Claim Status -->
@@ -238,24 +238,24 @@
                                     @if($t->isClaimActive())
                                         @if($t->claimed_by === auth()->id())
                                             <div class="space-y-0.5">
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-300 text-[10px] font-bold shadow-xs whitespace-nowrap">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-300 text-xs font-bold shadow-xs whitespace-nowrap">
                                                     <span>🔒</span> Sedang Anda Tangani
                                                 </span>
                                                 <form method="POST" action="{{ route('admin.verifikasi.releaseClaim', $t->id) }}" onclick="event.stopPropagation()" class="block">
                                                     @csrf
-                                                    <button type="submit" class="text-[9px] text-slate-400 hover:text-rose-600 underline cursor-pointer">Lepas Kunci</button>
+                                                    <button type="submit" class="text-xs text-slate-600 hover:text-rose-600 underline cursor-pointer">Lepas Kunci</button>
                                                 </form>
                                             </div>
                                         @else
                                             <div class="space-y-0.5">
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300 text-[10px] font-bold shadow-xs whitespace-nowrap" title="Kunci aktif sampai {{ $t->claimed_at->addMinutes(10)->format('H:i') }}">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold shadow-xs whitespace-nowrap" title="Kunci aktif sampai {{ $t->claimed_at->addMinutes(10)->format('H:i') }}">
                                                     <span>🔒</span> {{ \Illuminate\Support\Str::limit($t->claimedByUser?->nama ?? 'Admin Lain', 13) }}
                                                 </span>
-                                                <span class="text-[9px] text-amber-600 block font-mono font-medium">Sedang Ditinjau</span>
+                                                <span class="text-xs text-amber-600 block font-mono font-medium">Sedang Ditinjau</span>
                                             </div>
                                         @endif
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 text-[10px] font-bold shadow-xs whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300 text-xs font-bold shadow-xs whitespace-nowrap">
                                             <span>⏳</span> Belum Verifikasi
                                         </span>
                                     @endif

@@ -15,7 +15,7 @@ class SubmitReviewRequest extends FormRequest
     {
         return [
             'catatan' => ['required', 'string', 'min:10', 'max:5000'],
-            'bukti_foto' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,txt,log', 'max:10240'],
+            'bukti_foto' => ['nullable', 'file', 'max:10240', new \App\Rules\ValidSecureFile(['image', 'pdf', 'text'])],
             'row_version' => ['nullable', 'integer'],
         ];
     }

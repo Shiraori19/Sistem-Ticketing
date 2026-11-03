@@ -29,7 +29,7 @@ class PublicTicketController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Category::with('bidang')->orderBy('bidang_id')->orderBy('id')->get();
+        $categories = Category::with('bidang')->where('is_active', true)->orderBy('bidang_id')->orderBy('id')->get();
         $masterOpdList = \App\Models\MasterOpd::active()->orderBy('urutan')->orderBy('nama_opd')->get();
         $activeTab = $request->input('tab', 'buat');
         $query = trim($request->input('q', ''));
@@ -113,6 +113,7 @@ class PublicTicketController extends Controller
                             'ticket' => $ticket,
                             'kategori_field' => 'lampiran_pelapor',
                             'allowed_categories' => ['image', 'pdf'],
+                            'is_raw' => $request->boolean('is_raw_upload'),
                         ]
                     );
                     $finalPaths[] = $uploadResult['path'];
@@ -199,12 +200,13 @@ class PublicTicketController extends Controller
         $request->validate([
             'pin' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
             'keterangan_tambahan' => ['required', 'string', 'min:5', 'max:3000'],
-            'lampiran_tambahan' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
+            'lampiran_tambahan' => ['nullable', 'file', 'max:5120', new \App\Rules\ValidSecureFile(['image', 'pdf'])],
         ], [
             'pin.required' => 'PIN Keamanan 6 digit wajib diisi sesuai Struk Tanda Terima Digital.',
             'pin.regex' => 'Format PIN Keamanan harus berupa 6 digit angka numerik.',
             'keterangan_tambahan.required' => 'Penjelasan data tambahan wajib diisi.',
             'keterangan_tambahan.min' => 'Penjelasan minimal 5 karakter.',
+            'lampiran_tambahan.mimes' => 'Format berkas hanya boleh berupa JPG, JPEG, PNG, atau PDF. Dokumen Office/Word mohon disimpan sebagai PDF terlebih dahulu.',
             'lampiran_tambahan.max' => 'Ukuran berkas maksimal 5MB.',
         ]);
 
@@ -215,17 +217,21 @@ class PublicTicketController extends Controller
         }
 
         if ($request->hasFile('lampiran_tambahan')) {
-            $uploaded = $request->file('lampiran_tambahan');
-            $uploadResult = $this->uploadService->storeUploadedFile(
-                $uploaded,
-                "tickets/{$ticket->kode_tiket}",
-                [
-                    'ticket' => $ticket,
-                    'kategori_field' => 'lampiran_tambahan',
-                    'allowed_categories' => ['image', 'pdf'],
-                ]
-            );
-            $ticket->lampiran_tambahan = $uploadResult['path'];
+            try {
+                $uploaded = $request->file('lampiran_tambahan');
+                $uploadResult = $this->uploadService->storeUploadedFile(
+                    $uploaded,
+                    "tickets/{$ticket->kode_tiket}",
+                    [
+                        'ticket' => $ticket,
+                        'kategori_field' => 'lampiran_tambahan',
+                        'allowed_categories' => ['image', 'pdf'],
+                    ]
+                );
+                $ticket->lampiran_tambahan = $uploadResult['path'];
+            } catch (\InvalidArgumentException $e) {
+                return back()->withErrors(['lampiran_tambahan' => $e->getMessage()])->withInput();
+            }
         }
 
         $nowStr = Carbon::now()->translatedFormat('d F Y, H:i');

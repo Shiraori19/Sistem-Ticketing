@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\TechnicianProfile;
 use App\Models\Ticket;
 use App\Models\TicketAssignment;
-use App\Models\TicketObstacle;
+use App\Models\SlaException;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -530,6 +530,7 @@ class TicketWorkflowService
                 'user_id' => $tech->id,
                 'nama' => $tech->nama,
                 'username' => $tech->username,
+                'bidang_id' => $tech->bidang_id,
                 'bidang_kode' => $tech->bidang?->kode ?: 'DKIS',
                 'availability' => $avail,
                 'is_on_leave' => $avail === 'cuti',
@@ -1139,233 +1140,6 @@ class TicketWorkflowService
     }
 
     /**
-     * 9. Aksi Teknisi: Terima Penugasan (accept)
-     */
-    public function acceptAssignment(TicketAssignment $assignment, User $actor): TicketAssignment
-    {
-        return DB::transaction(function () use ($assignment, $actor) {
-            $assignment->status = 'accepted';
-            $assignment->save();
-
-            $ticket = $assignment->ticket;
-            $this->appendHistory($ticket, $ticket->status, $actor->nama . ' (Teknisi)', 'Teknisi mengonfirmasi dan menerima tugas.');
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'TERIMA_PENUGASAN',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Teknisi {$actor->nama} menerima penugasan tiket {$ticket->kode_tiket}",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $assignment;
-        });
-    }
-
-    /**
-     * 10. Aksi Teknisi: Tolak Penugasan (decline) dengan alasan formal wajib
-     */
-    public function declineAssignment(TicketAssignment $assignment, string $reason, User $actor): TicketAssignment
-    {
-        return DB::transaction(function () use ($assignment, $reason, $actor) {
-            $assignment->status = 'declined';
-            $assignment->decline_reason = $reason;
-            $assignment->save();
-
-            $ticket = $assignment->ticket;
-            $this->appendHistory($ticket, $ticket->status, $actor->nama . ' (Teknisi)', "Teknisi menolak tugas. Alasan: {$reason}. Tiket dikembalikan ke antrean bidang.");
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'TOLAK_PENUGASAN',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Teknisi {$actor->nama} menolak penugasan tiket {$ticket->kode_tiket}: {$reason}",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $assignment;
-        });
-    }
-
-    /**
-     * 11. Aksi Teknisi: Mulai Pengerjaan Lapangan (status: working, tiket: in_progress)
-     */
-    public function startProgress(Ticket $ticket, TicketAssignment $assignment, User $actor): Ticket
-    {
-        return DB::transaction(function () use ($ticket, $assignment, $actor) {
-            $assignment->status = 'working';
-            $assignment->save();
-
-            $ticket->status = 'in_progress';
-            if (!$ticket->pengerjaan_dimulai_at) {
-                $ticket->pengerjaan_dimulai_at = Carbon::now();
-            }
-            if (!$ticket->sla_dimulai_at) {
-                $ticket->sla_dimulai_at = Carbon::now();
-            }
-            $ticket->save();
-
-            $this->appendHistory($ticket, 'in_progress', $actor->nama . ' (Teknisi)', 'Teknisi tiba di lokasi dan memulai pengerjaan fisik/sistem.');
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'MULAI_PENGERJAAN',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Teknisi {$actor->nama} memulai pengerjaan lapangan untuk tiket {$ticket->kode_tiket}",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $ticket;
-        });
-    }
-
-    /**
-     * 12. Aksi Teknisi: Catat Progres Timeline (Append-Only Worklog)
-     */
-    public function addWorklog(Ticket $ticket, TicketAssignment $assignment, string $notes, User $actor): TicketAssignment
-    {
-        return DB::transaction(function () use ($ticket, $assignment, $notes, $actor) {
-            $worklog = $assignment->worklog ?? [];
-            $worklog[] = [
-                'note' => $notes,
-                'timestamp' => Carbon::now()->toIso8601String(),
-                'user' => $actor->nama,
-            ];
-            $assignment->worklog = $worklog;
-            $assignment->save();
-
-            $this->appendHistory($ticket, $ticket->status, $actor->nama . ' (Teknisi)', 'Progres lapangan: ' . $notes);
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'WORKLOG_TEKNISI',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Teknisi {$actor->nama} mencatat progres lapangan: {$notes}",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $assignment;
-        });
-    }
-
-    /**
-     * 13. Aksi Teknisi: Laporkan Hambatan Lapangan (KEBIJAKAN KETAT: Jam SLA TETAP BERJALAN)
-     */
-    public function reportObstacle(Ticket $ticket, TicketAssignment $assignment, array $data, User $actor): TicketObstacle
-    {
-        return DB::transaction(function () use ($ticket, $assignment, $data, $actor) {
-            $obstacle = TicketObstacle::create([
-                'ticket_id' => $ticket->id,
-                'user_id' => $actor->id,
-                'obstacle_type' => $data['obstacle_type'],
-                'description' => $data['description'],
-                'evidence_path' => $data['evidence_path'] ?? null,
-                'reported_at' => Carbon::now(),
-                'follow_up_deadline' => Carbon::now()->addHours(24),
-            ]);
-
-            // PENTING: Jam SLA TETAP BERJALAN! Tidak mempause SLA.
-            $evidenceText = !empty($data['evidence_path']) ? " (Bukti: {$data['evidence_path']})" : "";
-            $note = "Hambatan dilaporkan: {$data['obstacle_type']} - {$data['description']}{$evidenceText}. PERHATIAN: Sesuai kebijakan SLA ketat, jam SLA tetap berjalan.";
-            $this->appendHistory($ticket, $ticket->status, $actor->nama . ' (Teknisi)', $note);
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'LAPOR_HAMBATAN_SLA_BERJALAN',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Hambatan dilaporkan untuk tiket {$ticket->kode_tiket}: {$data['obstacle_type']} - {$data['description']}. Jam SLA tidak dihentikan.",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $obstacle;
-        });
-    }
-
-    /**
-     * 14. Aksi Teknisi: Ajukan Selesai (submitted ke Admin Bidang, DILARANG SELF-CLOSE)
-     */
-    public function submitForReview(Ticket $ticket, TicketAssignment $assignment, string $notes, ?string $evidencePath, User $actor): TicketAssignment
-    {
-        return DB::transaction(function () use ($ticket, $assignment, $notes, $evidencePath, $actor) {
-            $assignment->status = 'submitted';
-            $assignment->submitted_at = Carbon::now();
-            $assignment->notes = $notes;
-            $assignment->save();
-
-            if ($evidencePath) {
-                $ticket->bukti_resolusi = $evidencePath;
-            }
-            $ticket->catatan_resolusi = $notes;
-            $ticket->save();
-
-            $this->appendHistory($ticket, 'in_progress', $actor->nama . ' (Teknisi)', "Pengajuan selesai diajukan oleh teknisi: {$notes}. Menunggu review & verifikasi Admin Bidang.");
-
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'aksi' => 'AJUKAN_SELESAI_REVIEW',
-                'target_kode' => $ticket->kode_tiket,
-                'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Teknisi {$actor->nama} mengajukan penyelesaian untuk tiket {$ticket->kode_tiket}. Menunggu review Admin Bidang.",
-                'timestamp' => Carbon::now(),
-            ]);
-
-            return $assignment;
-        });
-    }
-
-    /**
-     * 15. Review Admin Bidang atas Pengajuan Selesai Teknisi (Approve atau Return)
-     */
-    public function reviewSubmission(Ticket $ticket, TicketAssignment $assignment, string $action, ?string $notes, User $actor, ?string $evidencePath = null, ?bool $isConfidential = null): Ticket
-    {
-        return DB::transaction(function () use ($ticket, $assignment, $action, $notes, $actor, $evidencePath, $isConfidential) {
-            if ($action === 'approve') {
-                $assignment->status = 'approved';
-                $assignment->reviewed_at = Carbon::now();
-                $assignment->reviewed_by = $actor->id;
-                $assignment->review_notes = $notes;
-                $assignment->save();
-
-                // Evaluasi kerahasiaan otomatis jika null
-                $confidential = $isConfidential;
-                if ($confidential === null) {
-                    $confidential = (strtoupper($ticket->tlp_level ?? '') === 'RED');
-                }
-
-                $finalEvidence = $evidencePath ?: $ticket->bukti_resolusi;
-                $finalNotes = $notes ?: ($assignment->notes ?: 'Pekerjaan perbaikan lapangan telah diverifikasi dan disetujui Admin Bidang.');
-
-                return $this->markResolved($ticket, $finalNotes, $finalEvidence, $confidential, $actor);
-            } else {
-                // Return / Kembalikan ke teknisi untuk perbaikan ulang
-                $assignment->status = 'returned';
-                $assignment->reviewed_at = Carbon::now();
-                $assignment->reviewed_by = $actor->id;
-                $assignment->review_notes = $notes;
-                $assignment->save();
-
-                $this->appendHistory($ticket, 'in_progress', $actor->nama . ' (Admin Bidang)', "Hasil perbaikan dikembalikan oleh Admin Bidang untuk penyempurnaan: {$notes}");
-
-                AuditLog::create([
-                    'user_id' => $actor->id,
-                    'aksi' => 'RETURN_HASIL_KERJA',
-                    'target_kode' => $ticket->kode_tiket,
-                    'ip_address' => request()?->ip() ?? '127.0.0.1',
-                    'detail' => "Admin Bidang {$actor->nama} mengembalikan pengajuan tiket {$ticket->kode_tiket} ke teknisi: {$notes}",
-                    'timestamp' => Carbon::now(),
-                ]);
-
-                return $ticket;
-            }
-        });
-    }
-
-    /**
      * 16. Pengecualian SLA Breach (Excused Breach) oleh Admin Pusat (Hak Veto Pusat)
      */
     public function excuseSlaBreach(Ticket $ticket, string $reason, ?string $evidencePath, User $actor): Ticket
@@ -1383,6 +1157,14 @@ class TicketWorkflowService
             $ticket->sla_excused_at = Carbon::now();
             $ticket->sla_excused_evidence_path = $evidencePath;
             $ticket->save();
+
+            // Rekam ke tabel sla_exceptions agar sinkron dengan Laporan Kinerja Layanan
+            SlaException::create([
+                'ticket_id'       => $ticket->id,
+                'alasan'          => $reason,
+                'diputuskan_oleh' => $actor->id,
+                'lampiran_bukti'  => $evidencePath,
+            ]);
 
             $this->appendHistory($ticket, $ticket->status, $actor->nama . ' (Admin Pusat)', "Pengecualian SLA (Excused SLA Breach) disetujui: {$reason}");
 

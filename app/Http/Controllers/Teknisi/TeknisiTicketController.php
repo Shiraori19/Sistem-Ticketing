@@ -214,6 +214,24 @@ class TeknisiTicketController extends Controller
     }
 
     /**
+     * Aksi 2b: Mulai Pengerjaan Lapangan (Start Progress)
+     * Rute alias idempotent untuk memulai pengerjaan di lapangan
+     */
+    public function startProgress(Request $request, $id)
+    {
+        $user = Auth::user();
+        /** @var TicketAssignment $assignment */
+        $assignment = TicketAssignment::with('ticket')->findOrFail($id);
+        $this->authorize('view', $assignment);
+
+        if ($assignment->status === 'assigned') {
+            $this->workflowService->acceptAssignment($assignment, $user, $request->input('row_version'));
+        }
+
+        return back()->with('success', 'Status pengerjaan teknis aktif (in progress). Silakan lanjutkan penanganan kendala.');
+    }
+
+    /**
      * Aksi 3: Tambah Catatan Progres Lapangan (Worklog)
      */
     public function addWorklog(AddWorklogRequest $request, $id)
