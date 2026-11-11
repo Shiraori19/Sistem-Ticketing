@@ -9,6 +9,166 @@
 
     window.SecureClientUpload = {
         /**
+         * Validasi Mendalam Client-Side Berdasarkan Magic Bytes dan Integritas Format
+         * @param {File} file
+         * @returns {Promise<{valid: boolean, error?: string, detectedFormat?: string}>}
+         */
+        validateFile: async function (file) {
+            if (!file) return { valid: false, error: 'Berkas tidak ditemukan.' };
+
+            var originalName = file.name || 'berkas';
+            var parts = originalName.split('.');
+
+            // 1. Cegah ekstensi ganda (double extension)
+            if (parts.length > 2) {
+                return {
+                    valid: false,
+                    error: 'Berkas "' + originalName + '" ditolak: Berkas dengan ekstensi ganda (. ' + parts.slice(1).join('.') + ') dilarang demi keamanan.'
+                };
+            }
+
+            var ext = parts.pop().toLowerCase();
+            var allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+
+            if (!allowedExtensions.includes(ext)) {
+                return {
+                    valid: false,
+                    error: 'Format berkas "' + originalName + '" (.' + ext + ') tidak diizinkan. Hanya menerima format JPG, PNG, atau PDF.'
+                };
+            }
+
+            if (file.size <= 0) {
+                return {
+                    valid: false,
+                    error: 'Ukuran berkas "' + originalName + '" 0 byte (kosong) tidak diizinkan.'
+                };
+            }
+
+            var maxSingleSizeBytes = 10 * 1024 * 1024; // 10 MB
+            if (file.size > maxSingleSizeBytes) {
+                return {
+                    valid: false,
+                    error: 'Ukuran berkas "' + originalName + '" (' + (file.size / 1024 / 1024).toFixed(2) + ' MB) melebihi batas maksimal 10 MB per berkas.'
+                };
+            }
+
+            try {
+                var slice = file.slice(0, 16);
+                var buffer = await slice.arrayBuffer();
+                var bytes = new Uint8Array(buffer);
+
+                if (bytes.length < 4) {
+                    return {
+                        valid: false,
+                        error: 'Berkas "' + originalName + '" rusak atau corrupt (ukuran biner tidak mencukupi).'
+                    };
+                }
+
+                // File Signature Checks:
+                var isJpg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+                var isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47 &&
+                            bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A;
+                var isPdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2D;
+
+                // Tolak Dokumen Office (DOCX/XLSX) atau ZIP (PK\x03\x04: 50 4B)
+                if (bytes[0] === 0x50 && bytes[1] === 0x4B) {
+                    return {
+                        valid: false,
+                        error: 'Berkas "' + originalName + '" ditolak! Terdeteksi sebagai dokumen Office (Word/Excel) atau arsip ZIP yang diganti ekstensinya. Silakan simpan sebagai PDF asli terlebih dahulu.'
+                    };
+                }
+
+                // Tolak Executable (MZ: 4D 5A)
+                if (bytes[0] === 0x4D && bytes[1] === 0x5A) {
+                    return {
+                        valid: false,
+                        error: 'Berkas "' + originalName + '" ditolak! Terdeteksi sebagai program eksekusi (EXE/DLL) yang dilarang.'
+                    };
+                }
+
+                // Tolak Kontainer Video MP4 (ftyp)
+                var isMp4 = false;
+                for (var i = 0; i < bytes.length - 3; i++) {
+                    if (bytes[i] === 0x66 && bytes[i+1] === 0x74 && bytes[i+2] === 0x79 && bytes[i+3] === 0x70) {
+                        isMp4 = true;
+                        break;
+                    }
+                }
+                if (isMp4) {
+                    return {
+                        valid: false,
+                        error: 'Berkas "' + originalName + '" ditolak! Terdeteksi sebagai berkas video MP4 yang diganti ekstensinya.'
+                    };
+                }
+
+                var detectedFormat = null;
+                if (isJpg) detectedFormat = 'jpg';
+                else if (isPng) detectedFormat = 'png';
+                else if (isPdf) detectedFormat = 'pdf';
+
+                if (!detectedFormat) {
+                    return {
+                        valid: false,
+                        error: 'Berkas "' + originalName + '" ditolak! Isi berkas bukan gambar (JPG/PNG) atau PDF yang sah (manipulasi signature biner terdeteksi).'
+                    };
+                }
+
+                var allowedForExt = detectedFormat === 'jpg' ? ['jpg', 'jpeg'] : [detectedFormat];
+                if (!allowedForExt.includes(ext)) {
+                    return {
+                        valid: false,
+                        error: 'Pemalsuan ekstensi terdeteksi pada "' + originalName + '". Ekstensi (.' + ext + ') tidak sesuai dengan isi berkas aslinya (.' + detectedFormat + ').'
+                    };
+                }
+
+                // Uji Decode Gambar
+                if (detectedFormat === 'jpg' || detectedFormat === 'png') {
+                    var decodeResult = await new Promise(function (resolve) {
+                        var img = new Image();
+                        var blobUrl = URL.createObjectURL(file);
+                        img.onload = function () {
+                            URL.revokeObjectURL(blobUrl);
+                            if (img.width > 6000 || img.height > 6000) {
+                                resolve({ ok: false, error: 'Dimensi gambar "' + originalName + '" (' + img.width + 'x' + img.height + ' px) melebihi batas aman 6000x6000 px.' });
+                            } else if (img.width <= 0 || img.height <= 0) {
+                                resolve({ ok: false, error: 'Dimensi gambar "' + originalName + '" tidak valid.' });
+                            } else {
+                                resolve({ ok: true });
+                            }
+                        };
+                        img.onerror = function () {
+                            URL.revokeObjectURL(blobUrl);
+                            resolve({ ok: false, error: 'Berkas gambar "' + originalName + '" rusak, corrupt, atau bukan gambar valid.' });
+                        };
+                        img.src = blobUrl;
+                    });
+
+                    if (!decodeResult.ok) {
+                        return { valid: false, error: decodeResult.error };
+                    }
+                }
+
+                // Uji Objek Berbahaya pada PDF
+                if (detectedFormat === 'pdf') {
+                    var textChunk = await file.slice(0, Math.min(file.size, 512 * 1024)).text();
+                    if (/\/JavaScript/i.test(textChunk) || /\/JS\b/i.test(textChunk) || /\/Launch\b/i.test(textChunk) || /\/EmbeddedFiles/i.test(textChunk)) {
+                        return {
+                            valid: false,
+                            error: 'Dokumen PDF "' + originalName + '" ditolak karena memuat elemen skrip aktif atau lampiran terlarang.'
+                        };
+                    }
+                }
+
+                return { valid: true, detectedFormat: detectedFormat };
+            } catch (err) {
+                return {
+                    valid: false,
+                    error: 'Gagal memvalidasi biner berkas "' + originalName + '": ' + err.message
+                };
+            }
+        },
+
+        /**
          * Kompres berkas gambar tunggal jika berformat JPEG / PNG
          * @param {File} file
          * @param {Object} options { maxDimension: 1920, targetSizeBytes: 1048576, quality: 0.82 }
@@ -129,6 +289,15 @@
 
                 for (var i = 0; i < files.length; i++) {
                     var f = files[i];
+                    var check = await SecureClientUpload.validateFile(f);
+                    if (!check.valid) {
+                        fileInput.value = '';
+                        if (container) {
+                            container.innerHTML = '<div class="text-xs text-rose-700 font-bold p-2 bg-rose-50 border border-rose-300 rounded-lg">⚠️ ' + check.error + '</div>';
+                        }
+                        return;
+                    }
+
                     var originalSize = f.size;
                     var processedFile = f;
 

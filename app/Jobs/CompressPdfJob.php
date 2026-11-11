@@ -105,3 +105,4 @@ class CompressPdfJob implements ShouldQueue
         @unlink($tempOutput);
     }
 }
+

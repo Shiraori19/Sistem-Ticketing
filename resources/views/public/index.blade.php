@@ -427,23 +427,35 @@
                                 <label for="lampiran_pelapor" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
                                     Lampiran Foto / Dokumen (Opsional)
                                 </label>
-                                <div class="flex flex-col items-center justify-center px-4 py-4 border-2 border-slate-200 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/50 hover:bg-blue-50/20" onclick="document.getElementById('lampiran_pelapor').click()">
-                                    <div class="space-y-1 text-center">
+                                <div id="dropzone-container" class="flex flex-col items-center justify-center px-4 py-4 border-2 border-slate-200 border-dashed rounded-2xl hover:border-blue-500 transition cursor-pointer bg-slate-50/50 hover:bg-blue-50/20" onclick="document.getElementById('lampiran_pelapor').click()">
+                                    <div class="space-y-1 text-center pointer-events-none">
                                         <svg class="mx-auto h-7 w-7 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="text-xs sm:text-sm text-slate-700 font-medium">
-                                            <label for="lampiran_pelapor" class="relative cursor-pointer rounded-md font-bold text-blue-600 hover:text-blue-700 focus-within:outline-none" onclick="event.stopPropagation()">
-                                                <span>Pilih berkas</span>
-                                                <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
-                                            </label>
+                                            <span class="font-bold text-blue-600 hover:text-blue-700">Pilih berkas</span>
                                             <span class="text-slate-500">atau seret ke sini</span>
                                         </div>
-                                        <p class="text-[11px] text-slate-400">
+                                        <p id="dropzone-hint" class="text-[11px] text-slate-400">
                                             JPG, PNG, atau PDF • Maks. 5 berkas (Otomatis dioptimasi &lt; 1 MB)
                                         </p>
                                     </div>
+                                    <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
                                 </div>
+
+                                <!-- Pesan Error Validasi Server -->
+                                @error('lampiran_pelapor')
+                                    <div class="mt-2 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 font-bold flex items-center gap-1.5 shadow-xs">
+                                        <span>⚠️</span>
+                                        <span>{{ $message }}</span>
+                                    </div>
+                                @enderror
+                                @error('lampiran_pelapor.*')
+                                    <div class="mt-2 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 font-bold flex items-center gap-1.5 shadow-xs">
+                                        <span>⚠️</span>
+                                        <span>{{ $message }}</span>
+                                    </div>
+                                @enderror
 
                                 <!-- Pesan Error Validasi Klien -->
                                 <div id="file-error-alert" class="hidden mt-2 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900 flex items-center justify-between shadow-xs">
@@ -1008,7 +1020,7 @@
                                                         <label class="block text-xs font-bold text-slate-800 mb-1.5">
                                                             2. Berkas / Foto Tambahan (Opsional)
                                                         </label>
-                                                        <input type="file" name="lampiran_tambahan" accept=".jpg,.jpeg,.png,.pdf"
+                                                        <input type="file" name="lampiran_tambahan" accept=".jpg,.jpeg,.png,.pdf" onchange="validateSingleFileInput(this)"
                                                             class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 border border-slate-200 rounded-xl p-1">
                                                         <p class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG, PDF (Maks. 5MB)</p>
                                                     </div>
@@ -1199,7 +1211,7 @@
                                                                 <label class="block text-xs font-bold text-slate-700 mb-1">
                                                                     Upload Bukti Kendala Lanjutan (Wajib) <span class="text-rose-500">*</span>
                                                                 </label>
-                                                                <input type="file" name="bukti_reopen" accept=".jpg,.jpeg,.png,.pdf" required
+                                                                <input type="file" name="bukti_reopen" accept=".jpg,.jpeg,.png,.pdf" required onchange="validateSingleFileInput(this)"
                                                                     class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer">
                                                             </div>
 
@@ -2230,6 +2242,168 @@
     // 4. Unggah Banyak Bukti (Multiple File Upload) dengan Chips, Kompresi Klien, & Validasi Klien
     let selectedFilesList = [];
 
+    // Helper: Validasi Biner Client-Side (Magic Bytes, Ekstensi, & Integritas Struktur)
+    async function validateFileClientSide(file) {
+        const originalName = file.name || 'berkas';
+        const parts = originalName.split('.');
+
+        // 1. Tolak ekstensi ganda (double extension)
+        if (parts.length > 2) {
+            return {
+                valid: false,
+                error: `Berkas "${originalName}" ditolak: Format dengan ekstensi ganda (.${parts.slice(1).join('.')}) dilarang demi keamanan.`
+            };
+        }
+
+        const ext = parts.pop().toLowerCase();
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
+
+        // 2. Whitelist ekstensi yang diizinkan
+        if (!allowedExtensions.includes(ext)) {
+            return {
+                valid: false,
+                error: `Format berkas "${originalName}" (.${ext}) tidak diizinkan. Hanya menerima format JPG, PNG, atau PDF.`
+            };
+        }
+
+        // 3. Batas ukuran fisik tunggal
+        if (file.size <= 0) {
+            return {
+                valid: false,
+                error: `Ukuran berkas "${originalName}" 0 byte (kosong) tidak diizinkan.`
+            };
+        }
+
+        const maxSingleSizeBytes = 10 * 1024 * 1024; // 10 MB
+        if (file.size > maxSingleSizeBytes) {
+            return {
+                valid: false,
+                error: `Ukuran berkas "${originalName}" (${(file.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 10 MB per berkas.`
+            };
+        }
+
+        // 4. Deteksi File Signature / Magic Bytes Asli dari Konten Biner
+        try {
+            const slice = file.slice(0, 16);
+            const buffer = await slice.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+
+            if (bytes.length < 4) {
+                return {
+                    valid: false,
+                    error: `Berkas "${originalName}" rusak atau corrupt (ukuran biner tidak mencukupi).`
+                };
+            }
+
+            // JPEG Signature: FF D8 FF
+            const isJpg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+
+            // PNG Signature: 89 50 4E 47 0D 0A 1A 0A
+            const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47 &&
+                          bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A;
+
+            // PDF Signature: %PDF- (25 50 44 46 2D)
+            const isPdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2D;
+
+            // Deteksi dokumen Microsoft Office (DOCX/XLSX) atau ZIP palsu (PK\x03\x04: 50 4B 03 04)
+            if (bytes[0] === 0x50 && bytes[1] === 0x4B) {
+                return {
+                    valid: false,
+                    error: `Berkas "${originalName}" ditolak! Terdeteksi sebagai dokumen Office (Word/Excel) atau arsip ZIP yang diganti ekstensinya. Silakan simpan sebagai PDF asli terlebih dahulu.`
+                };
+            }
+
+            // Deteksi executable binary Windows (MZ: 4D 5A)
+            if (bytes[0] === 0x4D && bytes[1] === 0x5A) {
+                return {
+                    valid: false,
+                    error: `Berkas "${originalName}" ditolak! Terdeteksi sebagai aplikasi biner (EXE/DLL) yang membahayakan.`
+                };
+            }
+
+            // Deteksi kontainer video MP4 (ftyp)
+            let isMp4 = false;
+            for (let i = 0; i < bytes.length - 3; i++) {
+                if (bytes[i] === 0x66 && bytes[i+1] === 0x74 && bytes[i+2] === 0x79 && bytes[i+3] === 0x70) {
+                    isMp4 = true;
+                    break;
+                }
+            }
+            if (isMp4) {
+                return {
+                    valid: false,
+                    error: `Berkas "${originalName}" ditolak! Terdeteksi sebagai berkas video MP4 yang diganti ekstensinya.`
+                };
+            }
+
+            let detectedFormat = null;
+            if (isJpg) detectedFormat = 'jpg';
+            else if (isPng) detectedFormat = 'png';
+            else if (isPdf) detectedFormat = 'pdf';
+
+            if (!detectedFormat) {
+                return {
+                    valid: false,
+                    error: `Berkas "${originalName}" ditolak! Isi berkas bukan gambar (JPG/PNG) atau PDF yang sah (manipulasi signature biner terdeteksi).`
+                };
+            }
+
+            // Verifikasi keselarasan ekstensi vs konten biner asli
+            const allowedForExt = detectedFormat === 'jpg' ? ['jpg', 'jpeg'] : [detectedFormat];
+            if (!allowedForExt.includes(ext)) {
+                return {
+                    valid: false,
+                    error: `Pemalsuan ekstensi terdeteksi pada "${originalName}". Ekstensi .${ext} tidak sesuai dengan isi berkas aslinya (.${detectedFormat}).`
+                };
+            }
+
+            // 5. Uji Integritas Gambar: parsing piksel kanvas (mendeteksi gambar rusak atau corrupt)
+            if (detectedFormat === 'jpg' || detectedFormat === 'png') {
+                const decodeTest = await new Promise((resolve) => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(file);
+                    img.onload = () => {
+                        URL.revokeObjectURL(url);
+                        if (img.width > 6000 || img.height > 6000) {
+                            resolve({ ok: false, error: `Dimensi gambar "${originalName}" (${img.width}x${img.height} px) melebihi batas aman 6000x6000 px.` });
+                        } else if (img.width <= 0 || img.height <= 0) {
+                            resolve({ ok: false, error: `Dimensi gambar "${originalName}" tidak valid (0 px).` });
+                        } else {
+                            resolve({ ok: true, width: img.width, height: img.height });
+                        }
+                    };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(url);
+                        resolve({ ok: false, error: `Berkas gambar "${originalName}" rusak, corrupt, atau bukan gambar valid.` });
+                    };
+                    img.src = url;
+                });
+
+                if (!decodeTest.ok) {
+                    return { valid: false, error: decodeTest.error };
+                }
+            }
+
+            // 6. Uji Integritas PDF: scan skrip aktif berbahaya (/JavaScript, /JS, /Launch, /EmbeddedFiles)
+            if (detectedFormat === 'pdf') {
+                const textChunk = await file.slice(0, Math.min(file.size, 512 * 1024)).text();
+                if (/\/JavaScript/i.test(textChunk) || /\/JS\b/i.test(textChunk) || /\/Launch\b/i.test(textChunk) || /\/EmbeddedFiles/i.test(textChunk)) {
+                    return {
+                        valid: false,
+                        error: `Dokumen PDF "${originalName}" ditolak karena memuat elemen skrip aktif atau lampiran terlarang.`
+                    };
+                }
+            }
+
+            return { valid: true, detectedFormat };
+        } catch (err) {
+            return {
+                valid: false,
+                error: `Gagal membaca isi berkas "${originalName}": ${err.message}`
+            };
+        }
+    }
+
     // Helper: Kompresi Gambar Klien (HTML5 Canvas) ke < 1 MB jika opsi Kualitas Asli tidak dicentang
     async function compressImageIfEligible(file) {
         const isRaw = document.getElementById('checkbox-raw-upload')?.checked;
@@ -2296,46 +2470,50 @@
     async function handleMultipleFiles(inputElem) {
         const errorAlert = document.getElementById('file-error-alert');
         const errorMessage = document.getElementById('file-error-message');
+        const hintEl = document.getElementById('dropzone-hint');
         if (errorAlert) errorAlert.classList.add('hidden');
 
-        const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
-        const maxSingleSizeBytes = 10 * 1024 * 1024; // Batas fisik unggah awal 10MB per berkas
         const maxTotalSizeBytes = 10 * 1024 * 1024; // 10MB total akumulasi
         const maxTotalFiles = 5;
 
         const rawFiles = Array.from(inputElem.files);
+        if (rawFiles.length === 0) return;
+
         let hasError = false;
         let errorText = '';
 
+        if (hintEl) hintEl.textContent = 'Memeriksa keamanan dan integritas isi berkas...';
+
+        // 1. Validasi isi biner asli seluruh berkas terlebih dahulu
+        const validatedFiles = [];
         for (let f of rawFiles) {
-            const ext = f.name.split('.').pop().toLowerCase();
-            if (!allowedExtensions.includes(ext)) {
+            const check = await validateFileClientSide(f);
+            if (!check.valid) {
                 hasError = true;
-                errorText = `Format berkas "${f.name}" tidak diizinkan. Hanya menerima format JPG, PNG, atau PDF.`;
+                errorText = check.error;
                 break;
             }
-            if (f.size > maxSingleSizeBytes) {
-                hasError = true;
-                errorText = `Ukuran berkas "${f.name}" (${(f.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 10 MB per berkas.`;
-                break;
-            }
+            validatedFiles.push(f);
         }
+
+        if (hintEl) hintEl.textContent = 'JPG, PNG, atau PDF • Maks. 5 berkas (Otomatis dioptimasi < 1 MB)';
 
         if (hasError) {
             if (errorMessage) errorMessage.textContent = errorText;
             if (errorAlert) errorAlert.classList.remove('hidden');
+            inputElem.value = '';
             syncInputFiles(inputElem);
             return;
         }
 
-        // Lakukan kompresi otomatis untuk gambar yang berukuran besar (> 1 MB) jika bukan mode raw
+        // 2. Lakukan kompresi otomatis untuk gambar yang berukuran besar (> 1 MB) jika bukan mode raw
         const processedFiles = [];
-        for (let f of rawFiles) {
+        for (let f of validatedFiles) {
             const processed = await compressImageIfEligible(f);
             processedFiles.push(processed);
         }
 
-        // Simulasikan daftar gabungan untuk mengecek batas akumulasi total ukuran dan jumlah
+        // 3. Simulasikan daftar gabungan untuk mengecek batas akumulasi total ukuran dan jumlah
         let simulatedList = [...selectedFilesList];
         for (let f of processedFiles) {
             if (!simulatedList.some(item => item.name === f.name && Math.abs(item.size - f.size) < 100)) {
@@ -2357,6 +2535,7 @@
         if (hasError) {
             if (errorMessage) errorMessage.textContent = errorText;
             if (errorAlert) errorAlert.classList.remove('hidden');
+            inputElem.value = '';
             syncInputFiles(inputElem);
             return;
         }
@@ -2364,6 +2543,17 @@
         selectedFilesList = simulatedList;
         syncInputFiles(inputElem);
         renderFileListChips();
+    }
+
+    // Helper: Validasi berkas tunggal (lampiran tambahan / bukti reopen)
+    async function validateSingleFileInput(inputElem) {
+        if (!inputElem.files || inputElem.files.length === 0) return;
+        const file = inputElem.files[0];
+        const check = await validateFileClientSide(file);
+        if (!check.valid) {
+            alert(check.error);
+            inputElem.value = '';
+        }
     }
 
     function syncInputFiles(inputElem) {
@@ -2485,6 +2675,38 @@
         const deskripsiInput = document.getElementById('deskripsi');
         if (deskripsiInput) {
             updateDeskripsiCounter(deskripsiInput);
+        }
+
+        // Pasang drag-and-drop handler pada area dropzone
+        const dropContainer = document.getElementById('dropzone-container');
+        if (dropContainer) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropContainer.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropContainer.classList.add('border-blue-500', 'bg-blue-50/40');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropContainer.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropContainer.classList.remove('border-blue-500', 'bg-blue-50/40');
+                }, false);
+            });
+
+            dropContainer.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files.length > 0) {
+                    const inputElem = document.getElementById('lampiran_pelapor');
+                    if (inputElem) {
+                        inputElem.files = files;
+                        handleMultipleFiles(inputElem);
+                    }
+                }
+            }, false);
         }
     });
 
