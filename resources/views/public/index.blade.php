@@ -437,7 +437,7 @@
                                             <span class="text-slate-500">atau seret ke sini</span>
                                         </div>
                                         <p id="dropzone-hint" class="text-[11px] text-slate-400">
-                                            JPG, PNG, atau PDF • Maks. 5 berkas (Gambar otomatis dikompresi &lt; 1 MB • PDF besar dikompresi di server)
+                                            JPG, PNG, atau PDF • Maks. 5 berkas • Maks. total 2 MB (Gambar otomatis dikompresi &lt; 1 MB • PDF maks. 1 MB)
                                         </p>
                                     </div>
                                     <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
@@ -2274,11 +2274,20 @@
             };
         }
 
-        const maxSingleSizeBytes = 10 * 1024 * 1024; // 10 MB
-        if (file.size > maxSingleSizeBytes) {
+        // Batas berkas PDF tidak dapat dikompresi di browser, batas maksimal 1 MB
+        if (ext === 'pdf' && file.size > 1024 * 1024) {
             return {
                 valid: false,
-                error: `Ukuran berkas "${originalName}" (${(file.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 10 MB per berkas.`
+                error: `Ukuran berkas PDF "${originalName}" (${(file.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 1 MB per berkas. Berkas PDF tidak dapat dikompresi di peramban, harap gunakan berkas PDF di bawah 1 MB.`
+            };
+        }
+
+        // Batas awal gambar sebelum kompresi kanvas (maksimal 10 MB)
+        const maxInputImageBytes = 10 * 1024 * 1024;
+        if (file.size > maxInputImageBytes) {
+            return {
+                valid: false,
+                error: `Ukuran berkas "${originalName}" (${(file.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 10 MB sebelum kompresi.`
             };
         }
 
@@ -2442,22 +2451,52 @@
                     ctx.drawImage(img, 0, 0, width, height);
 
                     const outMime = ext === 'png' ? 'image/png' : 'image/jpeg';
-                    const quality = ext === 'png' ? 0.85 : 0.78;
+                    const targetBytes = 950 * 1024; // Target aman di bawah 1 MB
+                    const qualities = ext === 'png' ? [0.85, 0.70, 0.55] : [0.78, 0.65, 0.50, 0.35];
 
-                    canvas.toBlob((blob) => {
-                        if (blob && blob.size < file.size) {
-                            const compressed = new File([blob], file.name, {
-                                type: outMime,
-                                lastModified: Date.now()
-                            });
-                            compressed._isCompressed = true;
-                            compressed._originalSize = file.size;
-                            resolve(compressed);
-                        } else {
-                            file._isCompressed = false;
-                            resolve(file);
+                    function tryCompress(qIdx) {
+                        if (qIdx >= qualities.length) {
+                            // Upaya terakhir: turunkan resolusi kanvas jika masih di atas target
+                            if (canvas.width > 1280 || canvas.height > 1280) {
+                                const scaleCanvas = document.createElement('canvas');
+                                scaleCanvas.width = Math.round(canvas.width * 0.75);
+                                scaleCanvas.height = Math.round(canvas.height * 0.75);
+                                const scaleCtx = scaleCanvas.getContext('2d');
+                                scaleCtx.drawImage(canvas, 0, 0, scaleCanvas.width, scaleCanvas.height);
+                                scaleCanvas.toBlob((blob) => {
+                                    if (blob) {
+                                        const comp = new File([blob], file.name, { type: outMime, lastModified: Date.now() });
+                                        comp._isCompressed = true;
+                                        comp._originalSize = file.size;
+                                        return resolve(comp);
+                                    }
+                                    resolve(file);
+                                }, outMime, 0.60);
+                                return;
+                            }
+                            return resolve(file);
                         }
-                    }, outMime, quality);
+
+                        canvas.toBlob((blob) => {
+                            if (blob && blob.size <= targetBytes) {
+                                const comp = new File([blob], file.name, { type: outMime, lastModified: Date.now() });
+                                comp._isCompressed = true;
+                                comp._originalSize = file.size;
+                                resolve(comp);
+                            } else if (blob && qIdx + 1 < qualities.length) {
+                                tryCompress(qIdx + 1);
+                            } else if (blob && blob.size < file.size) {
+                                const comp = new File([blob], file.name, { type: outMime, lastModified: Date.now() });
+                                comp._isCompressed = true;
+                                comp._originalSize = file.size;
+                                resolve(comp);
+                            } else {
+                                resolve(file);
+                            }
+                        }, outMime, qualities[qIdx]);
+                    }
+
+                    tryCompress(0);
                 };
                 img.onerror = () => { file._isCompressed = false; resolve(file); };
                 img.src = e.target.result;
@@ -2473,7 +2512,7 @@
         const hintEl = document.getElementById('dropzone-hint');
         if (errorAlert) errorAlert.classList.add('hidden');
 
-        const maxTotalSizeBytes = 10 * 1024 * 1024; // 10MB total akumulasi
+        const maxTotalSizeBytes = 2 * 1024 * 1024; // 2MB total akumulasi
         const maxTotalFiles = 5;
 
         const rawFiles = Array.from(inputElem.files);
@@ -2496,7 +2535,7 @@
             validatedFiles.push(f);
         }
 
-        if (hintEl) hintEl.textContent = 'JPG, PNG, atau PDF • Maks. 5 berkas (Gambar otomatis dikompresi < 1 MB • PDF besar dikompresi di server)';
+        if (hintEl) hintEl.textContent = 'JPG, PNG, atau PDF • Maks. 5 berkas • Maks. total 2 MB (Gambar otomatis dikompresi < 1 MB • PDF maks. 1 MB)';
 
         if (hasError) {
             if (errorMessage) errorMessage.textContent = errorText;
@@ -2510,6 +2549,11 @@
         const processedFiles = [];
         for (let f of validatedFiles) {
             const processed = await compressImageIfEligible(f);
+            if (processed.size > 1024 * 1024) {
+                hasError = true;
+                errorText = `Ukuran berkas "${processed.name}" (${(processed.size / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal 1 MB per berkas.`;
+                break;
+            }
             processedFiles.push(processed);
         }
 
@@ -2529,7 +2573,7 @@
         const totalSizeBytes = simulatedList.reduce((acc, curr) => acc + curr.size, 0);
         if (totalSizeBytes > maxTotalSizeBytes) {
             hasError = true;
-            errorText = `Total ukuran seluruh berkas lampiran (${(totalSizeBytes / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal akumulasi 10 MB.`;
+            errorText = `Total ukuran seluruh berkas lampiran (${(totalSizeBytes / 1024 / 1024).toFixed(2)} MB) melebihi batas maksimal akumulasi 2 MB.`;
         }
 
         if (hasError) {
@@ -2616,7 +2660,7 @@
             const totalMb = (totalBytes / 1024 / 1024).toFixed(2);
             const summary = document.createElement('div');
             summary.className = 'w-full text-[11px] font-semibold text-slate-500 pt-1 flex items-center justify-between border-t border-slate-100 mt-1';
-            summary.innerHTML = `<span>Total: <strong>${selectedFilesList.length}</strong> / 5 berkas</span><span class="${totalBytes > 10 * 1024 * 1024 ? 'text-rose-600 font-bold' : 'text-slate-600'}">Total Ukuran: <strong>${totalMb} MB</strong> / maks 10 MB</span>`;
+            summary.innerHTML = `<span>Total: <strong>${selectedFilesList.length}</strong> / 5 berkas</span><span class="${totalBytes > 2 * 1024 * 1024 ? 'text-rose-600 font-bold' : 'text-slate-600'}">Total Ukuran: <strong>${totalMb} MB</strong> / maks 2 MB</span>`;
             container.appendChild(summary);
         }
     }

@@ -200,14 +200,14 @@ class PublicTicketController extends Controller
         $request->validate([
             'pin' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
             'keterangan_tambahan' => ['required', 'string', 'min:5', 'max:3000'],
-            'lampiran_tambahan' => ['nullable', 'file', 'max:5120', new \App\Rules\ValidSecureFile(['image', 'pdf'])],
+            'lampiran_tambahan' => ['nullable', 'file', 'max:1024', new \App\Rules\ValidSecureFile(['image', 'pdf'], 1024)],
         ], [
             'pin.required' => 'PIN Keamanan 6 digit wajib diisi sesuai Struk Tanda Terima Digital.',
             'pin.regex' => 'Format PIN Keamanan harus berupa 6 digit angka numerik.',
             'keterangan_tambahan.required' => 'Penjelasan data tambahan wajib diisi.',
             'keterangan_tambahan.min' => 'Penjelasan minimal 5 karakter.',
             'lampiran_tambahan.mimes' => 'Format berkas hanya boleh berupa JPG, JPEG, PNG, atau PDF. Dokumen Office/Word mohon disimpan sebagai PDF terlebih dahulu.',
-            'lampiran_tambahan.max' => 'Ukuran berkas maksimal 5MB.',
+            'lampiran_tambahan.max' => 'Ukuran berkas maksimal 1 MB.',
         ]);
 
         // Verifikasi PIN ketat dengan RateLimiter

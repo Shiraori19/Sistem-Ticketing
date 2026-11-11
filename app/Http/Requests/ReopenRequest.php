@@ -15,7 +15,7 @@ class ReopenRequest extends FormRequest
     {
         return [
             'alasan' => ['required', 'string', 'min:5', 'max:1000'],
-            'bukti_reopen' => ['required', 'file', 'max:5120', new \App\Rules\ValidSecureFile(['image', 'pdf'])], // WAJIB ada berkas bukti yang sah dan aman
+            'bukti_reopen' => ['required', 'file', 'max:1024', new \App\Rules\ValidSecureFile(['image', 'pdf'], 1024)], // WAJIB ada berkas bukti yang sah dan aman
         ];
     }
 
@@ -27,7 +27,7 @@ class ReopenRequest extends FormRequest
             'bukti_reopen.required' => 'Berkas bukti pendukung pembukaan kembali tiket WAJIB diunggah (tidak boleh kosong).',
             'bukti_reopen.file' => 'Bukti pendukung harus berupa file yang valid.',
             'bukti_reopen.mimes' => 'Format file bukti reopen hanya diperbolehkan: JPG, PNG, atau PDF.',
-            'bukti_reopen.max' => 'Ukuran file bukti reopen maksimal 5 MB.',
+            'bukti_reopen.max' => 'Ukuran file bukti reopen maksimal 1 MB.',
         ];
     }
 }

@@ -68,19 +68,19 @@ class StoreTicketRequest extends FormRequest
                                 $totalBytes += $file->getSize();
                             }
                         }
-                        // Total akumulasi seluruh berkas maksimal 10 MB (10.485.760 bytes)
-                        if ($totalBytes > 10 * 1024 * 1024) {
+                        // Total akumulasi seluruh berkas maksimal 2 MB (2.097.152 bytes)
+                        if ($totalBytes > 2 * 1024 * 1024) {
                             $totalMb = round($totalBytes / (1024 * 1024), 2);
-                            $fail("Total ukuran seluruh berkas lampiran ({$totalMb} MB) melebihi batas maksimal akumulasi 10 MB.");
+                            $fail("Total ukuran seluruh berkas lampiran ({$totalMb} MB) melebihi batas maksimal akumulasi 2 MB.");
                         }
                     }
                 },
             ],
             'lampiran_pelapor.*' => [
                 'file',
-                'max:5120',
-                new \App\Rules\ValidSecureFile(['image', 'pdf']),
-            ], // Maks 5MB per berkas, divalidasi isi asli
+                'max:1024',
+                new \App\Rules\ValidSecureFile(['image', 'pdf'], 1024),
+            ], // Maks 1MB per berkas (total < 2MB), divalidasi isi asli
             'g-recaptcha-response' => [
                 app()->environment('testing') || app()->runningUnitTests() ? 'nullable' : 'required',
                 function ($attribute, $value, $fail) {
@@ -138,7 +138,7 @@ class StoreTicketRequest extends FormRequest
             'lampiran_pelapor.max' => 'Maksimal 5 berkas lampiran yang dapat diunggah.',
             'lampiran_pelapor.*.file' => 'Berkas lampiran harus berupa file yang valid.',
             'lampiran_pelapor.*.mimes' => 'Format berkas lampiran hanya diperbolehkan: JPG, JPEG, PNG, atau PDF.',
-            'lampiran_pelapor.*.max' => 'Ukuran setiap berkas lampiran maksimal adalah 5 MB.',
+            'lampiran_pelapor.*.max' => 'Ukuran setiap berkas lampiran maksimal adalah 1 MB (gambar otomatis dioptimasi, PDF maksimal 1 MB).',
             'g-recaptcha-response.required' => 'Harap centang verifikasi keamanan "Saya bukan robot" (reCAPTCHA) sebelum mengirim tiket.',
         ];
     }

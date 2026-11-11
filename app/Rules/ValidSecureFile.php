@@ -12,7 +12,7 @@ class ValidSecureFile implements ValidationRule
     protected array $allowedCategories;
     protected ?int $maxSizeKb;
 
-    public function __construct(array $allowedCategories = ['image', 'pdf'], ?int $maxSizeKb = null)
+    public function __construct(array $allowedCategories = ['image', 'pdf'], ?int $maxSizeKb = 1024)
     {
         $this->allowedCategories = $allowedCategories;
         $this->maxSizeKb = $maxSizeKb;

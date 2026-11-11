@@ -44,11 +44,20 @@
                 };
             }
 
-            var maxSingleSizeBytes = 10 * 1024 * 1024; // 10 MB
-            if (file.size > maxSingleSizeBytes) {
+            // Batas berkas PDF tidak dapat dikompresi di browser, maksimal 1 MB
+            if (ext === 'pdf' && file.size > 1024 * 1024) {
                 return {
                     valid: false,
-                    error: 'Ukuran berkas "' + originalName + '" (' + (file.size / 1024 / 1024).toFixed(2) + ' MB) melebihi batas maksimal 10 MB per berkas.'
+                    error: 'Ukuran berkas PDF "' + originalName + '" (' + (file.size / 1024 / 1024).toFixed(2) + ' MB) melebihi batas maksimal 1 MB per berkas. Berkas PDF tidak dapat dikompresi di peramban, silakan gunakan dokumen di bawah 1 MB.'
+                };
+            }
+
+            // Batas gambar sebelum kompresi (maksimal 10 MB untuk mencegah crash canvas browser)
+            var maxInputSizeBytes = 10 * 1024 * 1024;
+            if (file.size > maxInputSizeBytes) {
+                return {
+                    valid: false,
+                    error: 'Ukuran berkas "' + originalName + '" (' + (file.size / 1024 / 1024).toFixed(2) + ' MB) melebihi batas maksimal unggahan 10 MB.'
                 };
             }
 
@@ -177,8 +186,8 @@
         compressImage: function (file, options) {
             options = Object.assign({
                 maxDimension: 1920,
-                targetSizeBytes: 1024 * 1024, // 1 MB
-                quality: 0.82
+                targetSizeBytes: 950 * 1024, // < 1 MB target aman
+                quality: 0.80
             }, options || {});
 
             return new Promise(function (resolve, reject) {
@@ -305,6 +314,15 @@
                         processedFile = await SecureClientUpload.compressImage(f);
                     }
 
+                    // Validasi pasca-kompresi: berkas tidak boleh melebihi 1 MB
+                    if (processedFile.size > 1024 * 1024) {
+                        fileInput.value = '';
+                        if (container) {
+                            container.innerHTML = '<div class="text-xs text-rose-700 font-bold p-2 bg-rose-50 border border-rose-300 rounded-lg">⚠️ Ukuran berkas "' + f.name + '" setelah optimasi (' + (processedFile.size / 1024 / 1024).toFixed(2) + ' MB) melebihi batas 1 MB per berkas.</div>';
+                        }
+                        return;
+                    }
+
                     dt.items.add(processedFile);
 
                     var sizeBefore = SecureClientUpload.formatBytes(originalSize);
@@ -317,6 +335,16 @@
                         (isRaw ? '<span class="text-amber-700 font-semibold">(Unggah Asli) </span>' : '') +
                         sizeBefore + (originalSize !== processedFile.size ? ' → ' + sizeAfter : '') + savings +
                         '</div></div>';
+                }
+
+                // Cek total akumulasi seluruh berkas (maksimal 2 MB)
+                var totalBytes = Array.from(dt.files).reduce(function (acc, curr) { return acc + curr.size; }, 0);
+                if (totalBytes > 2 * 1024 * 1024) {
+                    fileInput.value = '';
+                    if (container) {
+                        container.innerHTML = '<div class="text-xs text-rose-700 font-bold p-2 bg-rose-50 border border-rose-300 rounded-lg">⚠️ Total akumulasi seluruh berkas (' + (totalBytes / 1024 / 1024).toFixed(2) + ' MB) melebihi batas maksimal akumulasi 2 MB.</div>';
+                    }
+                    return;
                 }
 
                 summaryHtml += '</div>';

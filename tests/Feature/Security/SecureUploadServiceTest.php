@@ -194,7 +194,7 @@ class SecureUploadServiceTest extends TestCase
      */
     public function test_rejects_file_exceeding_max_size(): void
     {
-        $largeFile = UploadedFile::fake()->image('gambar_sangat_besar.jpg', 400, 400)->size(12000); // 12 MB (max default 5MB)
+        $largeFile = UploadedFile::fake()->image('gambar_sangat_besar.jpg', 400, 400)->size(2000); // 2 MB (melebihi batas 1 MB per berkas)
 
         $this->expectException(ValidationException::class);
         $this->uploadService->processUpload($largeFile, 'pelapor_lampiran', $this->ticket);

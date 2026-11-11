@@ -17,14 +17,14 @@ return [
     // Kunci enkripsi terpisah dari APP_KEY untuk isolasi kustodi
     'vault_encryption_key' => env('VAULT_ENCRYPTION_KEY', env('APP_KEY')),
 
-    // Batas Ukuran Berkas (dalam Kilobytes)
+    // Batas Ukuran Berkas (dalam Kilobytes) - Diperketat maksimal 1 MB per berkas (total < 2 MB)
     'max_size_kb' => [
-        'image'       => 5120,   // 5 MB
-        'image_raw'   => 10240,  // 10 MB (opsi tanpa kompresi untuk insiden)
-        'pdf'         => 10240,  // 10 MB
-        'video'       => 20480,  // 20 MB (MP4 only)
-        'text'        => 2048,   // 2 MB (log/txt)
-        'default'     => 5120,
+        'image'       => 1024,   // 1 MB
+        'image_raw'   => 1024,   // 1 MB
+        'pdf'         => 1024,   // 1 MB
+        'video'       => 20480,  // 20 MB (MP4 only internal teknisi)
+        'text'        => 1024,   // 1 MB (log/txt)
+        'default'     => 1024,
     ],
 
     // Durasi Maksimum Video (detik)
