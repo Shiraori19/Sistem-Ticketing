@@ -11,7 +11,9 @@ RUN apk add --no-cache \
     unzip \
     git \
     curl \
-    oniguruma-dev
+    oniguruma-dev \
+    ghostscript \
+    qpdf
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

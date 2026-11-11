@@ -28,5 +28,9 @@ docker/nginx/ssl/*.crt
 
 # Non-sistem (Dokumen Magang, Tugas Akhir, Artikel, Desain & Arsip)
 /anti gravity sistem ticketing/
+QA_TEST.md
+UNIT_TEST.md
+laporan_qa.html
+laporan_unittest.html
 
 .env.testing

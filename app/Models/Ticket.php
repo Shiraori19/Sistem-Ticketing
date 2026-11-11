@@ -108,7 +108,7 @@ class Ticket extends Model
         'sla_breach' => false,
         'sla_respon_breach' => false,
         'reopen_count' => 0,
-        'max_reopen' => 2,
+        'max_reopen' => 3,
     ];
 
     /**
@@ -123,10 +123,13 @@ class Ticket extends Model
                     return $value;
                 }
                 $cleaned = preg_replace('/[^0-9]/', '', (string)$value);
+                if (str_starts_with($cleaned, '628')) {
+                    return $cleaned;
+                }
                 if (str_starts_with($cleaned, '08')) {
                     return '628' . substr($cleaned, 2);
                 }
-                if (str_starts_with($cleaned, '8')) {
+                if (str_starts_with($cleaned, '8') && strlen($cleaned) >= 9 && strlen($cleaned) <= 14) {
                     return '628' . substr($cleaned, 1);
                 }
                 return $cleaned;

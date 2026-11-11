@@ -87,6 +87,11 @@ class TicketController extends Controller
         ])->findOrFail($id);
         $user = Auth::user();
 
+        // Otorisasi RBAC: Tolak akun Teknisi mengakses antarmuka detail Admin
+        if ($user->isTeknisi()) {
+            abort(403, 'Akses Ditolak: Akun Teknisi hanya dapat mengakses rute portal tugas lapangan /teknisi/tugas.');
+        }
+
         $isRed = strtoupper($ticket->tlp_level ?? '') === 'RED';
 
         // Otorisasi Hak Akses Tiket TLP RED (BUTIR 7 & KEPUTUSAN 3)

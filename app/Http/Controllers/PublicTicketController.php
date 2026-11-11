@@ -193,8 +193,8 @@ class PublicTicketController extends Controller
     {
         $ticket = Ticket::where('kode_tiket', $kode)->firstOrFail();
 
-        if ($ticket->status !== 'pending_verification') {
-            return back()->with('error', 'Kelengkapan data hanya dapat dikirimkan saat tiket dalam tahap verifikasi.');
+        if (!in_array($ticket->status, ['pending_verification', 'pending_info'])) {
+            return back()->with('error', 'Kelengkapan data hanya dapat dikirimkan saat tiket dalam tahap verifikasi atau pending info.');
         }
 
         $request->validate([
@@ -258,8 +258,8 @@ class PublicTicketController extends Controller
     {
         $ticket = Ticket::where('kode_tiket', $kode)->firstOrFail();
 
-        if ($ticket->status !== 'pending_verification') {
-            return back()->with('error', 'Pembatalan hanya dapat dilakukan saat tiket masih dalam tahap verifikasi awal (pending verification).');
+        if (!in_array($ticket->status, ['pending_verification', 'pending_info'])) {
+            return back()->with('error', 'Pembatalan mandiri hanya dapat dilakukan saat tiket belum didisposisikan ke Bidang teknis.');
         }
 
         $request->validate([

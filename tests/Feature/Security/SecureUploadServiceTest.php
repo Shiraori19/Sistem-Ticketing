@@ -146,10 +146,57 @@ class SecureUploadServiceTest extends TestCase
     {
         $cleanLog = UploadedFile::fake()->createWithContent('system.log', "[2026-10-21 08:00:00] Server normal. No issues detected.\n");
 
-        $record = $this->uploadService->processUpload($cleanLog, 'pelapor_lampiran', $this->ticket);
+        $record = $this->uploadService->processUpload($cleanLog, 'pelapor_lampiran', $this->ticket, ['allowed_categories' => ['image', 'pdf', 'text']]);
 
         $this->assertInstanceOf(TicketFile::class, $record);
-        $this->assertEquals('text/plain', $record->mime_type);
+        $this->assertEquals('text/plain', $record->mime);
         $this->assertEquals('txt', $record->extension);
+    }
+
+    /**
+     * Uji penolakan video MP4 yang diganti ekstensinya menjadi .pdf
+     */
+    public function test_rejects_video_mp4_renamed_to_pdf(): void
+    {
+        $fakeVideoBytes = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom";
+        $spoofedPdf = UploadedFile::fake()->createWithContent('video_kendala.pdf', $fakeVideoBytes);
+
+        $this->expectException(ValidationException::class);
+        $this->uploadService->processUpload($spoofedPdf, 'pelapor_lampiran', $this->ticket);
+    }
+
+    /**
+     * Uji penolakan file biner EXE yang diganti ekstensinya menjadi .jpg
+     */
+    public function test_rejects_binary_exe_renamed_to_jpg(): void
+    {
+        $fakeExeBytes = "MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00\xFF\xFF";
+        $spoofedJpg = UploadedFile::fake()->createWithContent('update_patch.jpg', $fakeExeBytes);
+
+        $this->expectException(ValidationException::class);
+        $this->uploadService->processUpload($spoofedJpg, 'pelapor_lampiran', $this->ticket);
+    }
+
+    /**
+     * Uji penolakan gambar dengan data piksel corrupt
+     */
+    public function test_rejects_corrupted_image_file(): void
+    {
+        $corruptedBytes = "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00\x01\x01\x01\x00\x60\x00\x60\x00\x00CORRUPT_BYTES_DATA";
+        $corruptFile = UploadedFile::fake()->createWithContent('corrupt.jpg', $corruptedBytes);
+
+        $this->expectException(ValidationException::class);
+        $this->uploadService->processUpload($corruptFile, 'pelapor_lampiran', $this->ticket);
+    }
+
+    /**
+     * Uji penolakan berkas yang melebihi batas ukuran
+     */
+    public function test_rejects_file_exceeding_max_size(): void
+    {
+        $largeFile = UploadedFile::fake()->image('gambar_sangat_besar.jpg', 400, 400)->size(12000); // 12 MB (max default 5MB)
+
+        $this->expectException(ValidationException::class);
+        $this->uploadService->processUpload($largeFile, 'pelapor_lampiran', $this->ticket);
     }
 }

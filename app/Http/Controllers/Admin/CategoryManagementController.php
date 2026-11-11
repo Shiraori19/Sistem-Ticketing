@@ -144,6 +144,14 @@ class CategoryManagementController extends Controller
             'timestamp' => now(),
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'is_active' => $newStatus,
+                'message' => "Kategori '{$category->nama_kategori}' berhasil {$statusText}."
+            ]);
+        }
+
         return redirect()->route('admin.kategori.index')
             ->with('success', "Kategori '{$category->nama_kategori}' berhasil {$statusText}.");
     }

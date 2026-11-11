@@ -925,7 +925,8 @@ class TicketWorkflowService
             }
 
             $ticket->sla_breach = $isResolusiBreached;
-            $this->appendHistory($ticket, 'resolved', $actor->nama . ' (Admin Bidang)', $notes . $slaNote);
+            $actorName = $actor ? $actor->nama . ' (Admin Bidang)' : 'Sistem Otomatis';
+            $this->appendHistory($ticket, 'resolved', $actorName, $notes . $slaNote);
 
             // Cascading Resolution ke Tiket-Tiket Anak jika ini Induk Tiket
             if ($ticket->is_parent) {
@@ -933,6 +934,7 @@ class TicketWorkflowService
                     ->whereNotIn('status', ['resolved', 'closed', 'force_closed', 'cancelled'])
                     ->get();
 
+                $childActorName = $actor ? $actor->nama : 'Sistem';
                 foreach ($childTickets as $child) {
                     $child->status = 'resolved';
                     $child->selesai_at = $ticket->selesai_at;
@@ -946,7 +948,7 @@ class TicketWorkflowService
                     $this->appendHistory(
                         $child,
                         'resolved',
-                        $actor->nama . ' (Induk Tiket ' . $ticket->kode_tiket . ')',
+                        $childActorName . ' (Induk Tiket ' . $ticket->kode_tiket . ')',
                         'Diselesaikan otomatis mengikuti penyelesaian Induk Tiket: ' . $notes . $slaNote
                     );
                 }
@@ -955,7 +957,7 @@ class TicketWorkflowService
             $evidenceDetail = $evidencePath ? "dengan bukti: {$evidencePath}" : "tanpa lampiran berkas";
             $slaAuditText = $isResolusiBreached ? " (SLA Resolusi MELEBIHI BATAS: {$waktuTeksResolusi})" : " (SLA Resolusi Tepat Waktu)";
             AuditLog::create([
-                'user_id' => $actor->id,
+                'user_id' => $actor?->id,
                 'aksi' => 'RESOLUSI_TIKET',
                 'target_kode' => $ticket->kode_tiket,
                 'ip_address' => request()?->ip() ?? '127.0.0.1',
@@ -1009,20 +1011,23 @@ class TicketWorkflowService
             $ticket->status = 'closed';
             $ticket->selesai_at = $ticket->selesai_at ?: Carbon::now();
             $ticket->jenis_penyelesaian = 'dikonfirmasi_pelapor';
-            $ticket->rating = $rating !== null ? max(1, min(5, (int) $rating)) : 5;
+            $ticket->rating = $rating !== null ? max(1, min(5, (int) $rating)) : null;
             $ticket->feedback = $feedback;
             $ticket->save();
 
-            $stars = str_repeat('⭐', (int) $ticket->rating);
-            $note = "Pelapor mengonfirmasi penyelesaian tiket dengan penilaian {$ticket->rating}/5 {$stars}." . ($feedback ? " Ulasan: {$feedback}" : "");
+            $stars = $ticket->rating ? str_repeat('⭐', (int) $ticket->rating) : '';
+            $note = $ticket->rating
+                ? "Pelapor mengonfirmasi penyelesaian tiket dengan penilaian {$ticket->rating}/5 {$stars}." . ($feedback ? " Ulasan: {$feedback}" : "")
+                : "Pelapor mengonfirmasi penyelesaian tiket tanpa menyertakan ulasan rating." . ($feedback ? " Ulasan: {$feedback}" : "");
             $this->appendHistory($ticket, 'closed', $ticket->nama_pelapor . ' (Pelapor)', $note);
 
+            $ratingDetail = $ticket->rating ? "Rating: {$ticket->rating}/5 {$stars}" : "Tanpa Rating";
             AuditLog::create([
                 'user_id' => null,
                 'aksi' => 'KONFIRMASI_SELESAI_PELAPOR',
                 'target_kode' => $ticket->kode_tiket,
                 'ip_address' => request()?->ip() ?? '127.0.0.1',
-                'detail' => "Pelapor menutup tiket {$ticket->kode_tiket}. Rating: {$ticket->rating}/5 {$stars}" . ($feedback ? ", Ulasan: {$feedback}" : ""),
+                'detail' => "Pelapor menutup tiket {$ticket->kode_tiket}. {$ratingDetail}" . ($feedback ? ", Ulasan: {$feedback}" : ""),
                 'timestamp' => Carbon::now(),
             ]);
 

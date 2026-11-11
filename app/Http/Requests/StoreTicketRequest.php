@@ -55,7 +55,7 @@ class StoreTicketRequest extends FormRequest
             'category_id' => ['required', 'exists:categories,id'],
             'custom_category_name' => ['nullable', 'string', 'max:150'],
             'judul' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['required', 'string'],
+            'deskripsi' => ['required', 'string', 'max:5000'],
             'lampiran_pelapor' => [
                 'nullable',
                 'array',
@@ -133,6 +133,7 @@ class StoreTicketRequest extends FormRequest
             'category_id.exists' => 'Kategori layanan yang dipilih tidak valid.',
             'judul.required' => 'Judul permohonan / laporan kendala wajib diisi.',
             'deskripsi.required' => 'Deskripsi detail kendala / kebutuhan layanan wajib diisi.',
+            'deskripsi.max' => 'Deskripsi detail kendala / kebutuhan layanan maksimal 5.000 karakter.',
             'lampiran_pelapor.array' => 'Berkas lampiran harus berupa daftar file yang valid.',
             'lampiran_pelapor.max' => 'Maksimal 5 berkas lampiran yang dapat diunggah.',
             'lampiran_pelapor.*.file' => 'Berkas lampiran harus berupa file yang valid.',

@@ -202,7 +202,7 @@ class SecureUploadService
             $uploaderId = $options['uploader_id'] ?? auth()->id();
 
             try {
-                TicketFile::create([
+                $tf = TicketFile::create([
                     'ticket_id'             => $ticket->id,
                     'event_id'              => $options['event_id'] ?? null,
                     'uploader_id'           => $uploaderId,
@@ -218,6 +218,10 @@ class SecureUploadService
                     'is_encrypted'          => $isEncrypted,
                     'vault_path'            => $isSecret ? $storedRelativePath : null,
                 ]);
+
+                if ($detectedExt === 'pdf' && $finalSize > (2 * 1024 * 1024)) {
+                    \App\Jobs\CompressPdfJob::dispatch($tf->id);
+                }
             } catch (\Throwable $e) {
                 Log::warning("Gagal menyimpan riwayat ticket_files: " . $e->getMessage());
             }
@@ -399,6 +403,16 @@ class SecureUploadService
 
         if ($expectedMime && $detectedMime !== $expectedMime) {
             throw new InvalidArgumentException("Format internal gambar ({$detectedMime}) tidak sesuai dengan ekstensi (.{$ext}).");
+        }
+
+        // Mitigasi Decompression Bomb / Pixel Flood: periksa batas dimensi sebelum decoding ke memori
+        $width = (int) ($imageInfo[0] ?? 0);
+        $height = (int) ($imageInfo[1] ?? 0);
+        $maxWidth = config('files.image.max_width', 6000);
+        $maxHeight = config('files.image.max_height', 6000);
+
+        if ($width > $maxWidth || $height > $maxHeight) {
+            throw new InvalidArgumentException("Dimensi gambar ({$width}x{$height} piksel) melebihi batas maksimum {$maxWidth}x{$maxHeight} piksel.");
         }
 
         // Pastikan pustaka GD dapat mem-parsing data piksel gambar secara penuh jika ekstensi GD tersedia
