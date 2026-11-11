@@ -437,7 +437,7 @@
                                             <span class="text-slate-500">atau seret ke sini</span>
                                         </div>
                                         <p id="dropzone-hint" class="text-[11px] text-slate-400">
-                                            JPG, PNG, atau PDF • Maks. 5 berkas (Otomatis dioptimasi &lt; 1 MB)
+                                            JPG, PNG, atau PDF • Maks. 5 berkas (Gambar otomatis dikompresi &lt; 1 MB • PDF besar dikompresi di server)
                                         </p>
                                     </div>
                                     <input id="lampiran_pelapor" name="lampiran_pelapor[]" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" class="sr-only" onchange="handleMultipleFiles(this)">
@@ -2496,7 +2496,7 @@
             validatedFiles.push(f);
         }
 
-        if (hintEl) hintEl.textContent = 'JPG, PNG, atau PDF • Maks. 5 berkas (Otomatis dioptimasi < 1 MB)';
+        if (hintEl) hintEl.textContent = 'JPG, PNG, atau PDF • Maks. 5 berkas (Gambar otomatis dikompresi < 1 MB • PDF besar dikompresi di server)';
 
         if (hasError) {
             if (errorMessage) errorMessage.textContent = errorText;
@@ -2593,12 +2593,19 @@
             const sizeKb = Math.round(file.size / 1024);
             const sizeDisplay = file.size >= 1048576 ? `${sizeMb} MB` : `${sizeKb} KB`;
 
+            let compressionTag = '';
+            if (file._isCompressed) {
+                compressionTag = ' • Kompresi <1MB';
+            } else if (isPdf && file.size > 2 * 1024 * 1024) {
+                compressionTag = ' • Antrean Kompresi Server';
+            }
+
             const chip = document.createElement('div');
             chip.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium shadow-2xs animate-in fade-in';
             chip.innerHTML = `
                 <span>${isPdf ? '📄' : '🖼️'}</span>
                 <span class="max-w-[180px] truncate font-semibold" title="${file.name}">${file.name}</span>
-                <span class="text-[10px] text-blue-700 font-bold uppercase">(${sizeDisplay}${file._isCompressed ? ' • Kompresi <1MB' : ''})</span>
+                <span class="text-[10px] text-blue-700 font-bold uppercase">(${sizeDisplay}${compressionTag})</span>
                 <button type="button" onclick="removeSelectedFile(${idx})" class="w-4 h-4 rounded-full bg-blue-200/80 hover:bg-rose-500 hover:text-white flex items-center justify-center text-[10px] font-bold text-blue-800 transition cursor-pointer" title="Hapus berkas">✕</button>
             `;
             container.appendChild(chip);
