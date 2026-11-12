@@ -469,14 +469,7 @@
                                 <!-- Chips / Pills Berkas Terpilih -->
                                 <div id="file-list-preview" class="mt-2.5 flex flex-wrap gap-2"></div>
 
-                                <!-- Opsi Unggah Kualitas Asli -->
-                                <div class="mt-2.5 pt-2.5 border-t border-slate-100">
-                                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-700 select-none hover:text-blue-900">
-                                        <input type="checkbox" id="checkbox-raw-upload" name="is_raw_upload" value="1" 
-                                            class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                                        <span class="text-xs text-slate-500 font-medium">Kirim berkas kualitas asli tanpa kompresi (opsional, jika diminta petugas DKIS)</span>
-                                    </label>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -2413,14 +2406,13 @@
         }
     }
 
-    // Helper: Kompresi Gambar Klien (HTML5 Canvas) ke < 1 MB jika opsi Kualitas Asli tidak dicentang
+    // Helper: Kompresi Gambar Klien (HTML5 Canvas) ke < 1 MB
     async function compressImageIfEligible(file) {
-        const isRaw = document.getElementById('checkbox-raw-upload')?.checked;
         const ext = file.name.split('.').pop().toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
 
-        // Jika diminta kualitas asli (DKIS) atau bukan gambar (misal PDF) atau sudah di bawah 1 MB, tidak perlu kompresi kanvas
-        if (isRaw || !isImage || file.size <= 1024 * 1024) {
+        // Bukan gambar (misal PDF) atau sudah di bawah 1 MB, tidak perlu kompresi kanvas
+        if (!isImage || file.size <= 1024 * 1024) {
             file._isCompressed = false;
             return file;
         }
@@ -2545,7 +2537,7 @@
             return;
         }
 
-        // 2. Lakukan kompresi otomatis untuk gambar yang berukuran besar (> 1 MB) jika bukan mode raw
+        // 2. Lakukan kompresi otomatis untuk gambar yang berukuran besar (> 1 MB)
         const processedFiles = [];
         for (let f of validatedFiles) {
             const processed = await compressImageIfEligible(f);

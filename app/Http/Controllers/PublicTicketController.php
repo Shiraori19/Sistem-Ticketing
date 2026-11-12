@@ -113,7 +113,6 @@ class PublicTicketController extends Controller
                             'ticket' => $ticket,
                             'kategori_field' => 'lampiran_pelapor',
                             'allowed_categories' => ['image', 'pdf'],
-                            'is_raw' => $request->boolean('is_raw_upload'),
                         ]
                     );
                     $finalPaths[] = $uploadResult['path'];

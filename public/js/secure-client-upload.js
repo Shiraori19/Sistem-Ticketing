@@ -273,10 +273,9 @@
         /**
          * Pasang penanganan otomatis pada form formulir unggahan
          */
-        attachToForm: function (fileInputId, previewContainerId, rawCheckboxId) {
+        attachToForm: function (fileInputId, previewContainerId) {
             var fileInput = document.getElementById(fileInputId);
             var container = document.getElementById(previewContainerId);
-            var rawCheckbox = rawCheckboxId ? document.getElementById(rawCheckboxId) : null;
 
             if (!fileInput) return;
 
@@ -287,7 +286,6 @@
                     return;
                 }
 
-                var isRaw = rawCheckbox && rawCheckbox.checked;
                 var dt = new DataTransfer();
 
                 if (container) {
@@ -310,7 +308,7 @@
                     var originalSize = f.size;
                     var processedFile = f;
 
-                    if (!isRaw && f.type.match(/^image\/(jpeg|png|jpg)$/i)) {
+                    if (f.type.match(/^image\/(jpeg|png|jpg)$/i)) {
                         processedFile = await SecureClientUpload.compressImage(f);
                     }
 
@@ -332,7 +330,6 @@
                     summaryHtml += '<div class="flex items-center justify-between text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg">' +
                         '<div class="truncate max-w-[200px] sm:max-w-[320px] font-mono text-slate-700 font-medium">📎 ' + f.name + '</div>' +
                         '<div class="text-right text-[11px] text-slate-500 whitespace-nowrap">' +
-                        (isRaw ? '<span class="text-amber-700 font-semibold">(Unggah Asli) </span>' : '') +
                         sizeBefore + (originalSize !== processedFile.size ? ' → ' + sizeAfter : '') + savings +
                         '</div></div>';
                 }

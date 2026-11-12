@@ -428,8 +428,8 @@ class SecureUploadService
 
     /**
      * Sanitasi Gambar: Decode lalu Encode ulang dengan GD (Membersihkan EXIF, GPS, Muatan Tersembunyi)
-     * Otomatis mengompresi dan menurunkan resolusi ke ukuran di bawah 1 MB (Maksimal 1920px),
-     * kecuali opsi 'is_raw' bernilai true (atas permintaan forensik keamanan DKIS).
+     * Otomatis mengompresi dan menurunkan resolusi ke ukuran di bawah 1 MB (Maksimal 1920px).
+     * Kompresi selalu diterapkan tanpa pengecualian.
      */
     public function sanitizeImage(string $path, string $ext, array $options = []): string
     {
@@ -457,23 +457,9 @@ class SecureUploadService
             throw new InvalidArgumentException("Dimensi gambar ({$width}x{$height} piksel) melebihi batas maksimum {$maxWidth}x{$maxHeight}.");
         }
 
-        $isRaw = (bool) ($options['is_raw'] ?? false);
         $tempPath = tempnam(sys_get_temp_dir(), 'sec_img_');
 
-        // Jika opsi "Kualitas Asli" aktif (misal investigasi insiden DKIS), pertahankan dimensi asli
-        if ($isRaw) {
-            if ($ext === 'png') {
-                imagealphablending($image, false);
-                imagesavealpha($image, true);
-                imagepng($image, $tempPath, 8);
-            } else {
-                imagejpeg($image, $tempPath, 88);
-            }
-            imagedestroy($image);
-            return $tempPath;
-        }
-
-        // Mode Standar (Otomatis Kompresi di bawah 1 MB)
+        // Mode Standar (Selalu Kompresi, tidak ada bypass kualitas asli)
         // 1. Resample gambar ke resolusi optimal (maksimal 1920px pada sisi terpanjang)
         $targetDim = 1920;
         $workImage = $image;
