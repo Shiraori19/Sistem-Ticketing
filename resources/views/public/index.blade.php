@@ -4,6 +4,33 @@
 ])
 
 @section('content')
+<style>
+/* Custom Styled Scrollbar for SKPD and Kategori Dropdown Combobox */
+.dropdown-scroll-box {
+    max-height: 250px !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #94a3b8 #f1f5f9 !important;
+    -webkit-overflow-scrolling: touch;
+}
+.dropdown-scroll-box::-webkit-scrollbar {
+    width: 8px !important;
+    display: block !important;
+}
+.dropdown-scroll-box::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 8px !important;
+}
+.dropdown-scroll-box::-webkit-scrollbar-thumb {
+    background: #94a3b8 !important;
+    border-radius: 8px !important;
+    border: 2px solid #f1f5f9 !important;
+}
+.dropdown-scroll-box::-webkit-scrollbar-thumb:hover {
+    background: #64748b !important;
+}
+</style>
 <div class="bg-slate-50 min-h-screen">
     <!-- ══════════════════════════════════════════════════════════════════════
          A. HERO HEADER (Dark Navy Gradient)
@@ -211,9 +238,10 @@
                                 </div>
 
                                 <!-- Panel Dropdown SKPD: Ringkas & Dapat Di-Scroll -->
-                                <div id="skpd_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                        Pilih Instansi
+                                <div id="skpd_dropdown_list" class="hidden absolute z-50 left-0 right-0 bg-white border-2 border-slate-300 rounded-2xl shadow-2xl text-sm" style="max-height: 330px; display: none; flex-direction: column; overflow: hidden;">
+                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex-shrink-0 flex items-center justify-between rounded-t-2xl">
+                                        <span>Pilih Instansi / SKPD</span>
+                                        <span id="skpd_count_label" class="text-[10px] font-normal text-slate-400 normal-case tracking-normal"></span>
                                     </div>
                                     @php
                                         $daftarOpd = (isset($masterOpdList) && $masterOpdList->isNotEmpty())
@@ -242,7 +270,7 @@
                                                 'Lainnya (Jelaskan di Deskripsi)',
                                             ];
                                     @endphp
-                                    <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="skpd_items_container" style="scrollbar-width: thin;">
+                                    <div class="p-1 space-y-0.5 dropdown-scroll-box flex-1" id="skpd_items_container" style="max-height: 250px; overflow-y: scroll !important;">
                                         <!-- Opsi Custom Teks Ketikan (Muncul saat mengetik nama yang belum ada) -->
                                         <div id="skpd_custom_option" class="hidden px-3.5 py-2.5 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectSkpdCustom()">
                                             <div class="flex items-center gap-2">
@@ -252,16 +280,16 @@
                                         </div>
 
                                         @foreach($daftarOpd as $opd)
-                                            <div class="skpd-option px-3.5 py-2.5 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('skpd') === $opd ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
+                                            <div class="skpd-option px-3.5 py-2 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('skpd') === $opd ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
                                                 data-value="{{ $opd }}" onclick="selectSkpd('{{ addslashes($opd) }}')">
-                                                <span>{{ $opd }}</span>
+                                                <span class="truncate pr-2">{{ $opd }}</span>
                                                 @if(old('skpd') === $opd)
-                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                 @endif
                                             </div>
                                         @endforeach
                                     </div>
-                                    <div id="skpd_empty_state" class="hidden p-3.5 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
+                                    <div id="skpd_empty_state" class="hidden p-3 text-center text-xs text-slate-500 bg-slate-50 border-t border-slate-200 flex-shrink-0">
                                         <span>Tidak menemukan nama instansi dalam daftar?</span>
                                         <button type="button" onclick="selectSkpdCustom()" class="block w-full mt-1.5 text-blue-700 hover:underline font-bold cursor-pointer">
                                             ✍️ Pilih Lainnya dan jelaskan di deskripsi
@@ -356,11 +384,12 @@
                                 </div>
 
                                 <!-- Panel Dropdown Kategori: Ringkas, Tanpa Judul Bidang & Dapat Di-Scroll -->
-                                <div id="cat_dropdown_list" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border-2 border-slate-200 rounded-2xl shadow-xl overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100">
-                                    <div class="px-3.5 py-1.5 bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                        Pilih Kategori
+                                <div id="cat_dropdown_list" class="hidden absolute z-50 left-0 right-0 bg-white border-2 border-slate-300 rounded-2xl shadow-2xl text-sm" style="max-height: 330px; display: none; flex-direction: column; overflow: hidden;">
+                                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex-shrink-0 flex items-center justify-between rounded-t-2xl">
+                                        <span>Pilih Kategori Kendala</span>
+                                        <span id="cat_count_label" class="text-[10px] font-normal text-slate-400 normal-case tracking-normal"></span>
                                     </div>
-                                    <div class="p-1 space-y-0.5 max-h-48 sm:max-h-52 overflow-y-auto overscroll-contain" id="cat_items_container" style="scrollbar-width: thin;">
+                                    <div class="p-1 space-y-0.5 dropdown-scroll-box flex-1" id="cat_items_container" style="max-height: 250px; overflow-y: scroll !important;">
                                         <!-- Opsi Kategori Kustom (Muncul saat mengetik kategori yang belum ada) -->
                                         <div id="cat_custom_option" class="hidden px-3.5 py-2.5 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-900 font-semibold cursor-pointer border border-blue-200/80 transition" onclick="selectCatCustom('{{ $fallbackCatId }}')">
                                             <div class="flex items-center gap-2">
@@ -370,17 +399,17 @@
                                         </div>
 
                                         @foreach($categories as $cat)
-                                            <div class="cat-option px-3.5 py-2.5 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('category_id') == $cat->id ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
+                                            <div class="cat-option px-3.5 py-2 rounded-xl hover:bg-blue-50 cursor-pointer flex items-center justify-between text-slate-700 hover:text-blue-900 transition {{ old('category_id') == $cat->id ? 'bg-blue-50 font-bold text-blue-900' : '' }}"
                                                 data-id="{{ $cat->id }}" data-name="{{ $cat->nama_kategori }}"
                                                 onclick="selectCat('{{ $cat->id }}', '{{ addslashes($cat->nama_kategori) }}')">
-                                                <span>{{ $cat->nama_kategori }}</span>
+                                                <span class="truncate pr-2">{{ $cat->nama_kategori }}</span>
                                                 @if(old('category_id') == $cat->id)
-                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                 @endif
                                             </div>
                                         @endforeach
                                     </div>
-                                    <div id="cat_empty_state" class="hidden p-3.5 text-center text-xs text-slate-600 bg-slate-50 border-t border-slate-100">
+                                    <div id="cat_empty_state" class="hidden p-3 text-center text-xs text-slate-600 bg-slate-50 border-t border-slate-200 flex-shrink-0">
                                         <span>Tidak menemukan kategori yang sesuai?</span>
                                         <button type="button" onclick="selectCatCustom('{{ $fallbackCatId }}')" class="block w-full mt-1.5 text-blue-700 hover:underline font-bold cursor-pointer">
                                             ✍️ Pilih Lainnya dan jelaskan di deskripsi
@@ -1653,25 +1682,59 @@
     function openSkpdDropdown() {
         const list = document.getElementById('skpd_dropdown_list');
         const icon = document.getElementById('skpd_chevron_icon');
-        if (list) {
-            list.classList.remove('hidden');
-            if (icon) icon.classList.add('rotate-180');
-            const searchInput = document.getElementById('skpd_search_input');
-            filterSkpdOptions(searchInput ? searchInput.value : '');
+        const container = document.getElementById('skpd_search_container');
+        if (!list || !container) return;
+
+        // Tutup dropdown kategori jika sedang terbuka
+        closeCatDropdown();
+
+        list.classList.remove('hidden');
+        list.style.display = 'flex';
+
+        // Hitung posisi pintar (flip ke atas jika ruang bawah kurang dari 280px)
+        const triggerRect = container.getBoundingClientRect();
+        const viewportH = window.innerHeight;
+        const spaceBelow = viewportH - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+
+        if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+            list.style.top = 'auto';
+            list.style.bottom = '100%';
+            list.style.marginTop = '0';
+            list.style.marginBottom = '6px';
+        } else {
+            list.style.top = '100%';
+            list.style.bottom = 'auto';
+            list.style.marginTop = '6px';
+            list.style.marginBottom = '0';
+        }
+
+        if (icon) icon.classList.add('rotate-180');
+        const searchInput = document.getElementById('skpd_search_input');
+        filterSkpdOptions(searchInput ? searchInput.value : '');
+
+        // Update label jumlah item
+        const countLabel = document.getElementById('skpd_count_label');
+        if (countLabel) {
+            const total = document.querySelectorAll('.skpd-option').length;
+            countLabel.textContent = total + ' instansi';
         }
     }
 
     function closeSkpdDropdown() {
         const list = document.getElementById('skpd_dropdown_list');
         const icon = document.getElementById('skpd_chevron_icon');
-        if (list) list.classList.add('hidden');
+        if (list) {
+            list.classList.add('hidden');
+            list.style.display = 'none';
+        }
         if (icon) icon.classList.remove('rotate-180');
     }
 
     function toggleSkpdDropdown() {
         const list = document.getElementById('skpd_dropdown_list');
         if (!list) return;
-        if (list.classList.contains('hidden')) {
+        if (list.classList.contains('hidden') || list.style.display === 'none') {
             openSkpdDropdown();
             document.getElementById('skpd_search_input')?.focus();
         } else {
@@ -1817,25 +1880,59 @@
     function openCatDropdown() {
         const list = document.getElementById('cat_dropdown_list');
         const icon = document.getElementById('cat_chevron_icon');
-        if (list) {
-            list.classList.remove('hidden');
-            if (icon) icon.classList.add('rotate-180');
-            const searchInput = document.getElementById('cat_search_input');
-            filterCatOptions(searchInput ? searchInput.value : '');
+        const container = document.getElementById('cat_search_container');
+        if (!list || !container) return;
+
+        // Tutup dropdown SKPD jika sedang terbuka
+        closeSkpdDropdown();
+
+        list.classList.remove('hidden');
+        list.style.display = 'flex';
+
+        // Hitung posisi pintar (flip ke atas jika ruang bawah kurang dari 280px)
+        const triggerRect = container.getBoundingClientRect();
+        const viewportH = window.innerHeight;
+        const spaceBelow = viewportH - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+
+        if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+            list.style.top = 'auto';
+            list.style.bottom = '100%';
+            list.style.marginTop = '0';
+            list.style.marginBottom = '6px';
+        } else {
+            list.style.top = '100%';
+            list.style.bottom = 'auto';
+            list.style.marginTop = '6px';
+            list.style.marginBottom = '0';
+        }
+
+        if (icon) icon.classList.add('rotate-180');
+        const searchInput = document.getElementById('cat_search_input');
+        filterCatOptions(searchInput ? searchInput.value : '');
+
+        // Update label jumlah item
+        const countLabel = document.getElementById('cat_count_label');
+        if (countLabel) {
+            const total = document.querySelectorAll('.cat-option').length;
+            countLabel.textContent = total + ' kategori';
         }
     }
 
     function closeCatDropdown() {
         const list = document.getElementById('cat_dropdown_list');
         const icon = document.getElementById('cat_chevron_icon');
-        if (list) list.classList.add('hidden');
+        if (list) {
+            list.classList.add('hidden');
+            list.style.display = 'none';
+        }
         if (icon) icon.classList.remove('rotate-180');
     }
 
     function toggleCatDropdown() {
         const list = document.getElementById('cat_dropdown_list');
         if (!list) return;
-        if (list.classList.contains('hidden')) {
+        if (list.classList.contains('hidden') || list.style.display === 'none') {
             openCatDropdown();
             document.getElementById('cat_search_input')?.focus();
         } else {
