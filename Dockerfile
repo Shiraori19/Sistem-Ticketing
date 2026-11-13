@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies & PostgreSQL dev libraries
+# Install system dependencies, PostgreSQL dev libraries, Ghostscript, qpdf & Nginx
 RUN apk add --no-cache \
     postgresql-dev \
     libpng-dev \
@@ -13,7 +13,8 @@ RUN apk add --no-cache \
     curl \
     oniguruma-dev \
     ghostscript \
-    qpdf
+    qpdf \
+    nginx
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -32,11 +33,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy entrypoint script
-COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Salin source code sistem ke dalam image
+COPY . /var/www/html
 
-EXPOSE 9000
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php-fpm"]
+# Salin konfigurasi Nginx dan script entrypoint
+COPY docker/render/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/render/entrypoint.sh /usr/local/bin/render-entrypoint.sh
+RUN chmod +x /usr/local/bin/render-entrypoint.sh
+
+# Pasang dependensi PHP tanpa dev dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+EXPOSE 10000
+ENTRYPOINT ["/usr/local/bin/render-entrypoint.sh"]
 
