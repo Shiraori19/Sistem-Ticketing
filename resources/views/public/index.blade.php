@@ -42,26 +42,17 @@
         <div class="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <!-- Top Navbar Bar inside Hero -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pb-4 border-b border-white/10">
+            <!-- Top Navbar Bar inside Hero: Responsif Rapi di HP dan Desktop -->
+            <div class="flex items-center justify-between pb-4 sm:pb-5 border-b border-white/10">
                 <!-- DKIS Logo & Branding -->
-                <div class="flex items-center space-x-3.5">
-                    <img src="{{ asset('images/logo-dkis.png') }}" alt="Logo DKIS" class="h-11 w-auto object-contain">
-                    <div class="border-l border-white/20 pl-3 text-left">
-                        <span class="text-sm sm:text-base font-extrabold tracking-tight text-white block leading-tight">Pemerintah Daerah Kota Cirebon</span>
-                        <p class="text-xs text-slate-300 font-medium tracking-wide">
+                <div class="flex items-center space-x-2.5 sm:space-x-3.5">
+                    <img src="{{ asset('images/logo-dkis.png') }}" alt="Logo DKIS" class="h-9 sm:h-11 w-auto object-contain">
+                    <div class="border-l border-white/20 pl-2.5 sm:pl-3 text-left">
+                        <span class="text-xs sm:text-base font-extrabold tracking-tight text-white block leading-tight">Pemerintah Kota Cirebon</span>
+                        <p class="text-[10px] sm:text-xs text-slate-300 font-medium tracking-wide">
                             Dinas Komunikasi, Informatika dan Statistik
                         </p>
                     </div>
-                </div>
-
-                <!-- Top Navbar Right Actions: Tombol Lacak / Buat Pengaduan Diperbesar -->
-                <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
-                    <button type="button" id="nav-btn-toggle" onclick="togglePortalTab()"
-                        class="inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl text-sm sm:text-base font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-400/50 shadow-md transition transform active:scale-95 cursor-pointer">
-                        <span id="nav-btn-icon">{{ ($activeTab ?? 'buat') === 'lacak' ? '✍️' : '🔍' }}</span>
-                        <span id="nav-btn-label">{{ ($activeTab ?? 'buat') === 'lacak' ? 'Buat Pengaduan Baru' : 'Lacak Status Tiket' }}</span>
-                    </button>
                 </div>
             </div>
 
@@ -78,6 +69,22 @@
                 <p class="text-sm sm:text-base text-slate-200 max-w-xl mx-auto leading-relaxed">
                     Pusat bantuan kendala jaringan, aplikasi kedinasan, dan perangkat TIK Pemerintah Kota Cirebon.
                 </p>
+
+                <!-- Modern Segmented Tabs: Terpadu, Rapi, & Sangat Nyaman di HP Maupun Desktop -->
+                <div class="pt-2 flex justify-center">
+                    <div class="inline-flex p-1 rounded-2xl bg-slate-900/40 backdrop-blur-md border border-white/15 shadow-inner w-full max-w-sm sm:max-w-md">
+                        <button type="button" onclick="switchPortalTab('buat')" id="tab-pill-buat"
+                            class="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-3.5 sm:px-5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer {{ ($activeTab ?? 'buat') === 'buat' ? 'bg-white text-slate-900 shadow-md shadow-black/10' : 'text-slate-300 hover:text-white hover:bg-white/10' }}">
+                            <span class="text-base">✍️</span>
+                            <span>Buat Pengaduan</span>
+                        </button>
+                        <button type="button" onclick="switchPortalTab('lacak')" id="tab-pill-lacak"
+                            class="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-3.5 sm:px-5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer {{ ($activeTab ?? 'buat') === 'lacak' ? 'bg-white text-slate-900 shadow-md shadow-black/10' : 'text-slate-300 hover:text-white hover:bg-white/10' }}">
+                            <span class="text-base">🔍</span>
+                            <span>Lacak Status Tiket</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1647,17 +1654,38 @@
         }
 
         if (buatSection && lacakSection) {
+            const tabPillBuat = document.getElementById('tab-pill-buat');
+            const tabPillLacak = document.getElementById('tab-pill-lacak');
+            const activeClasses = ['bg-white', 'text-slate-900', 'shadow-md', 'shadow-black/10'];
+            const inactiveClasses = ['text-slate-300', 'hover:text-white', 'hover:bg-white/10'];
+
             if (tabName === 'buat') {
                 buatSection.classList.remove('hidden');
                 lacakSection.classList.add('hidden');
                 if (navBtnIcon) navBtnIcon.textContent = '🔍';
                 if (navBtnLabel) navBtnLabel.textContent = 'Lacak Status Tiket';
+                if (tabPillBuat) {
+                    tabPillBuat.classList.add(...activeClasses);
+                    tabPillBuat.classList.remove(...inactiveClasses);
+                }
+                if (tabPillLacak) {
+                    tabPillLacak.classList.remove(...activeClasses);
+                    tabPillLacak.classList.add(...inactiveClasses);
+                }
                 window.history.replaceState(null, '', '{{ route("public.index") }}');
             } else {
                 buatSection.classList.add('hidden');
                 lacakSection.classList.remove('hidden');
                 if (navBtnIcon) navBtnIcon.textContent = '✍️';
                 if (navBtnLabel) navBtnLabel.textContent = 'Buat Pengaduan Baru';
+                if (tabPillLacak) {
+                    tabPillLacak.classList.add(...activeClasses);
+                    tabPillLacak.classList.remove(...inactiveClasses);
+                }
+                if (tabPillBuat) {
+                    tabPillBuat.classList.remove(...activeClasses);
+                    tabPillBuat.classList.add(...inactiveClasses);
+                }
                 window.history.replaceState(null, '', '{{ route("public.index") }}?tab=lacak');
             }
             window.scrollTo({ top: 120, behavior: 'smooth' });
