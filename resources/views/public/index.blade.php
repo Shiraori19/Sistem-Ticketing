@@ -136,6 +136,33 @@
             </div>
         @endif
 
+        <!-- Banner Pengingat Struk Terakhir (dari localStorage) -->
+        <div id="banner-struk-reminder" class="hidden mb-6 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-bold text-sm mt-0.5">📋</div>
+                    <div>
+                        <div class="text-sm font-bold leading-relaxed">Pengingat: Anda memiliki tiket terakhir</div>
+                        <div class="text-xs text-blue-700 mt-1">
+                            Kode Tiket: <strong id="reminder-kode" class="font-mono"></strong> — 
+                            Dibuat: <span id="reminder-waktu"></span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button type="button" onclick="copyReminderCode()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition">
+                                📋 Salin Kode Tiket
+                            </button>
+                            <button type="button" onclick="downloadSavedStruk()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-emerald-700 transition">
+                                📥 Download Struk
+                            </button>
+                            <button type="button" onclick="dismissStrukReminder()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer hover:bg-slate-300 transition">
+                                ✕ Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ══════════════════════════════════════════════════════════════════
              B. TAB "BUAT LAPORAN BARU" (Card Putih dengan Shadow)
              ══════════════════════════════════════════════════════════════════ -->
@@ -1530,11 +1557,11 @@
                     <!-- Warning Alert Sebelum Menutup Modal -->
                     <div style="margin-top: 12px; padding: 10px 12px; background-color: #fef3c7; border: 1.5px dashed #d97706; border-radius: 12px; color: #92400e; font-size: 11.5px; line-height: 1.45; font-weight: 700; display: flex; align-items: start; gap: 8px;">
                         <span style="font-size: 16px;">⚠️</span>
-                        <span><strong>PENTING:</strong> Simpan PIN ini baik-baik. PIN tidak akan ditampilkan lagi setelah Anda menutup jendela ini!</span>
+                        <span><strong>PENTING:</strong> Simpan Kode Tiket & PIN ini baik-baik. <strong>Setelah halaman di-refresh atau ditutup, struk ini TIDAK bisa ditampilkan lagi!</strong> Gunakan tombol di bawah untuk menyimpan.</span>
                     </div>
 
-                    <!-- 4 Action Buttons on Deep Navy -->
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr) 1.2fr 1.2fr; gap: 8px; margin-top: 14px; padding: 0 2px;">
+                    <!-- Action Buttons -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; padding: 0 2px;">
                         <button type="button" onclick="copyTicketCode('{{ $strukData['kode_tiket'] }}')"
                             style="background-color: #e2e8f0; color: #0f172a; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s;">
                             <span id="copy-btn-icon">📋</span>
@@ -1547,22 +1574,53 @@
                             <span id="copy-pin-text">Salin PIN</span>
                         </button>
 
-                        <button type="button" 
+                        <button type="button" onclick="downloadStrukAsText()"
+                            style="background-color: #10b981; color: #ffffff; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
+                            <span>📥</span>
+                            <span>Simpan Struk</span>
+                        </button>
+
+                        <button type="button"
                             id="btn-print-struk"
                             data-struk="{{ json_encode($strukData) }}"
                             onclick="triggerPrintStruk(JSON.parse(this.dataset.struk))"
                             style="background-color: #2563eb; color: #ffffff; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
                             <span>🖨️ Cetak / PDF</span>
                         </button>
+                    </div>
 
+                    <!-- Tombol Tutup & Pantau Tiket -->
+                    <div style="margin-top: 8px; padding: 0 2px;">
                         <button type="button" onclick="closeSuccessModal()"
-                            style="background-color: #1d4ed8; color: #ffffff; font-weight: 800; font-size: 12px; padding: 10px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
-                            <span>🔍 Pantau Tiket</span>
+                            style="width: 100%; background-color: #1d4ed8; color: #ffffff; font-weight: 800; font-size: 13px; padding: 12px 8px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); transition: all 0.2s;">
+                            <span>🔍</span>
+                            <span>Sudah Disimpan — Pantau Tiket Saya</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- Auto-save struk data ke localStorage & proteksi beforeunload --}}
+        <script>
+        (function() {
+            // Simpan data struk ke localStorage agar bisa diakses kembali
+            var strukData = @json($strukData);
+            localStorage.setItem('_last_struk', JSON.stringify(strukData));
+            localStorage.setItem('_last_struk_time', new Date().toISOString());
+            localStorage.removeItem('_struk_saved');
+            window._strukModalOpen = true;
+
+            // Proteksi: Peringatkan jika user mau refresh/tutup browser saat modal terbuka
+            window.addEventListener('beforeunload', function(e) {
+                if (window._strukModalOpen) {
+                    e.preventDefault();
+                    e.returnValue = 'Struk Tanda Terima belum disimpan! Yakin ingin meninggalkan halaman?';
+                    return e.returnValue;
+                }
+            });
+        })();
+        </script>
     @endif
 
     <!-- ══════════════════════════════════════════════════════════════════════
@@ -2881,9 +2939,28 @@
     // 4. Modal Popup Controls & Clipboard Copy
     function closeSuccessModal() {
         const modal = document.getElementById('modal-success-ticket');
-        if (modal) {
-            modal.classList.add('hidden');
+        if (!modal) return;
+
+        // Cek apakah user sudah menyimpan struk
+        const saved = localStorage.getItem('_struk_saved');
+        if (!saved) {
+            const yakin = confirm(
+                '⚠️ PERINGATAN!\n\n' +
+                'Anda BELUM menyimpan Struk Tanda Terima Digital.\n' +
+                'Setelah ditutup, Kode Tiket & PIN TIDAK bisa ditampilkan lagi!\n\n' +
+                'Pastikan Anda sudah:\n' +
+                '✅ Menyalin Kode Tiket\n' +
+                '✅ Menyalin PIN Keamanan\n' +
+                '✅ Mencetak / Download struk\n\n' +
+                'Yakin ingin menutup tanpa menyimpan?'
+            );
+            if (!yakin) return;
         }
+
+        modal.classList.add('hidden');
+        window._strukModalOpen = false;
+        // Hapus flag supaya beforeunload tidak trigger lagi
+        localStorage.removeItem('_struk_saved');
     }
 
     function openCancelTicketModal(kodeTiket) {
@@ -2926,6 +3003,7 @@
             if (btnText) btnText.textContent = 'Kode Disalin!';
             if (btnIcon) btnIcon.textContent = '✅';
             showStrukInlineFeedback('Kode tiket resmi ' + code + ' berhasil disalin!');
+            localStorage.setItem('_struk_saved', '1');
             setTimeout(() => {
                 if (btnText) btnText.textContent = 'Salin Kode';
                 if (btnIcon) btnIcon.textContent = '📋';
@@ -2942,6 +3020,7 @@
             if (btnText) btnText.textContent = 'PIN Disalin!';
             if (btnIcon) btnIcon.textContent = '✅';
             showStrukInlineFeedback('PIN keamanan ' + pin + ' berhasil disalin! Simpan baik-baik.');
+            localStorage.setItem('_struk_saved', '1');
             setTimeout(() => {
                 if (btnText) btnText.textContent = 'Salin PIN';
                 if (btnIcon) btnIcon.textContent = '🔒';
@@ -2951,8 +3030,53 @@
         });
     }
 
+    // Download Struk sebagai file teks (.txt) agar bisa disimpan di HP
+    function downloadStrukAsText() {
+        var data = localStorage.getItem('_last_struk');
+        if (!data) {
+            alert('Data struk tidak tersedia.');
+            return;
+        }
+        var s = JSON.parse(data);
+        var text = '════════════════════════════════════════\n';
+        text += '   BUKTI TANDA TERIMA PENGAJUAN TIKET\n';
+        text += '   DINAS KOMUNIKASI, INFORMATIKA,\n';
+        text += '   DAN STATISTIK KOTA CIREBON\n';
+        text += '════════════════════════════════════════\n\n';
+        text += 'KODE TIKET RESMI : ' + s.kode_tiket + '\n';
+        text += 'WAKTU PENDAFTARAN: ' + s.waktu + '\n\n';
+        text += '── Identitas Pelapor ──────────────────\n';
+        text += 'Nama Pegawai     : ' + s.nama + '\n';
+        text += 'NIP Pegawai      : ' + s.nip + '\n';
+        text += 'Instansi / SKPD  : ' + s.skpd + '\n\n';
+        text += '── Rincian Kendala ────────────────────\n';
+        text += 'Kategori Masalah : ' + s.kategori + '\n';
+        text += 'Judul Kendala    : ' + s.judul + '\n\n';
+        text += '════════════════════════════════════════\n';
+        text += '🔒 PIN KEAMANAN  : ' + s.pin + '\n';
+        text += '════════════════════════════════════════\n\n';
+        text += '*Simpan PIN ini baik-baik!\n';
+        text += ' Gunakan PIN untuk: Membatalkan Tiket,\n';
+        text += ' Melengkapi Data, atau Konfirmasi Selesai.\n\n';
+        text += 'Lacak tiket di: ' + window.location.origin + '\n';
+
+        var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'Struk_Tiket_' + s.kode_tiket + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        localStorage.setItem('_struk_saved', '1');
+        showStrukInlineFeedback('✅ Struk berhasil diunduh! Cek folder Download di HP/komputer Anda.');
+    }
+
     // 5. Cetak Struk Tanda Terima Digital Resmi (Sesuai Desain Standar)
     function triggerPrintStruk(data) {
+        localStorage.setItem('_struk_saved', '1');
         const w = window.open('', '_blank', 'width=580,height=720');
         if (!w) {
             alert('Mohon izinkan popup di browser Anda untuk mencetak tanda terima.');
@@ -3038,6 +3162,92 @@
         `);
         w.document.close();
     }
+
+    // 6. Banner Pengingat Struk Terakhir (Persistent via localStorage)
+    (function() {
+        // Jangan tampilkan banner jika modal struk sedang terbuka
+        if (document.getElementById('modal-success-ticket')) return;
+
+        var saved = localStorage.getItem('_last_struk');
+        var savedTime = localStorage.getItem('_last_struk_time');
+        if (!saved) return;
+
+        try {
+            var data = JSON.parse(saved);
+            // Hanya tampilkan jika struk dibuat dalam 7 hari terakhir
+            if (savedTime) {
+                var age = (Date.now() - new Date(savedTime).getTime()) / (1000 * 60 * 60 * 24);
+                if (age > 7) {
+                    localStorage.removeItem('_last_struk');
+                    localStorage.removeItem('_last_struk_time');
+                    return;
+                }
+            }
+
+            var banner = document.getElementById('banner-struk-reminder');
+            var kodeEl = document.getElementById('reminder-kode');
+            var waktuEl = document.getElementById('reminder-waktu');
+            if (banner && kodeEl) {
+                kodeEl.textContent = data.kode_tiket;
+                if (waktuEl) waktuEl.textContent = data.waktu || '-';
+                banner.classList.remove('hidden');
+            }
+        } catch(e) {}
+    })();
+
+    function copyReminderCode() {
+        var saved = localStorage.getItem('_last_struk');
+        if (!saved) return;
+        var data = JSON.parse(saved);
+        navigator.clipboard.writeText(data.kode_tiket).then(function() {
+            alert('✅ Kode Tiket ' + data.kode_tiket + ' berhasil disalin!');
+        }).catch(function() {
+            prompt('Salin kode tiket ini:', data.kode_tiket);
+        });
+    }
+
+    function downloadSavedStruk() {
+        var saved = localStorage.getItem('_last_struk');
+        if (!saved) { alert('Data struk tidak tersedia.'); return; }
+        var s = JSON.parse(saved);
+        var text = '════════════════════════════════════════\n';
+        text += '   BUKTI TANDA TERIMA PENGAJUAN TIKET\n';
+        text += '   DINAS KOMUNIKASI, INFORMATIKA,\n';
+        text += '   DAN STATISTIK KOTA CIREBON\n';
+        text += '════════════════════════════════════════\n\n';
+        text += 'KODE TIKET RESMI : ' + s.kode_tiket + '\n';
+        text += 'WAKTU PENDAFTARAN: ' + s.waktu + '\n\n';
+        text += '── Identitas Pelapor ──────────────────\n';
+        text += 'Nama Pegawai     : ' + s.nama + '\n';
+        text += 'NIP Pegawai      : ' + s.nip + '\n';
+        text += 'Instansi / SKPD  : ' + s.skpd + '\n\n';
+        text += '── Rincian Kendala ────────────────────\n';
+        text += 'Kategori Masalah : ' + s.kategori + '\n';
+        text += 'Judul Kendala    : ' + s.judul + '\n\n';
+        text += '════════════════════════════════════════\n';
+        text += '🔒 PIN KEAMANAN  : ' + s.pin + '\n';
+        text += '════════════════════════════════════════\n\n';
+        text += '*Simpan PIN ini baik-baik!\n';
+        text += ' Gunakan PIN untuk: Membatalkan Tiket,\n';
+        text += ' Melengkapi Data, atau Konfirmasi Selesai.\n\n';
+        text += 'Lacak tiket di: ' + window.location.origin + '\n';
+
+        var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'Struk_Tiket_' + s.kode_tiket + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function dismissStrukReminder() {
+        var banner = document.getElementById('banner-struk-reminder');
+        if (banner) banner.classList.add('hidden');
+    }
+
 </script>
 @endsection
 

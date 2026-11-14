@@ -26,11 +26,11 @@ docker/nginx/ssl/*.pem
 docker/nginx/ssl/*.key
 docker/nginx/ssl/*.crt
 
-# Non-sistem (Dokumen Magang, Tugas Akhir, Artikel, Desain & Arsip)
+# Non-sistem (Tools, Dokumentasi Lokal & Arsip)
+/_tools/
+/_docs/
 /anti gravity sistem ticketing/
-QA_TEST.md
-UNIT_TEST.md
-laporan_qa.html
-laporan_unittest.html
+*.zip
+cloudflared.exe
 
 .env.testing
